@@ -402,8 +402,7 @@ textarea.field{resize:none;line-height:1.5}
     </div>
     <div style="margin-top:20px;padding:16px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px">Need access?</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Contact your account manager to get your login details</div>
-      <a href="mailto:cm.fileshares@gmail.com" style="font-size:13px;color:var(--orange);font-weight:600;text-decoration:none">cm.fileshares@gmail.com</a>
+      <div style="font-size:12px;color:var(--muted)">Contact your account manager to get your login details</div>
     </div>
   </div>
 </div>
@@ -1906,7 +1905,7 @@ async function loadInbox(){
         ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
         : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     }
-    return '<div class="inbox-item" onclick="openInboxChat(''+c.id+'',''+esc(c.name)+'',''+color+'')">'
+    return '<div class="inbox-item" data-id="'+c.id+'" data-name="'+esc(c.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
       +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
       +'<div class="inbox-info">'
         +'<div class="inbox-name">'+esc(c.name)+(c.company?' <span style="font-size:11px;color:var(--muted);font-weight:400">· '+esc(c.company)+'</span>':'')+'</div>'
@@ -1917,6 +1916,12 @@ async function loadInbox(){
         +(unread>0?'<div class="inbox-unread-dot"></div>':'')
       +'</div></div>';
   }).join('');
+}
+function handleInboxClick(el){
+  const id    = el.dataset.id;
+  const name  = el.dataset.name;
+  const color = el.dataset.color;
+  openInboxChat(id, name, color);
 }
 async function openInboxChat(clientId, clientName, color){
   chatClientId = clientId;
