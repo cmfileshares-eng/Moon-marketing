@@ -690,12 +690,22 @@ let _uploadContext = 'client';
 ══════════════════════════════════════════ */
 async function checkIsAdmin(){
   if(!currentUser) return false;
-  const { data, error } = await sb
-    .from('admins')
-    .select('id')
-    .eq('id', currentUser.id)
-    .single();
-  return !error && !!data;
+  try {
+    // Race the Supabase query against a 4 second timeout
+    const queryPromise = sb
+      .from('admins')
+      .select('id')
+      .eq('id', currentUser.id)
+      .single();
+    const timeoutPromise = new Promise((_,reject) =>
+      setTimeout(()=>reject(new Error('timeout')), 4000)
+    );
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+    return !error && !!data;
+  } catch(e) {
+    console.warn('Admin check failed:', e.message);
+    return false;
+  }
 }
 
 const DB_notifs = [];
@@ -1430,23 +1440,19 @@ async function confirmDeleteClient(){
 async function openAdmin(){
   if(adminUnlocked){ document.getElementById('admin-panel').classList.add('open'); return; }
   if(!currentUser){ toast('Please sign in first.'); return; }
-
-  // Show the verifying gate
   const gate = document.getElementById('admin-gate');
   gate.style.display = 'flex';
-  document.getElementById('gate-msg').textContent = 'Checking your account with Supabase…';
-
+  document.getElementById('gate-msg').textContent = 'Checking your account…';
   const isAdmin = await checkIsAdmin();
-
   if(isAdmin){
     adminUnlocked = true;
     closeGate();
     document.getElementById('admin-panel').classList.add('open');
   } else {
     document.getElementById('gate-msg').textContent = '⛔ Your account does not have admin access.';
-    // Hide spinner, show just the cancel button after a moment
-    gate.querySelector('.spinner').style.display = 'none';
-    setTimeout(closeGate, 2200);
+    const spinner = gate.querySelector('.spinner');
+    if(spinner) spinner.style.display = 'none';
+    setTimeout(closeGate, 2500);
   }
 }
 
