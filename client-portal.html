@@ -873,6 +873,42 @@ textarea.field{resize:none;line-height:1.5}
   </div>
 </div>
 
+<!-- RESET PASSWORD MODAL (admin) -->
+<div id="resetpw-modal" style="display:none;position:fixed;inset:0;z-index:810;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center">
+  <div class="chpw-card">
+    <h3>Reset Password</h3>
+    <p id="resetpw-sub">For <strong id="resetpw-name"></strong></p>
+    <!-- Tab toggle -->
+    <div class="tab-row" style="margin-bottom:18px">
+      <button class="tab-btn on" id="resetpw-tab-email" onclick="switchResetTab('email')">Send Email</button>
+      <button class="tab-btn" id="resetpw-tab-manual" onclick="switchResetTab('manual')">Set Manually</button>
+    </div>
+    <!-- Email tab -->
+    <div id="resetpw-email-panel">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">A password reset link will be sent to <strong id="resetpw-email-display"></strong></p>
+      <div id="resetpw-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeResetPassword()">Cancel</button>
+        <button class="btn-save" id="resetpw-send-btn" onclick="sendResetEmail()">Send Link</button>
+      </div>
+    </div>
+    <!-- Manual tab -->
+    <div id="resetpw-manual-panel" style="display:none">
+      <div class="pw-field-wrap">
+        <input class="field" id="resetpw-new" type="password" placeholder="New password"/>
+        <button class="pw-toggle" type="button" onclick="togglePw('resetpw-new',this)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div id="resetpw-manual-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeResetPassword()">Cancel</button>
+        <button class="btn-save" id="resetpw-manual-btn" onclick="saveManualReset()">Set Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SIGN OUT CONFIRM -->
 <div id="signout-confirm">
   <div class="signout-card">
@@ -931,17 +967,26 @@ async function boot(){
     const t=new Promise(r=>setTimeout(()=>r({data:{session:null}}),2000));
     const {data:{session}}=await Promise.race([p,t]);
     hide('loading-screen');
-    if(session){currentUser=session.user;await routeUser();}
+    if(session){
+      currentUser=session.user;
+      _routing=true; // prevent onAuthStateChange from double-routing
+      await routeUser();
+    }
     else{show('auth-screen');}
   }catch(e){console.error('Boot:',e);hide('loading-screen');show('auth-screen');}
 }
 
 let _routing=false;
 sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_IN'&&session&&!_routing){
+  if(event==='SIGNED_IN'&&session){
     currentUser=session.user;
     hide('auth-screen');
-    await routeUser();
+    // Reset button state in case it was in loading mode
+    const btn=document.querySelector('#client-auth-card .btn-primary');
+    if(btn){btn.textContent='Sign In →';btn.disabled=false;}
+    const adminBtn=document.querySelector('#admin-auth-card .btn-primary');
+    if(adminBtn){adminBtn.textContent='Sign In as Admin →';adminBtn.disabled=false;}
+    if(!_routing)await routeUser();
   }
   if(event==='SIGNED_OUT'){
     _routing=false;
@@ -961,7 +1006,7 @@ async function routeUser(){
     if(isAdmin){isAdminUser=true;await enterAdminApp();}
     else{isAdminUser=false;await enterApp();}
   }catch(e){console.error('routeUser:',e);await enterApp();}
-  finally{_routing=false;}
+  _routing=false;
 }
 
 async function checkIsAdmin(){
@@ -1567,35 +1612,73 @@ async function loadAdminInbox(){
   const list=document.getElementById('admin-inbox-list');
   if(!list)return;
   list.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading...</div>';
-  const {data:msgs}=await sb.from('messages').select('*').order('created_at',{ascending:false});
-  if(!msgs?.length){
-    list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No conversations yet</div>';
+
+  // Load clients and messages in parallel
+  const [{data:clients},{data:msgs}]=await Promise.all([
+    sb.from('clients').select('id,name,email,color,created_at').order('created_at',{ascending:false}),
+    sb.from('messages').select('*').order('created_at',{ascending:false})
+  ]);
+
+  if(!clients?.length){
+    list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No clients yet</div>';
     return;
   }
+
+  // Build a map of room_id → latest message + unread count
   const rooms={};
-  msgs.forEach(m=>{
-    if(!rooms[m.room_id]){rooms[m.room_id]={latest:m,unread:0,name:m.sender_name||'Client'};}
+  (msgs||[]).forEach(m=>{
+    if(!rooms[m.room_id]){rooms[m.room_id]={latest:m,unread:0};}
     if(m.sender==='client'&&!m.read)rooms[m.room_id].unread++;
-    if(m.sender==='client'&&m.sender_name)rooms[m.room_id].name=m.sender_name;
   });
-  const sorted=Object.entries(rooms).sort((a,b)=>new Date(b[1].latest.created_at)-new Date(a[1].latest.created_at));
-  list.innerHTML=sorted.map(([roomId,info],i)=>{
-    const color=CLIENT_COLORS[i%CLIENT_COLORS.length];
-    const init=(info.name||'?').charAt(0).toUpperCase();
-    const dt=new Date(info.latest.created_at),now=new Date();
-    const time=dt.toDateString()===now.toDateString()
-      ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
-      :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const preview=(info.latest.sender==='admin'?'You: ':'')+info.latest.body;
-    return '<div class="inbox-item" data-room="'+roomId+'" data-name="'+esc(info.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
+
+  // Merge clients with their message data, sort by latest activity (clients with messages first, then by created_at)
+  const rows=clients.map(c=>{
+    // room_id is the client's auth uid — we stored it as currentUser.id when they chatted
+    // Try to find a room that matches this client's email via sender_name or just any room
+    // Best available key: messages store room_id = auth uid, clients table has email
+    // We join by checking if any message's room_id matches a room we know about
+    const room=rooms[c.id]||null; // client.id may equal auth uid if linked
+    return {client:c,room};
+  });
+
+  // Sort: clients with messages first (by latest msg time), then no-message clients by created_at
+  rows.sort((a,b)=>{
+    const ta=a.room?new Date(a.room.latest.created_at):new Date(a.client.created_at);
+    const tb=b.room?new Date(b.room.latest.created_at):new Date(b.client.created_at);
+    const hasMsgA=!!a.room, hasMsgB=!!b.room;
+    if(hasMsgA&&!hasMsgB)return -1;
+    if(!hasMsgA&&hasMsgB)return 1;
+    return tb-ta;
+  });
+
+  const now=new Date();
+  list.innerHTML=rows.map((row,i)=>{
+    const c=row.client;
+    const room=row.room;
+    const color=c.color||CLIENT_COLORS[i%CLIENT_COLORS.length];
+    const init=(c.name||'?').charAt(0).toUpperCase();
+    let preview='No messages yet';
+    let timeStr='';
+    let unreadDot='';
+    if(room){
+      preview=(room.latest.sender==='admin'?'You: ':'')+room.latest.body;
+      const dt=new Date(room.latest.created_at);
+      timeStr=dt.toDateString()===now.toDateString()
+        ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+        :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      if(room.unread>0)unreadDot='<div class="inbox-unread-dot"></div>';
+    }
+    // Use client.id as roomId fallback (works when auth uid = client id), else use room's room_id
+    const roomId=room?room.latest.room_id:c.id;
+    return '<div class="inbox-item" data-room="'+roomId+'" data-name="'+esc(c.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
       +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
       +'<div class="inbox-info">'
-        +'<div class="inbox-name">'+esc(info.name)+'</div>'
-        +'<div class="inbox-preview">'+esc(preview)+'</div>'
+        +'<div class="inbox-name">'+esc(c.name)+'</div>'
+        +'<div class="inbox-preview" style="color:'+(room?'var(--muted)':'var(--border)')+'">'+esc(preview)+'</div>'
       +'</div>'
       +'<div class="inbox-meta">'
-        +'<div class="inbox-time">'+time+'</div>'
-        +(info.unread>0?'<div class="inbox-unread-dot"></div>':'')
+        +'<div class="inbox-time">'+timeStr+'</div>'
+        +unreadDot
       +'</div></div>';
   }).join('');
 }
@@ -1645,14 +1728,84 @@ async function loadAdminClients(){
   const {data}=await sb.from('clients').select('*').order('name');
   if(!data?.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No clients yet</div>';return;}
   list.innerHTML=data.map((c,i)=>`
-    <div class="admin-client-row">
+    <div class="admin-client-row" style="cursor:default">
       <div class="admin-client-av" style="background:${c.color||CLIENT_COLORS[i%6]}">${(c.name||'?').charAt(0).toUpperCase()}</div>
       <div class="admin-client-info">
         <div class="admin-client-name">${esc(c.name)}</div>
         <div class="admin-client-email">${esc(c.company||'')}${c.company&&c.email?' · ':''}${esc(c.email||'')}</div>
       </div>
-      <div style="color:var(--muted);font-size:18px">›</div>
+      <button onclick="openResetPassword('${esc(c.email||'')}','${esc(c.name||'')}')"
+        style="flex-shrink:0;padding:7px 12px;background:var(--off);border:1.5px solid var(--border);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap">
+        Reset PW
+      </button>
     </div>`).join('');
+}
+
+/* ── RESET PASSWORD (admin) ── */
+let _resetEmail='';
+function openResetPassword(email,name){
+  _resetEmail=email;
+  document.getElementById('resetpw-name').textContent=name||email;
+  document.getElementById('resetpw-email-display').textContent=email;
+  document.getElementById('resetpw-err').textContent='';
+  document.getElementById('resetpw-manual-err').textContent='';
+  document.getElementById('resetpw-new').value='';
+  const sendBtn=document.getElementById('resetpw-send-btn');
+  const manBtn=document.getElementById('resetpw-manual-btn');
+  if(sendBtn){sendBtn.textContent='Send Link';sendBtn.disabled=false;}
+  if(manBtn){manBtn.textContent='Set Password';manBtn.disabled=false;}
+  switchResetTab('email');
+  document.getElementById('resetpw-modal').style.display='flex';
+}
+function closeResetPassword(){
+  document.getElementById('resetpw-modal').style.display='none';
+  _resetEmail='';
+}
+function switchResetTab(tab){
+  document.getElementById('resetpw-email-panel').style.display=tab==='email'?'block':'none';
+  document.getElementById('resetpw-manual-panel').style.display=tab==='manual'?'block':'none';
+  document.getElementById('resetpw-tab-email').classList.toggle('on',tab==='email');
+  document.getElementById('resetpw-tab-manual').classList.toggle('on',tab==='manual');
+}
+async function sendResetEmail(){
+  const btn=document.getElementById('resetpw-send-btn');
+  const errEl=document.getElementById('resetpw-err');
+  errEl.textContent='';
+  if(!_resetEmail){errEl.textContent='No email address found.';return;}
+  btn.textContent='Sending…';btn.disabled=true;
+  const {error}=await sb.auth.resetPasswordForEmail(_resetEmail,{
+    redirectTo:window.location.href
+  });
+  if(error){
+    errEl.textContent=error.message;
+    btn.textContent='Send Link';btn.disabled=false;
+    return;
+  }
+  closeResetPassword();
+  toast('✓ Reset link sent to '+_resetEmail);
+}
+async function saveManualReset(){
+  const np=document.getElementById('resetpw-new').value;
+  const errEl=document.getElementById('resetpw-manual-err');
+  const btn=document.getElementById('resetpw-manual-btn');
+  errEl.textContent='';
+  if(!np){errEl.textContent='Please enter a new password.';return;}
+  if(np.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
+  btn.textContent='Setting…';btn.disabled=true;
+  // Use admin API endpoint directly — avoids touching the current admin session
+  try{
+    const res=await fetch(SUPABASE_URL+'/auth/v1/admin/users',{
+      method:'GET',
+      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+    });
+    // We can't list users with anon key — use resetPasswordForEmail as fallback
+    // and tell admin it was sent
+    errEl.textContent='Manual reset requires service key. Use "Send Email" instead.';
+    btn.textContent='Set Password';btn.disabled=false;
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    btn.textContent='Set Password';btn.disabled=false;
+  }
 }
 
 async function saveAdminStats(){
