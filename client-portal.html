@@ -769,15 +769,24 @@ async function checkIsAdmin(){
 const DB_notifs = [];
 
 /* ══════════════════════════════════════════
-   BOOT
+   BOOT — always hides loading screen
 ══════════════════════════════════════════ */
 async function boot(){
-  const { data:{ session } } = await sb.auth.getSession();
-  hide('loading-screen');
-  if(session){
-    currentUser = session.user;
-    await enterApp();
-  } else {
+  try {
+    // Hard timeout — if Supabase takes more than 5s, show auth anyway
+    const sessionPromise = sb.auth.getSession();
+    const timeout = new Promise(resolve => setTimeout(() => resolve({data:{session:null}}), 5000));
+    const { data:{ session } } = await Promise.race([sessionPromise, timeout]);
+    hide('loading-screen');
+    if(session){
+      currentUser = session.user;
+      await enterApp();
+    } else {
+      show('auth-screen');
+    }
+  } catch(e) {
+    console.error('Boot error:', e);
+    hide('loading-screen');
     show('auth-screen');
   }
 }
@@ -797,28 +806,37 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function enterApp(){
-  show('app');
-  hide('auth-screen');
-  // Set avatar + greeting from Google/auth metadata
-  const meta = currentUser.user_metadata || {};
-  // Google sign-in populates 'full_name' or 'name'; email/password uses what was typed at signup
-  const fullName = meta.full_name || meta.name || meta.email?.split('@')[0] || currentUser.email?.split('@')[0] || 'there';
-  const firstName = fullName.split(' ')[0];
-  document.getElementById('avatar-pill').textContent = firstName.charAt(0).toUpperCase();
-  document.getElementById('greeting-name').textContent = firstName + ' ☽';
-  document.getElementById('greeting-date').textContent =
-    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-
-  // Find this user's client record
-  const { data: clients } = await sb.from('clients').select('id').eq('email', currentUser.email).limit(1);
-  if(clients && clients.length){
-    currentClientId = clients[0].id;
-  }
-  await loadClientPortal();
-  // Load chat preview
-  if(currentClientId){
-    const {data:msgs} = await sb.from('messages').select('*').eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(20);
-    if(msgs) updateChatPreview(msgs.reverse());
+  try {
+    show('app');
+    hide('loading-screen');
+    hide('auth-screen');
+    // Set avatar + greeting from Google/auth metadata
+    const meta = currentUser.user_metadata || {};
+    const fullName = meta.full_name || meta.name || meta.email?.split('@')[0] || currentUser.email?.split('@')[0] || 'there';
+    const firstName = fullName.split(' ')[0];
+    const avatarEl = document.getElementById('avatar-pill');
+    const greetEl  = document.getElementById('greeting-name');
+    const dateEl   = document.getElementById('greeting-date');
+    if(avatarEl) avatarEl.textContent = firstName.charAt(0).toUpperCase();
+    if(greetEl)  greetEl.textContent  = firstName + ' ☽';
+    if(dateEl)   dateEl.textContent   = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    // Find this user's client record
+    const { data: clients } = await sb.from('clients').select('id').eq('email', currentUser.email).limit(1);
+    if(clients && clients.length){
+      currentClientId = clients[0].id;
+    }
+    await loadClientPortal();
+    // Load chat preview
+    if(currentClientId){
+      const {data:msgs} = await sb.from('messages').select('*').eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(20);
+      if(msgs) updateChatPreview(msgs.reverse());
+    }
+  } catch(e) {
+    console.error('enterApp error:', e);
+    // Still show the app even if data loading fails
+    show('app');
+    hide('loading-screen');
+    hide('auth-screen');
   }
 }
 
@@ -1834,6 +1852,14 @@ async function loadDetailMessages(clientId){
 }
 
 /* START */
+// Absolute fallback — if boot() fails silently, force loading screen off after 7s
+setTimeout(()=>{
+  const ls = document.getElementById('loading-screen');
+  if(ls && ls.style.display !== 'none'){
+    ls.style.display = 'none';
+    show('auth-screen');
+  }
+}, 7000);
 boot();
 </script>
 </body>
