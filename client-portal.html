@@ -323,7 +323,40 @@ textarea.field{resize:none;line-height:1.5}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── CHAT SCREEN ── */
+/* ── ADMIN AUTH ── */
+.admin-auth-link{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;padding:8px;background:none;border:none;font-family:var(--font-body);width:100%}
+.admin-auth-link:hover{color:var(--orange)}
+#admin-auth-card{display:none}
+/* ── ADMIN PORTAL ── */
+#admin-app{display:none;position:fixed;inset:0;z-index:700;background:var(--off);flex-direction:column}
+#admin-app.open{display:flex}
+.admin-topbar{position:sticky;top:0;z-index:10;background:rgba(248,247,245,.95);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.admin-topbar-left{display:flex;align-items:center;gap:8px}
+.admin-topbar-title{font-family:var(--font-display);font-size:18px;font-weight:400}
+.admin-topbar-badge{font-size:10px;font-weight:700;background:var(--ink);color:white;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+.admin-page{flex:1;overflow-y:auto;padding:16px;padding-bottom:90px;-webkit-overflow-scrolling:touch}
+.admin-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.admin-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted);transition:color .2s}
+.admin-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.admin-nav-btn.on{color:var(--orange)}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.admin-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px}
+.admin-card-title{font-family:var(--font-display);font-size:17px;font-weight:400;margin-bottom:16px}
+.admin-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.admin-action-card{background:var(--off);border-radius:var(--radius);padding:18px 14px;cursor:pointer;transition:all .2s;border:1.5px solid transparent;display:flex;flex-direction:column;gap:8px}
+.admin-action-card:active{border-color:var(--orange);background:var(--orange-l)}
+.admin-action-icon{width:38px;height:38px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center}
+.admin-action-icon svg{width:18px;height:18px;fill:none;stroke-width:2}
+.admin-action-label{font-size:14px;font-weight:600}
+.admin-action-sub{font-size:11px;color:var(--muted)}
+.admin-client-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.admin-client-row:last-child{border-bottom:none}
+.admin-client-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+.admin-client-info{flex:1;min-width:0}
+.admin-client-name{font-size:14px;font-weight:600}
+.admin-client-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── CHAT ── */
 #chat-screen{display:none;position:fixed;inset:0;z-index:260;background:var(--off);flex-direction:column}
 #chat-screen.open{display:flex}
 .chat-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -353,22 +386,15 @@ textarea.field{resize:none;line-height:1.5}
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;text-align:center;padding:32px}
 .chat-empty svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
 .msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px}
-/* ── UNIFIED INBOX ── */
-#inbox-screen{display:none;position:fixed;inset:0;z-index:260;background:var(--off);flex-direction:column}
-#inbox-screen.open{display:flex}
-.inbox-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
-.inbox-title{font-family:var(--font-display);font-size:18px;font-weight:400;flex:1}
-.inbox-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--white)}
-.inbox-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
-.inbox-item:active{background:var(--off)}
-.inbox-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:white;flex-shrink:0}
-.inbox-info{flex:1;min-width:0}
-.inbox-name{font-size:15px;font-weight:600}
-.inbox-preview{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inbox-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
-.inbox-time{font-size:11px;color:var(--muted)}
-.inbox-unread-dot{width:10px;height:10px;border-radius:50%;background:var(--orange)}
-.inbox-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;padding:40px;text-align:center}
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upload-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:10px;display:none}
+.upload-progress-fill{height:100%;background:var(--orange);border-radius:4px;width:0;transition:width .3s}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.upload-zone svg{width:28px;height:28px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto}
+.upload-zone p{font-size:14px;color:var(--muted)}
+.upload-zone span{font-size:12px;color:var(--orange);font-weight:600}
+.upload-zone.active{border-color:var(--orange);background:var(--orange-l)}
 
 </style>
 </head>
@@ -387,22 +413,41 @@ textarea.field{resize:none;line-height:1.5}
     <div class="brand-name">Lunar</div>
   </div>
   <div class="auth-card">
-    <h2>Welcome back<br><em>☽</em></h2>
-    <p>Sign in to access your portal</p>
-    <div id="form-in">
+    <!-- CLIENT LOGIN -->
+    <div id="client-auth-card">
+      <h2>Welcome back<br><em>☽</em></h2>
+      <p>Sign in to access your portal</p>
       <input class="field" id="si-email" type="email" placeholder="Email address" autocomplete="email"/>
-      <div style="position:relative;margin-bottom:12px">
+      <div style="position:relative;margin-bottom:4px">
         <input class="field" id="si-pass" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:48px;margin-bottom:0"/>
         <button type="button" onclick="togglePw('si-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
       <div class="auth-err" id="si-err"></div>
-      <button class="btn-primary" onclick="signIn()" style="margin-top:4px">Sign In →</button>
+      <button class="btn-primary" onclick="signIn()" style="margin-top:12px">Sign In →</button>
+      <div style="margin-top:14px;padding:14px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
+        <div style="font-size:12px;color:var(--muted)">Need access? Contact your account manager</div>
+      </div>
+      <button class="admin-auth-link" onclick="showAdminAuth()">Admin sign in →</button>
     </div>
-    <div style="margin-top:20px;padding:16px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
-      <div style="font-size:13px;font-weight:600;margin-bottom:4px">Need access?</div>
-      <div style="font-size:12px;color:var(--muted)">Contact your account manager to get your login details</div>
+    <!-- ADMIN LOGIN -->
+    <div id="admin-auth-card" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <button onclick="showClientAuth()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);display:flex;align-items:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:400">Admin Sign In</div>
+      </div>
+      <input class="field" id="ai-email" type="email" placeholder="Admin email" autocomplete="email"/>
+      <div style="position:relative;margin-bottom:4px">
+        <input class="field" id="ai-pass" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:48px;margin-bottom:0"/>
+        <button type="button" onclick="togglePw('ai-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="auth-err" id="ai-err"></div>
+      <button class="btn-primary" onclick="adminSignIn()" style="margin-top:12px;background:var(--ink)">Sign In as Admin →</button>
     </div>
   </div>
 </div>
@@ -535,7 +580,7 @@ textarea.field{resize:none;line-height:1.5}
     <!-- MESSAGES -->
     <div class="section-head">
       <div class="section-title">Messages</div>
-      <button class="section-action" onclick="openChat()">Open chat</button>
+      <button class="section-action" onclick="openChat()">Open</button>
     </div>
     <div class="bubble" onclick="openChat()" style="cursor:pointer">
       <div style="display:flex;align-items:center;gap:12px;padding:4px 0">
@@ -543,7 +588,7 @@ textarea.field{resize:none;line-height:1.5}
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:600">Account Manager</div>
           <div style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Lunar Agency</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to open chat</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to chat with your account manager</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
           <div style="font-size:11px;color:var(--muted)" id="chat-preview-time"></div>
@@ -577,70 +622,119 @@ textarea.field{resize:none;line-height:1.5}
     <button class="nav-btn" id="nav-messages" onclick="navTo('messages',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
     </button>
-    <button class="nav-btn" id="nav-admin" onclick="openAdmin()">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Admin
+
+  </nav>
+</div>
+
+<!-- ADMIN PORTAL -->
+<div id="admin-app">
+  <div class="admin-topbar">
+    <div class="admin-topbar-left">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="white" width="15" height="15"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+      <div class="admin-topbar-title">Lunar</div>
+      <div class="admin-topbar-badge">ADMIN</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="avatar-pill" id="admin-avatar" onclick="adminSignOut()" title="Sign out">A</div>
+    </div>
+  </div>
+  <div class="admin-page">
+    <!-- MESSAGES -->
+    <div class="admin-section active" id="admin-sec-messages">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Messages</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">All client conversations</div>
+      <div class="admin-card" style="padding:0;overflow:hidden">
+        <div id="admin-inbox-list"><div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div></div>
+      </div>
+    </div>
+    <!-- UPLOAD -->
+    <div class="admin-section" id="admin-sec-upload">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Upload</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Add creatives for clients</div>
+      <div class="admin-card">
+        <div class="admin-card-title">Select Client</div>
+        <select class="field" id="upload-client-select" style="margin-bottom:16px"><option value="">Loading…</option></select>
+        <div class="admin-action-grid">
+          <div class="admin-action-card" onclick="openAdminModal('upload')">
+            <div class="admin-action-icon" style="background:var(--purple-l)"><svg viewBox="0 0 24 24" style="stroke:var(--purple)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div class="admin-action-label">Upload Creative</div>
+            <div class="admin-action-sub">Video, image, PDF</div>
+          </div>
+          <div class="admin-action-card" onclick="openAdminModal('project')">
+            <div class="admin-action-icon bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="admin-action-label">New Project</div>
+            <div class="admin-action-sub">Add a campaign</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- INVOICES -->
+    <div class="admin-section" id="admin-sec-invoices">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Invoices</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Create and manage billing</div>
+      <div class="admin-card">
+        <div class="admin-card-title">Select Client</div>
+        <select class="field" id="invoice-client-select" style="margin-bottom:16px"><option value="">Loading…</option></select>
+        <button class="btn-primary" style="margin-bottom:0" onclick="openAdminModal('invoice')">+ Create Invoice</button>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">Recent Invoices</div>
+        <div id="admin-invoices-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Loading…</div></div>
+      </div>
+    </div>
+    <!-- STATS -->
+    <div class="admin-section" id="admin-sec-stats">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Update Stats</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Push performance data to clients</div>
+      <div class="admin-card">
+        <div class="admin-card-title">Select Client</div>
+        <select class="field" id="stats-client-select" style="margin-bottom:0"><option value="">Loading…</option></select>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">Performance Data</div>
+        <div style="margin-bottom:12px"><label class="form-label">Month</label><input class="field" id="s-month" placeholder="e.g. April 2026" style="margin-bottom:0"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div><label class="form-label">ROAS</label><input class="field" id="s-roas" placeholder="3.8" style="margin-bottom:0"/></div>
+          <div><label class="form-label">CTR (%)</label><input class="field" id="s-ctr" placeholder="4.2" style="margin-bottom:0"/></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <div><label class="form-label">Conv Rate (%)</label><input class="field" id="s-conv" placeholder="12" style="margin-bottom:0"/></div>
+          <div><label class="form-label">Ad Spend ($)</label><input class="field" id="s-spend" placeholder="12400" style="margin-bottom:0"/></div>
+        </div>
+        <button class="btn-primary" style="margin-bottom:0" onclick="saveAdminStats()">Update Stats →</button>
+      </div>
+    </div>
+    <!-- CLIENTS -->
+    <div class="admin-section" id="admin-sec-clients">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Clients</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Manage all client accounts</div>
+      <button class="btn-primary" onclick="openAdminModal('add-client')">+ Add New Client</button>
+      <div class="admin-card"><div id="admin-clients-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Loading…</div></div></div>
+    </div>
+  </div>
+  <nav class="admin-bottom-nav">
+    <button class="admin-nav-btn on" id="anav-messages" onclick="adminNavTo('messages',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages
+    </button>
+    <button class="admin-nav-btn" id="anav-upload" onclick="adminNavTo('upload',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
+    </button>
+    <button class="admin-nav-btn" id="anav-invoices" onclick="adminNavTo('invoices',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Invoices
+    </button>
+    <button class="admin-nav-btn" id="anav-stats" onclick="adminNavTo('stats',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats
+    </button>
+    <button class="admin-nav-btn" id="anav-clients" onclick="adminNavTo('clients',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clients
     </button>
   </nav>
 </div>
 
-<!-- ══════════ ADMIN ACCOUNTS PAGE ══════════ -->
-<div id="accounts-page">
-  <div class="accounts-topbar">
-    <div class="back-btn" onclick="closeAccountsPage()">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </div>
-    <div class="accounts-title">Client Accounts</div>
-    <button style="background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer" onclick="openModal('add-client')">+ Add</button>
-  </div>
-  <div style="padding:16px">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="accounts-summary">Loading accounts…</div>
-    <div id="clients-list"></div>
-  </div>
-</div>
-
-<!-- ══════════ CLIENT DETAIL PAGE ══════════ -->
-<div id="client-detail">
-  <div class="accounts-topbar">
-    <div class="back-btn" onclick="closeClientDetail()">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </div>
-    <div class="accounts-title" id="detail-title">Client</div>
-    <button style="background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;color:var(--red)" onclick="confirmDeleteClient()">Delete</button>
-  </div>
-  <div class="client-header-card" id="detail-header">
-    <h2 id="detail-client-name">—</h2>
-    <p id="detail-client-company">—</p>
-    <div class="client-action-row">
-      <button class="client-action-btn" onclick="openDetailModal('project')">+ Project</button>
-      <button class="client-action-btn" onclick="openDetailModal('invoice')">+ Invoice</button>
-      <button class="client-action-btn" onclick="openDetailModal('upload')">+ Upload</button>
-      <button class="client-action-btn" onclick="openDetailModal('perf')">+ Stats</button>
-      <button class="client-action-btn" onclick="openDetailModal('book')">+ Call</button>
-      <button class="client-action-btn" onclick="openAdminChat()">💬 Chat</button>
-    </div>
-  </div>
-  <div class="detail-section">
-    <div class="section-head"><div class="section-title">Projects</div></div>
-    <div class="bubble"><div id="detail-projects"></div></div>
-    <div class="section-head"><div class="section-title">Invoices</div></div>
-    <div class="bubble"><div id="detail-invoices"></div></div>
-    <div class="section-head"><div class="section-title">Files & Assets</div><div style="font-size:11px;color:var(--muted)">Google Drive</div></div>
-    <div class="bubble"><div id="detail-files"></div></div>
-    <div class="section-head"><div class="section-title">Performance Stats</div></div>
-    <div class="bubble"><div id="detail-perf"></div></div>
-    <div class="section-head"><div class="section-title">Messages</div></div>
-    <div class="bubble"><div id="detail-messages"><div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div></div><div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:8px"><input class="field" id="detail-msg-input" placeholder="Message this client…" style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendAdminMessage()"/><button onclick="sendAdminMessage()" style="padding:13px 16px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0">Send</button></div></div>
-    <div class="section-head"><div class="section-title">Upcoming Calls</div></div>
-    <div class="bubble"><div id="detail-appts"></div></div>
-  </div>
-</div>
-
-<!-- CHAT SCREEN -->
+<!-- CHAT SCREEN (room keyed by user uid — works for everyone, no client_id needed) -->
 <div id="chat-screen">
   <div class="chat-topbar">
-    <div class="chat-back" onclick="closeChat()">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </div>
+    <div class="chat-back" onclick="closeChat()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
     <div class="chat-am-av" id="chat-am-av">CM</div>
     <div class="chat-am-info">
       <div class="chat-am-name" id="chat-am-name">Account Manager</div>
@@ -652,7 +746,7 @@ textarea.field{resize:none;line-height:1.5}
     <div class="chat-empty" id="chat-empty">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <div>No messages yet</div>
-      <div style="font-size:12px">Send a message to your account manager</div>
+      <div style="font-size:12px">Send a message to get started</div>
     </div>
   </div>
   <div class="chat-input-bar">
@@ -664,78 +758,13 @@ textarea.field{resize:none;line-height:1.5}
   </div>
 </div>
 
-<!-- UNIFIED INBOX (admin) -->
-<div id="inbox-screen">
-  <div class="inbox-topbar">
-    <div class="back-btn" onclick="closeInbox()" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
-    </div>
-    <div class="inbox-title">Messages</div>
-    <div id="inbox-count" style="font-size:12px;color:var(--muted)"></div>
-  </div>
-  <div class="inbox-list" id="inbox-list">
-    <div class="inbox-empty">
-      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <div>No conversations yet</div>
-    </div>
-  </div>
+<!-- ADMIN MODAL -->
+<div id="admin-modal-overlay" onclick="if(event.target===this)closeAdminModal()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);align-items:flex-end">
+  <div class="modal-sheet" id="admin-modal-content"></div>
 </div>
 
-<!-- ADMIN GATE — shows while Supabase verifies admin status -->
-<div id="admin-gate" onclick="if(event.target===this)closeGate()">
-  <div class="gate-card">
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="width:52px;height:52px;background:var(--orange-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      <div style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:4px">Verifying access…</div>
-      <div style="font-size:13px;color:var(--muted)" id="gate-msg">Checking your account with Supabase</div>
-    </div>
-    <div style="display:flex;justify-content:center;margin-bottom:16px">
-      <div class="spinner" style="border-color:rgba(255,107,44,.3);border-top-color:var(--orange);width:28px;height:28px"></div>
-    </div>
-    <button class="btn-cancel" style="width:100%" onclick="closeGate()">Cancel</button>
-  </div>
-</div>
-
-<!-- ADMIN PANEL SHEET -->
-<div id="admin-panel" onclick="if(event.target===this)closeAdmin()">
-  <div class="admin-sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">What do you want to do?</div>
-    <div class="admin-grid">
-      <div class="admin-item" onclick="openAccountsPage();closeAdmin()">
-        <div class="ai-icon" style="background:#EEF2FF"><svg viewBox="0 0 24 24" style="stroke:#6366F1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <div class="ai-label">Manage Clients</div><div class="ai-sub">View all accounts</div>
-      </div>
-      <div class="admin-item" onclick="openInbox();closeAdmin()">
-        <div class="ai-icon bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div class="ai-label">Messages</div><div class="ai-sub">All client chats</div>
-      </div>
-      <div class="admin-item" onclick="openModal('upload');closeAdmin()">
-        <div class="ai-icon" style="background:var(--purple-l)"><svg viewBox="0 0 24 24" style="stroke:var(--purple)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-        <div class="ai-label">Upload Creative</div><div class="ai-sub">Video to Drive</div>
-      </div>
-      <div class="admin-item" onclick="openModal('invoice');closeAdmin()">
-        <div class="ai-icon bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--blue)"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-        <div class="ai-label">New Invoice</div><div class="ai-sub">Bill your client</div>
-      </div>
-      <div class="admin-item" onclick="openModal('project');closeAdmin()">
-        <div class="ai-icon bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="ai-label">New Project</div><div class="ai-sub">Add a campaign</div>
-      </div>
-      <div class="admin-item" onclick="openModal('report');closeAdmin()">
-        <div class="ai-icon" style="background:#EEF2FF"><svg viewBox="0 0 24 24" style="stroke:#6366F1"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <div class="ai-label">Update Report</div><div class="ai-sub">Ad performance</div>
-      </div>
-      <div class="admin-item" onclick="openModal('book');closeAdmin()">
-        <div class="ai-icon bg-amber"><svg viewBox="0 0 24 24" style="stroke:var(--amber)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-        <div class="ai-label">Book a Call</div><div class="ai-sub">Schedule meeting</div>
-      </div>
-    </div>
-    <button style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--muted);cursor:pointer;margin-top:4px" onclick="lockAdmin()">🔒 Lock Admin Panel</button>
-  </div>
-</div>
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-picker" accept="video/*,image/*,.pdf,.zip" style="display:none" onchange="onFilePicked(this)"/>
 
 <!-- MODAL -->
 <div id="modal-overlay" onclick="if(event.target===this)closeModal()">
@@ -760,206 +789,185 @@ textarea.field{resize:none;line-height:1.5}
 
 <script>
 /* ══════════════════════════════════════════
-   CONFIG — your keys are pre-filled
+   CONFIG
 ══════════════════════════════════════════ */
 const SUPABASE_URL  = 'https://onxodaeoqvttrazzklgn.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_mq-p3HHfwzropQeceoQVGw_Ci92qFEd';
 const GOOGLE_CLIENT_ID  = '55525879916-ukhn0eugsuku8oad987lngvm0vanrq04.apps.googleusercontent.com';
 const DRIVE_ROOT_FOLDER = '1Gdze4pOGygErK6NpLjUZwL5Br_oCpR30';
-// No hardcoded password — admin access is verified server-side via Supabase
+const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
+const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
 
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let currentUser = null;
-let currentClientId = null; // which client's data we're viewing
-let adminUnlocked = false;
+let currentClientId = null;
+let isAdminUser = false;
 let autoApproveOn = false;
+let chatSubscription = null;
+let chatRoomId = null;
+let chatIsAdmin = false;
 let currentDetailClientId = null;
 let googleAccessToken = null;
 let _pendingUploadFile = null;
-let _uploadContext = 'client';
-
-/* ══════════════════════════════════════════
-   ADMIN CHECK — server-side via Supabase
-   No password is stored in this file.
-   Access is granted only if the signed-in
-   user's uid exists in the admins table.
-══════════════════════════════════════════ */
-async function checkIsAdmin(){
-  if(!currentUser) return false;
-  try {
-    const p = sb.from('admins').select('id').eq('id',currentUser.id).single();
-    const t = new Promise(r=>setTimeout(()=>r({data:null,error:'timeout'}),4000));
-    const { data, error } = await Promise.race([p,t]);
-    return !error && !!data;
-  } catch(e){ return false; }
-}
-
 const DB_notifs = [];
 
 /* ══════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════ */
 async function boot(){
+  setTimeout(()=>{
+    const ls=document.getElementById('loading-screen');
+    if(ls&&ls.style.display!=='none'){ls.style.display='none';show('auth-screen');}
+  },7000);
   try {
-    const p = sb.auth.getSession();
-    const t = new Promise(r=>setTimeout(()=>r({data:{session:null}}),6000));
-    const { data:{ session } } = await Promise.race([p,t]);
+    const p=sb.auth.getSession();
+    const t=new Promise(r=>setTimeout(()=>r({data:{session:null}}),6000));
+    const {data:{session}}=await Promise.race([p,t]);
     hide('loading-screen');
-    if(session){ currentUser=session.user; await enterApp(); }
-    else { show('auth-screen'); }
-  } catch(e){
-    console.error('Boot error:',e);
-    hide('loading-screen');
-    show('auth-screen');
-  }
+    if(session){currentUser=session.user;await routeUser();}
+    else{show('auth-screen');}
+  }catch(e){console.error('Boot:',e);hide('loading-screen');show('auth-screen');}
 }
 
-sb.auth.onAuthStateChange(async (event, session) => {
-  if(event === 'SIGNED_IN' && session){
-    currentUser = session.user;
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(event==='SIGNED_IN'&&session){
+    currentUser=session.user;
     hide('auth-screen');
-    await enterApp();
+    await routeUser();
   }
-  if(event === 'SIGNED_OUT'){
-    currentUser = null;
-    currentClientId = null;
+  if(event==='SIGNED_OUT'){
+    currentUser=null;currentClientId=null;isAdminUser=false;
+    hide('app');hide('admin-app');
     show('auth-screen');
-    hide('app');
+    showClientAuth();
   }
 });
 
-async function enterApp(){
-  try {
-    show('app');
-    hide('loading-screen');
-    hide('auth-screen');
-    const meta = currentUser.user_metadata || {};
-    const fullName = meta.full_name || meta.name || currentUser.email?.split('@')[0] || 'there';
-    const firstName = fullName.split(' ')[0];
-    const ap = document.getElementById('avatar-pill');
-    const gn = document.getElementById('greeting-name');
-    const gd = document.getElementById('greeting-date');
-    if(ap) ap.textContent = firstName.charAt(0).toUpperCase();
-    if(gn) gn.textContent = firstName + ' ☽';
-    if(gd) gd.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    const { data: clients } = await sb.from('clients').select('id').eq('email', currentUser.email).limit(1);
-    if(clients && clients.length) currentClientId = clients[0].id;
-    await loadClientPortal();
-    await loadChatPreview();
-  } catch(e){
-    console.error('enterApp error:',e);
-    show('app');
-    hide('loading-screen');
-    hide('auth-screen');
-  }
+async function routeUser(){
+  try{
+    const isAdmin=await checkIsAdmin();
+    if(isAdmin){isAdminUser=true;await enterAdminApp();}
+    else{isAdminUser=false;await enterApp();}
+  }catch(e){console.error('routeUser:',e);await enterApp();}
+}
+
+async function checkIsAdmin(){
+  if(!currentUser)return false;
+  try{
+    const p=sb.from('admins').select('id').eq('id',currentUser.id).maybeSingle();
+    const t=new Promise(r=>setTimeout(()=>r({data:null}),4000));
+    const {data}=await Promise.race([p,t]);
+    return !!data;
+  }catch(e){return false;}
 }
 
 /* ══════════════════════════════════════════
    AUTH
 ══════════════════════════════════════════ */
-function authTab(tab, btn){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  toggle('form-in', tab==='in');
-  toggle('form-up', tab==='up');
+function showAdminAuth(){
+  document.getElementById('client-auth-card').style.display='none';
+  document.getElementById('admin-auth-card').style.display='block';
+}
+function showClientAuth(){
+  document.getElementById('admin-auth-card').style.display='none';
+  document.getElementById('client-auth-card').style.display='block';
 }
 
 async function signIn(){
-  const email = v('si-email'), pass = v('si-pass');
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if(error) document.getElementById('si-err').textContent = error.message;
+  const email=v('si-email'),pass=v('si-pass');
+  const err=document.getElementById('si-err');
+  err.textContent='';
+  if(!email||!pass){err.textContent='Please enter your email and password.';return;}
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error)err.textContent=error.message;
 }
 
-async function signUp(){
-  const name = v('su-name'), company = v('su-company');
-  const email = v('su-email'), pass = v('su-pass');
-  const { data, error } = await sb.auth.signUp({ email, password: pass,
-    options: { data: { full_name: name, company } }
-  });
-  if(error){ document.getElementById('su-err').textContent = error.message; return; }
-  // Create client record
-  await sb.from('clients').insert({ name, company, email, color: '#FF6B2C' });
-  toast('✓ Account created! Check your email to confirm.');
+async function adminSignIn(){
+  const email=v('ai-email'),pass=v('ai-pass');
+  const err=document.getElementById('ai-err');
+  err.textContent='';
+  if(!email||!pass){err.textContent='Please enter your email and password.';return;}
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error)err.textContent=error.message;
 }
 
-async function signInGoogle(){
-  const { error } = await sb.auth.signInWithOAuth({ provider: 'google',
-    options: { scopes: 'https://www.googleapis.com/auth/drive.file' }
-  });
-  if(error) toast('Google sign-in failed: ' + error.message);
+function togglePw(fieldId,btn){
+  const f=document.getElementById(fieldId);
+  if(!f)return;
+  const hidden=f.type==='password';
+  f.type=hidden?'text':'password';
+  btn.innerHTML=hidden
+    ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
 
 /* ══════════════════════════════════════════
-   LOAD CLIENT PORTAL DATA
+   CLIENT PORTAL
 ══════════════════════════════════════════ */
-async function loadClientPortal(){
-  if(!currentClientId){ renderEmptyState(); return; }
-  const cid = currentClientId;
-  const [proj, inv, files, appts, perf, approvals] = await Promise.all([
-    sb.from('projects').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
-    sb.from('invoices').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
-    sb.from('files').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
-    sb.from('appointments').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
-    sb.from('performance').select('*').eq('client_id', cid).order('created_at',{ascending:false}).limit(1),
-    sb.from('files').select('*').eq('client_id', cid).eq('needs_approval', true).eq('approved', false),
-  ]);
+async function enterApp(){
+  try{
+    show('app');hide('loading-screen');hide('auth-screen');
+    const meta=currentUser.user_metadata||{};
+    const fullName=meta.full_name||meta.name||currentUser.email?.split('@')[0]||'there';
+    const firstName=fullName.split(' ')[0];
+    const ap=document.getElementById('avatar-pill');
+    const gn=document.getElementById('greeting-name');
+    const gd=document.getElementById('greeting-date');
+    if(ap)ap.textContent=firstName.charAt(0).toUpperCase();
+    if(gn)gn.textContent=firstName+' ☽';
+    if(gd)gd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    const {data:cr}=await sb.from('clients').select('id').eq('email',currentUser.email).maybeSingle();
+    if(cr)currentClientId=cr.id;
+    await loadClientPortal();
+    await loadChatPreview();
+  }catch(e){console.error('enterApp:',e);show('app');hide('loading-screen');}
+}
 
-  renderProjects(proj.data||[], 'projects-list');
-  renderInvoices(inv.data||[], 'invoices-list');
-  renderFiles(files.data||[], 'files-list');
-  renderAppts(appts.data||[], 'appts-list');
+async function loadClientPortal(){
+  if(!currentClientId){renderEmptyState();return;}
+  const cid=currentClientId;
+  const [proj,inv,files,appts,perf,approvals]=await Promise.all([
+    sb.from('projects').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('invoices').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('files').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('appointments').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('performance').select('*').eq('client_id',cid).order('created_at',{ascending:false}).limit(1),
+    sb.from('files').select('*').eq('client_id',cid).eq('needs_approval',true).eq('approved',false),
+  ]);
+  renderProjects(proj.data||[],'projects-list');
+  renderInvoices(inv.data||[],'invoices-list');
+  renderFiles(files.data||[],'files-list');
+  renderAppts(appts.data||[],'appts-list');
   renderPerf(perf.data?.[0]);
   renderApprovals(approvals.data||[]);
-  updateStats(proj.data||[], inv.data||[], perf.data?.[0]);
+  updateStats(proj.data||[],inv.data||[],perf.data?.[0]);
 }
 
 function renderEmptyState(){
-  document.getElementById('projects-list').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No projects here yet</div>';
-  document.getElementById('invoices-list').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No invoices here yet</div>';
-  document.getElementById('files-list').innerHTML   ='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div>';
-  document.getElementById('appts-list').innerHTML   ='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No calls booked yet</div>';
-  document.getElementById('badge-campaigns').textContent='🚀 No active campaigns';
-  document.getElementById('badge-approvals').textContent='⚡ Nothing to approve';
-  document.getElementById('s-campaigns').textContent='—';
-  document.getElementById('s-outstanding').textContent='—';
-  document.getElementById('s-roas').textContent='—';
-  document.getElementById('s-leads').textContent='—';
-  document.getElementById('m-roas').textContent='—';
-  document.getElementById('m-ctr').textContent='—';
-  document.getElementById('m-conv').textContent='—';
+  ['projects-list','invoices-list','files-list','appts-list'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No data yet</div>';
+  });
+  const gc=document.getElementById('badge-campaigns');
+  const ga=document.getElementById('badge-approvals');
+  if(gc)gc.textContent='🚀 No active campaigns';
+  if(ga)ga.textContent='⚡ Nothing to approve';
+  ['s-campaigns','s-outstanding','s-roas','s-leads','m-roas','m-ctr','m-conv'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  renderBars([]);
 }
 
-function updateStats(projects, invoices, perf){
-  const active = projects.filter(p=>p.status==='active').length;
-  const outstanding = invoices.filter(i=>i.status==='upcoming'||i.status==='due').reduce((s,i)=>s+Number(i.amount||0),0);
-  document.getElementById('s-campaigns').textContent = active;
-  document.getElementById('s-outstanding').textContent = '$'+(outstanding/1000).toFixed(1)+'k';
-  document.getElementById('s-roas').textContent = perf?.roas ? perf.roas+'×' : '—';
-  document.getElementById('s-leads').textContent = perf?.ad_spend ? '$'+Number(perf.ad_spend).toLocaleString() : '—';
-  document.getElementById('badge-campaigns').textContent = `🚀 ${active} Active Campaigns`;
-  document.getElementById('m-roas').textContent = perf?.roas ? perf.roas+'×' : '—';
-  document.getElementById('m-ctr').textContent = perf?.ctr ? perf.ctr+'%' : '—';
-  document.getElementById('m-conv').textContent = perf?.conv_rate ? perf.conv_rate+'%' : '—';
-}
-
-/* ══════════════════════════════════════════
-   RENDER HELPERS
-══════════════════════════════════════════ */
-function renderProjects(data, containerId){
+function renderProjects(data,containerId){
   const map={active:'s-active',review:'s-review',hold:'s-hold'};
   const lbl={active:'Active',review:'In Review',hold:'On Hold'};
   const colors=['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6'];
-  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No projects here yet</div>'; return; }
-  document.getElementById(containerId).innerHTML = data.map((p,i)=>`
+  const el=document.getElementById(containerId);if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No projects here yet</div>';return;}
+  el.innerHTML=data.map((p,i)=>`
     <div class="proj-item">
       <div class="proj-dot" style="background:${p.color||colors[i%5]}"></div>
-      <div class="proj-info">
-        <div class="proj-name">${esc(p.name)}</div>
-        <div class="proj-sub">${esc(p.platform||'')} · Due ${esc(p.due_date||'TBD')}</div>
-      </div>
+      <div class="proj-info"><div class="proj-name">${esc(p.name)}</div><div class="proj-sub">${esc(p.platform||'')} · Due ${esc(p.due_date||'TBD')}</div></div>
       <div class="proj-right">
         <div class="status-badge ${map[p.status]||'s-hold'}">${lbl[p.status]||p.status}</div>
         <div class="prog-mini"><div class="prog-fill" style="width:0%;background:${p.color||colors[i%5]}" data-pct="${p.progress||0}"></div></div>
@@ -968,15 +976,16 @@ function renderProjects(data, containerId){
   setTimeout(()=>document.querySelectorAll('.prog-fill').forEach(b=>b.style.width=b.dataset.pct+'%'),100);
 }
 
-function renderInvoices(data, containerId){
+function renderInvoices(data,containerId){
   const bg={paid:'bg-green c-green',due:'bg-orange c-orange',upcoming:'bg-amber c-amber',overdue:'bg-red c-red'};
   const lbl={paid:'Paid',due:'Due Soon',upcoming:'Upcoming',overdue:'Overdue'};
-  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No invoices here yet</div>'; return; }
-  document.getElementById(containerId).innerHTML = data.map(i=>`
+  const el=document.getElementById(containerId);if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No invoices here yet</div>';return;}
+  el.innerHTML=data.map(i=>`
     <div class="inv-item">
       <div class="inv-left">
         <div class="inv-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <div><div class="inv-id">${esc(i.invoice_number)}</div><div class="inv-date">${esc(i.due_date||i.issue_date||'')}</div></div>
+        <div><div class="inv-id">${esc(i.invoice_number||'')}</div><div class="inv-date">${esc(i.due_date||i.issue_date||'')}</div></div>
       </div>
       <div class="inv-right">
         <div class="inv-amt">$${Number(i.amount||0).toLocaleString()}</div>
@@ -985,30 +994,29 @@ function renderInvoices(data, containerId){
     </div>`).join('');
 }
 
-function renderFiles(data, containerId){
-  const extCls={PDF:'f-pdf',FIG:'f-fig',MP4:'f-mp4',MOV:'f-mp4',WEBM:'f-mp4',ZIP:'f-zip',PNG:'f-png',JPG:'f-png',JPEG:'f-png'};
+function renderFiles(data,containerId){
+  const extCls={PDF:'f-pdf',FIG:'f-fig',MP4:'f-mp4',MOV:'f-mp4',WEBM:'f-mp4',ZIP:'f-zip',PNG:'f-png',JPG:'f-png'};
   const videoTypes=new Set(['MP4','MOV','WEBM']);
-  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div>'; return; }
-  document.getElementById(containerId).innerHTML = data.map(f=>{
+  const el=document.getElementById(containerId);if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No files here yet</div>';return;}
+  el.innerHTML=data.map(f=>{
     const ext=(f.file_type||'FILE').toUpperCase();
     const isVid=videoTypes.has(ext);
-    const action = isVid && f.drive_embed_url
-      ? `playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')`
-      : f.drive_view_url ? `window.open('${esc(f.drive_view_url)}','_blank')` : `toast('No file link available')`;
+    const action=isVid&&f.drive_embed_url
+      ?`playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')`
+      :f.drive_view_url?`window.open('${esc(f.drive_view_url)}','_blank')`:`toast('No file link')`;
     return `<div class="file-item" onclick="${action}">
       <div class="file-ic ${extCls[ext]||'f-zip'}">${ext}</div>
       <div class="file-name">${esc(f.name)}</div>
-      <div class="file-meta">
-        <div style="font-size:16px">${isVid && f.drive_embed_url ? '▶' : '↗'}</div>
-        <div>${esc(f.size||'')}</div>
-      </div>
+      <div class="file-meta"><div style="font-size:16px">${isVid&&f.drive_embed_url?'▶':'↗'}</div><div>${esc(f.size||'')}</div></div>
     </div>`;
   }).join('');
 }
 
-function renderAppts(data, containerId){
-  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No calls booked yet</div>'; return; }
-  document.getElementById(containerId).innerHTML = data.map(a=>`
+function renderAppts(data,containerId){
+  const el=document.getElementById(containerId);if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No calls booked yet</div>';return;}
+  el.innerHTML=data.map(a=>`
     <div class="appt-item">
       <div class="time-block"><div class="t">${esc(a.appointment_time||'—')}</div><div class="p">Scheduled</div></div>
       <div class="appt-info"><div class="appt-name">${esc(a.title)}</div><div class="appt-sub">${esc(a.appointment_date||'')} · ${esc(a.duration||'')}</div></div>
@@ -1016,53 +1024,42 @@ function renderAppts(data, containerId){
 }
 
 function renderPerf(p){
-  if(!p){ renderBars([]); return; }
-  document.getElementById('m-roas').textContent = p.roas ? p.roas+'×' : '—';
-  document.getElementById('m-ctr').textContent  = p.ctr  ? p.ctr+'%' : '—';
-  document.getElementById('m-conv').textContent = p.conv_rate ? p.conv_rate+'%' : '—';
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  if(!p){renderBars([]);return;}
+  set('m-roas',p.roas?p.roas+'×':'—');
+  set('m-ctr',p.ctr?p.ctr+'%':'—');
+  set('m-conv',p.conv_rate?p.conv_rate+'%':'—');
   renderBars([]);
 }
 
 function renderBars(data){
-  if(!data.length){
-    const bc=document.getElementById('bar-chart');
-    const bl=document.getElementById('bar-labels');
-    if(bc) bc.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;width:100%;padding:20px 0">No performance data yet</div>';
-    if(bl) bl.innerHTML='';
-    return;
-  }
-  const bars = data;
-  const max = Math.max(...bars.map(b=>b.v));
   const bc=document.getElementById('bar-chart');
   const bl=document.getElementById('bar-labels');
-  if(!bc||!bl) return;
-  bc.innerHTML=bars.map(b=>`<div class="bar-col"><div class="bar${b.hi?' hi':''}" style="height:0" data-h="${Math.round(b.v/max*70)}px"></div></div>`).join('');
-  bl.innerHTML=bars.map(b=>`<div class="bar-col"><div class="bar-lbl">${b.l}</div></div>`).join('');
+  if(!bc||!bl)return;
+  if(!data.length){bc.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;width:100%;padding:20px">No performance data yet</div>';bl.innerHTML='';return;}
+  const max=Math.max(...data.map(b=>b.v));
+  bc.innerHTML=data.map(b=>`<div class="bar-col"><div class="bar${b.hi?' hi':''}" style="height:0" data-h="${Math.round(b.v/max*70)}px"></div></div>`).join('');
+  bl.innerHTML=data.map(b=>`<div class="bar-col"><div class="bar-lbl">${b.l}</div></div>`).join('');
   setTimeout(()=>document.querySelectorAll('.bar').forEach(b=>b.style.height=b.dataset.h),200);
 }
 
 function renderApprovals(data){
-  const c=document.getElementById('approvals-container');
-  document.getElementById('badge-approvals').textContent = `⚡ ${data.length} Awaiting Approval`;
-  if(!data.length){
-    c.innerHTML='<div style="padding:20px 0;color:var(--muted);font-size:14px;text-align:center">No creatives to approve</div>';
-    return;
-  }
+  const c=document.getElementById('approvals-container');if(!c)return;
+  const bg=document.getElementById('badge-approvals');
+  if(bg)bg.textContent=data.length>0?`⚡ ${data.length} Awaiting Approval`:'⚡ Nothing to approve';
+  if(!data.length){c.innerHTML='<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No creatives to approve</div>';return;}
   c.innerHTML=data.map(a=>{
     const ext=(a.file_type||'MP4').toUpperCase();
-    const isVid=['MP4','MOV','WEBM'].includes(ext);
-    const thumbStyle = a.drive_embed_url ? '' : 'background:linear-gradient(135deg,#1C1917,#3D3530)';
     return `<div class="approval-card" id="acard-${a.id}">
-      <div class="approval-thumb" style="${thumbStyle}">
+      <div class="approval-thumb">
         <div class="media-type-badge">${ext}</div>
-        ${a.drive_embed_url ? `<iframe src="${esc(a.drive_embed_url)}" style="position:absolute;inset:0;width:100%;height:100%;opacity:.5;border:none;pointer-events:none"></iframe>` : ''}
-        <div class="play-btn" onclick="${isVid && a.drive_embed_url ? `playDriveVideo('${esc(a.drive_embed_url)}','${esc(a.name)}')` : `toast('Preview not available')`}">
+        <div class="play-btn" onclick="${a.drive_embed_url?`playDriveVideo('${esc(a.drive_embed_url)}','${esc(a.name)}')`:'toast(\'Preview not available\')'}">
           <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         </div>
       </div>
       <div class="approval-body">
         <div class="approval-name">${esc(a.name)}</div>
-        <div class="approval-sub">${esc(a.drive_view_url ? 'Google Drive · Tap ▶ to preview' : 'Pending review')}</div>
+        <div class="approval-sub">${esc(a.drive_view_url?'Google Drive · Tap ▶ to preview':'Pending review')}</div>
         <div class="approval-btns" id="abtns-${a.id}">
           <button class="btn-approve" onclick="approveAsset('${a.id}')">✓ Approve</button>
           <button class="btn-decline" onclick="showReviseBox('${a.id}')">✗ Revise</button>
@@ -1079,494 +1076,568 @@ function renderApprovals(data){
   }).join('');
 }
 
-async function approveAsset(id){
-  await sb.from('files').update({approved:true}).eq('id',id);
-  addNotif('green','Creative approved ✓','Your approval has been sent — we\'ll start running it.');
-  toast('✓ Approved! We\'ll get it live.');
-  await loadClientPortal();
+function updateStats(projects,invoices,perf){
+  const active=projects.filter(p=>p.status==='active').length;
+  const outstanding=invoices.filter(i=>i.status==='upcoming'||i.status==='due').reduce((s,i)=>s+Number(i.amount||0),0);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('s-campaigns',active||'—');
+  set('s-outstanding',outstanding>0?'$'+(outstanding/1000).toFixed(1)+'k':'—');
+  set('s-roas',perf?.roas?perf.roas+'×':'—');
+  set('s-leads',perf?.ad_spend?'$'+Number(perf.ad_spend).toLocaleString():'—');
+  const bc=document.getElementById('badge-campaigns');
+  if(bc)bc.textContent=active>0?`🚀 ${active} Active Campaigns`:'🚀 No active campaigns';
+  set('m-roas',perf?.roas?perf.roas+'×':'—');
+  set('m-ctr',perf?.ctr?perf.ctr+'%':'—');
+  set('m-conv',perf?.conv_rate?perf.conv_rate+'%':'—');
 }
 
-function showReviseBox(id){ toggle('abtns-'+id,false); toggle('rbox-'+id,true); document.getElementById('rtxt-'+id)?.focus(); }
-function hideReviseBox(id){ toggle('abtns-'+id,true); toggle('rbox-'+id,false); }
-
+async function approveAsset(id){
+  await sb.from('files').update({approved:true}).eq('id',id);
+  addNotif('green','Creative approved ✓','Your approval has been sent.');
+  toast('✓ Approved!');
+  await loadClientPortal();
+}
+function showReviseBox(id){toggle('abtns-'+id,false);toggle('rbox-'+id,true);document.getElementById('rtxt-'+id)?.focus();}
+function hideReviseBox(id){toggle('abtns-'+id,true);toggle('rbox-'+id,false);}
 async function submitRevision(id){
   const txt=document.getElementById('rtxt-'+id)?.value.trim();
-  if(!txt){ toast('Please describe what you\'d like changed.'); return; }
-  await sb.from('files').update({revision_note:txt, needs_approval:false}).eq('id',id);
-  addNotif('amber','Revision sent','Your feedback has been sent to your account manager.');
+  if(!txt){toast('Please describe what you would like changed.');return;}
+  await sb.from('files').update({revision_note:txt,needs_approval:false}).eq('id',id);
+  addNotif('amber','Revision sent','Your feedback has been sent.');
   toast('✓ Feedback sent!');
   await loadClientPortal();
 }
-
-function onAutoApprove(cb){
-  autoApproveOn=cb.checked;
-  addNotif(cb.checked?'green':'muted', cb.checked?'Auto-approve ON 🚀':'Auto-approve off', cb.checked?'New creatives will run automatically.':'You\'ll review each creative before it goes live.');
-  toast(cb.checked?'Auto-approve ON 🚀':'Auto-approve turned off.');
-}
+function onAutoApprove(cb){autoApproveOn=cb.checked;toast(cb.checked?'Auto-approve ON':'Auto-approve off.');}
 
 /* ══════════════════════════════════════════
-   GOOGLE DRIVE INTEGRATION
+   CHAT — keyed by auth uid, works for everyone
+   No client_id or linking required
 ══════════════════════════════════════════ */
-function initGoogleDrive(){
-  return new Promise(resolve=>{
-    if(googleAccessToken){ resolve(); return; }
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
-      callback: (resp)=>{
-        if(resp.access_token){
-          googleAccessToken = resp.access_token;
-          resolve();
-        }
+async function openChat(){
+  chatRoomId = currentUser.id; // uid is the room key
+  chatIsAdmin = false;
+  document.getElementById('chat-am-name').textContent='Account Manager';
+  document.getElementById('chat-am-av').textContent='CM';
+  document.getElementById('chat-am-av').style.background='linear-gradient(135deg,#FF6B2C,#F5A623)';
+  document.getElementById('chat-screen').classList.add('open');
+  document.body.style.overflow='hidden';
+  await loadMessages(chatRoomId);
+  subscribeToMessages(chatRoomId);
+  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
+}
+
+function closeChat(){
+  document.getElementById('chat-screen').classList.remove('open');
+  document.body.style.overflow='';
+  if(chatSubscription){chatSubscription.unsubscribe();chatSubscription=null;}
+}
+
+async function loadMessages(roomId){
+  if(!roomId)return;
+  const {data,error}=await sb.from('messages').select('*').eq('room_id',roomId).order('created_at',{ascending:true});
+  if(error){console.error('loadMessages:',error);return;}
+  renderChatMessages(data||[]);
+  const senderToMark=chatIsAdmin?'client':'admin';
+  if(data?.length){
+    await sb.from('messages').update({read:true}).eq('room_id',roomId).eq('sender',senderToMark).eq('read',false);
+  }
+  updateChatPreview(data||[]);
+}
+
+function subscribeToMessages(roomId){
+  if(chatSubscription)chatSubscription.unsubscribe();
+  chatSubscription=sb.channel('room:'+roomId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+roomId},
+      payload=>{
+        const m=payload.new;
+        const container=document.getElementById('chat-messages');
+        const empty=document.getElementById('chat-empty');
+        if(empty)empty.style.display='none';
+        const mine=chatIsAdmin?m.sender==='admin':m.sender==='client';
+        const time=new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+        const div=document.createElement('div');
+        div.className='chat-bubble-wrap '+(mine?'mine':'theirs');
+        div.innerHTML='<div class="chat-bubble '+(mine?'mine':'theirs')+'">'+esc(m.body)+'</div><div class="chat-time">'+time+'</div>';
+        container.appendChild(div);
+        container.scrollTop=container.scrollHeight;
+        updateChatPreview([m]);
+        if(m.sender!==(chatIsAdmin?'admin':'client'))sb.from('messages').update({read:true}).eq('id',m.id);
       }
-    });
-    client.requestAccessToken();
+    ).subscribe();
+}
+
+function renderChatMessages(msgs){
+  const container=document.getElementById('chat-messages');
+  const empty=document.getElementById('chat-empty');
+  if(!msgs.length){if(empty)empty.style.display='flex';return;}
+  if(empty)empty.style.display='none';
+  let lastDate='',html='';
+  msgs.forEach(m=>{
+    const dt=new Date(m.created_at);
+    const dateStr=dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    if(dateStr!==lastDate){html+='<div class="chat-date-divider">'+dateStr+'</div>';lastDate=dateStr;}
+    const mine=chatIsAdmin?m.sender==='admin':m.sender==='client';
+    const time=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    html+='<div class="chat-bubble-wrap '+(mine?'mine':'theirs')+'">'
+      +'<div class="chat-bubble '+(mine?'mine':'theirs')+'">'+esc(m.body)+'</div>'
+      +'<div class="chat-time">'+time+'</div></div>';
+  });
+  container.innerHTML=html;
+  container.scrollTop=container.scrollHeight;
+}
+
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const body=input.value.trim();
+  if(!body)return;
+  const roomId=chatRoomId;
+  if(!roomId){toast('Chat not ready.');return;}
+  input.value='';
+  const meta=currentUser?.user_metadata||{};
+  const name=chatIsAdmin?'Account Manager':(meta.full_name||meta.name||currentUser?.email||'Client');
+  const {error}=await sb.from('messages').insert({
+    room_id:roomId,
+    sender:chatIsAdmin?'admin':'client',
+    sender_name:name,
+    body,read:false
+  });
+  if(error){console.error('sendMessage:',error);toast('Failed: '+error.message);input.value=body;}
+}
+
+function updateChatPreview(msgs){
+  if(!msgs.length)return;
+  const last=msgs[msgs.length-1];
+  const preview=document.getElementById('chat-preview-text');
+  const time=document.getElementById('chat-preview-time');
+  const badge=document.getElementById('chat-unread-badge');
+  if(preview)preview.textContent=(last.sender==='client'?'You: ':'')+last.body;
+  if(time){
+    const dt=new Date(last.created_at),now=new Date();
+    time.textContent=dt.toDateString()===now.toDateString()
+      ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+  const unread=msgs.filter(m=>m.sender==='admin'&&!m.read).length;
+  if(badge)badge.innerHTML=unread>0?'<span class="msg-unread-badge">'+unread+'</span>':'';
+}
+
+async function loadChatPreview(){
+  const roomId=currentUser?.id;
+  if(!roomId)return;
+  const {data}=await sb.from('messages').select('*').eq('room_id',roomId).order('created_at',{ascending:false}).limit(10);
+  if(data)updateChatPreview(data.reverse());
+}
+
+/* ══════════════════════════════════════════
+   ADMIN PORTAL
+══════════════════════════════════════════ */
+async function enterAdminApp(){
+  try{
+    hide('loading-screen');hide('auth-screen');
+    document.getElementById('admin-app').classList.add('open');
+    const meta=currentUser.user_metadata||{};
+    const name=meta.full_name||meta.name||currentUser.email?.split('@')[0]||'Admin';
+    const av=document.getElementById('admin-avatar');
+    if(av)av.textContent=name.charAt(0).toUpperCase();
+    await loadAdminData();
+  }catch(e){console.error('enterAdminApp:',e);}
+}
+
+async function adminSignOut(){
+  document.getElementById('admin-app').classList.remove('open');
+  await sb.auth.signOut();
+}
+
+function adminNavTo(section,btn){
+  document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('admin-sec-'+section);
+  if(sec)sec.classList.add('active');
+  if(section==='messages')loadAdminInbox();
+  if(section==='invoices')loadAdminInvoices();
+  if(section==='clients')loadAdminClients();
+}
+
+async function loadAdminData(){
+  await Promise.all([loadAdminInbox(),loadAdminClientSelects(),loadAdminClients()]);
+}
+
+async function loadAdminClientSelects(){
+  const {data:clients}=await sb.from('clients').select('id,name').order('name');
+  if(!clients)return;
+  const opts=clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  ['upload-client-select','invoice-client-select','stats-client-select'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML='<option value="">Select client...</option>'+opts;
   });
 }
 
-async function uploadToDrive(file, clientName){
-  toast('Connecting to Google Drive…');
-  await initGoogleDrive();
-  toast('Uploading to Drive…');
-
-  // Step 1: find or create client subfolder
-  const folderName = clientName || 'General';
-  let folderId = DRIVE_ROOT_FOLDER;
-  try {
-    // Search for subfolder
-    const searchResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(folderName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      { headers:{ Authorization:`Bearer ${googleAccessToken}` } }
-    );
-    const searchData = await searchResp.json();
-    if(searchData.files && searchData.files.length){
-      folderId = searchData.files[0].id;
-    } else {
-      // Create subfolder
-      const mkResp = await fetch('https://www.googleapis.com/drive/v3/files',{
-        method:'POST',
-        headers:{ Authorization:`Bearer ${googleAccessToken}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ name:folderName, mimeType:'application/vnd.google-apps.folder', parents:[DRIVE_ROOT_FOLDER] })
-      });
-      const mkData = await mkResp.json();
-      folderId = mkData.id || DRIVE_ROOT_FOLDER;
-    }
-  } catch(e){ folderId = DRIVE_ROOT_FOLDER; }
-
-  // Step 2: upload file with metadata
-  const metadata = { name: file.name, parents: [folderId] };
-  const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
-  form.append('file', file);
-
-  const uploadResp = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink',
-    { method:'POST', headers:{ Authorization:`Bearer ${googleAccessToken}` }, body:form }
-  );
-  const uploadData = await uploadResp.json();
-
-  if(!uploadData.id) throw new Error('Upload failed: ' + JSON.stringify(uploadData));
-
-  // Step 3: make file viewable by anyone with link
-  await fetch(`https://www.googleapis.com/drive/v3/files/${uploadData.id}/permissions`,{
-    method:'POST',
-    headers:{ Authorization:`Bearer ${googleAccessToken}`, 'Content-Type':'application/json' },
-    body: JSON.stringify({ role:'reader', type:'anyone' })
+async function loadAdminInbox(){
+  const list=document.getElementById('admin-inbox-list');
+  if(!list)return;
+  list.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading...</div>';
+  const {data:msgs}=await sb.from('messages').select('*').order('created_at',{ascending:false});
+  if(!msgs?.length){
+    list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No conversations yet</div>';
+    return;
+  }
+  const rooms={};
+  msgs.forEach(m=>{
+    if(!rooms[m.room_id]){rooms[m.room_id]={latest:m,unread:0,name:m.sender_name||'Client'};}
+    if(m.sender==='client'&&!m.read)rooms[m.room_id].unread++;
+    if(m.sender==='client'&&m.sender_name)rooms[m.room_id].name=m.sender_name;
   });
-
-  const driveViewUrl  = `https://drive.google.com/file/d/${uploadData.id}/view`;
-  const driveEmbedUrl = `https://drive.google.com/file/d/${uploadData.id}/preview`;
-
-  return { driveFileId: uploadData.id, driveViewUrl, driveEmbedUrl };
+  const sorted=Object.entries(rooms).sort((a,b)=>new Date(b[1].latest.created_at)-new Date(a[1].latest.created_at));
+  list.innerHTML=sorted.map(([roomId,info],i)=>{
+    const color=CLIENT_COLORS[i%CLIENT_COLORS.length];
+    const init=(info.name||'?').charAt(0).toUpperCase();
+    const dt=new Date(info.latest.created_at),now=new Date();
+    const time=dt.toDateString()===now.toDateString()
+      ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const preview=(info.latest.sender==='admin'?'You: ':'')+info.latest.body;
+    return '<div class="inbox-item" data-room="'+roomId+'" data-name="'+esc(info.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
+      +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
+      +'<div class="inbox-info">'
+        +'<div class="inbox-name">'+esc(info.name)+'</div>'
+        +'<div class="inbox-preview">'+esc(preview)+'</div>'
+      +'</div>'
+      +'<div class="inbox-meta">'
+        +'<div class="inbox-time">'+time+'</div>'
+        +(info.unread>0?'<div class="inbox-unread-dot"></div>':'')
+      +'</div></div>';
+  }).join('');
 }
 
-/* ══════════════════════════════════════════
-   VIDEO PLAYER (Google Drive embed)
-══════════════════════════════════════════ */
-function playDriveVideo(embedUrl, name){
-  const modal=document.getElementById('video-modal');
-  const player=document.getElementById('video-player');
-  const frame=document.getElementById('drive-embed-frame');
-  const title=document.getElementById('video-title-bar');
-  player.style.display='none';
-  frame.style.display='block';
-  frame.src=embedUrl;
-  title.textContent=name||'Preview';
-  modal.style.display='flex';
+function handleInboxClick(el){
+  const roomId=el.dataset.room;
+  const name=el.dataset.name;
+  const color=el.dataset.color;
+  openAdminChat(roomId,name,color);
 }
 
-function closeVideoModal(){
-  document.getElementById('video-modal').style.display='none';
-  document.getElementById('video-player').pause();
-  document.getElementById('video-player').src='';
-  document.getElementById('drive-embed-frame').src='';
+function openAdminChat(roomId,name,color){
+  chatRoomId=roomId;
+  chatIsAdmin=true;
+  const nameEl=document.getElementById('chat-am-name');
+  const avEl=document.getElementById('chat-am-av');
+  if(nameEl)nameEl.textContent=name;
+  if(avEl){avEl.textContent=name.charAt(0).toUpperCase();avEl.style.background='linear-gradient(135deg,'+color+',#F5A623)';}
+  document.getElementById('chat-screen').classList.add('open');
+  loadMessages(roomId);
+  subscribeToMessages(roomId);
+  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
+  sb.from('messages').update({read:true}).eq('room_id',roomId).eq('sender','client').eq('read',false);
 }
 
-/* ══════════════════════════════════════════
-   FILE PICKER
-══════════════════════════════════════════ */
-let _uploadCallback = null;
-function triggerFilePicker(cb){ _uploadCallback=cb; document.getElementById('file-picker').value=''; document.getElementById('file-picker').click(); }
-function onFilePicked(input){ const f=input.files[0]; if(f&&_uploadCallback) _uploadCallback(f); }
-
-/* ══════════════════════════════════════════
-   MODAL FORMS
-══════════════════════════════════════════ */
-function openModal(type){
-  const tpl = modalTemplates[type];
-  if(!tpl){ toast('Form not found: '+type); return; }
-  document.getElementById('modal-content').innerHTML = typeof tpl==='function' ? tpl() : tpl;
-  document.getElementById('modal-overlay').classList.add('open');
+async function loadAdminInvoices(){
+  const list=document.getElementById('admin-invoices-list');if(!list)return;
+  const {data}=await sb.from('invoices').select('*,clients(name)').order('created_at',{ascending:false}).limit(10);
+  if(!data?.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No invoices yet</div>';return;}
+  const bg={paid:'bg-green c-green',due:'bg-orange c-orange',upcoming:'bg-amber c-amber'};
+  const lbl={paid:'Paid',due:'Due Soon',upcoming:'Upcoming'};
+  list.innerHTML=data.map(i=>`
+    <div class="inv-item">
+      <div class="inv-left">
+        <div class="inv-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div><div class="inv-id">${esc(i.invoice_number||'')} <span style="font-size:11px;color:var(--muted)">${esc(i.clients?.name||'')}</span></div><div class="inv-date">${esc(i.due_date||'')}</div></div>
+      </div>
+      <div class="inv-right">
+        <div class="inv-amt">$${Number(i.amount||0).toLocaleString()}</div>
+        <div class="inv-badge ${bg[i.status]||'bg-amber c-amber'}">${lbl[i.status]||i.status}</div>
+      </div>
+    </div>`).join('');
 }
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); _pendingUploadFile=null; }
 
-// Which client are we adding data for?
-function targetClientId(){ return _uploadContext==='detail' ? currentDetailClientId : currentClientId; }
+async function loadAdminClients(){
+  const list=document.getElementById('admin-clients-list');if(!list)return;
+  const {data}=await sb.from('clients').select('*').order('name');
+  if(!data?.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No clients yet</div>';return;}
+  list.innerHTML=data.map((c,i)=>`
+    <div class="admin-client-row">
+      <div class="admin-client-av" style="background:${c.color||CLIENT_COLORS[i%6]}">${(c.name||'?').charAt(0).toUpperCase()}</div>
+      <div class="admin-client-info">
+        <div class="admin-client-name">${esc(c.name)}</div>
+        <div class="admin-client-email">${esc(c.company||'')}${c.company&&c.email?' · ':''}${esc(c.email||'')}</div>
+      </div>
+      <div style="color:var(--muted);font-size:18px">›</div>
+    </div>`).join('');
+}
 
-const modalTemplates = {
-  project: ()=>`<h3>Add Project</h3>
-    <div class="form-group"><label class="form-label">Campaign Name</label><input class="field" placeholder="e.g. Google Ads — Summer Sale" id="p-name"/></div>
-    <div class="form-group"><label class="form-label">Platform</label>
-      <select class="field" id="p-platform"><option>Google Ads</option><option>Meta Ads</option><option>TikTok Ads</option><option>Email</option><option>Other</option></select></div>
-    <div class="form-group form-row">
-      <div><label class="form-label">Due Date</label><input class="field" type="date" id="p-due"/></div>
-      <div><label class="form-label">Status</label>
-        <select class="field" id="p-status"><option value="active">Active</option><option value="review">In Review</option><option value="hold">On Hold</option></select></div>
+async function saveAdminStats(){
+  const clientId=v('stats-client-select');
+  if(!clientId){toast('Please select a client first.');return;}
+  const roas=v('s-roas'),ctr=v('s-ctr'),conv_rate=v('s-conv'),ad_spend=v('s-spend'),month=v('s-month');
+  const {error}=await sb.from('performance').insert({client_id:clientId,roas,ctr,conv_rate,ad_spend:Number(ad_spend)||0,month});
+  if(error){toast('Error: '+error.message);return;}
+  toast('✓ Stats updated!');
+  ['s-roas','s-ctr','s-conv','s-spend','s-month'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+/* ── ADMIN MODALS ── */
+const adminModalTemplates={
+  project:()=>`<h3>Add Project</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Client</label>
+      <select class="field" id="ap-client" style="margin-bottom:0"><option value="">Select client...</option></select></div>
+    <div style="margin-bottom:14px"><label class="form-label">Campaign Name</label><input class="field" id="ap-name" placeholder="e.g. Google Ads" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Platform</label>
+      <select class="field" id="ap-platform" style="margin-bottom:0"><option>Google Ads</option><option>Meta Ads</option><option>TikTok Ads</option><option>Email</option><option>Other</option></select></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Due Date</label><input class="field" type="date" id="ap-due" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Status</label>
+        <select class="field" id="ap-status" style="margin-bottom:0"><option value="active">Active</option><option value="review">In Review</option><option value="hold">On Hold</option></select></div>
     </div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveProject()">Save Project</button></div>`,
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminProject()">Save</button></div>`,
 
-  invoice: ()=>`<h3>Create Invoice</h3>
-    <div class="form-group"><label class="form-label">Invoice #</label><input class="field" placeholder="INV-1044" id="i-num"/></div>
-    <div class="form-group"><label class="form-label">Amount ($)</label><input class="field" type="number" placeholder="0.00" id="i-amt"/></div>
-    <div class="form-group form-row">
-      <div><label class="form-label">Issue Date</label><input class="field" type="date" id="i-issue"/></div>
-      <div><label class="form-label">Due Date</label><input class="field" type="date" id="i-due"/></div>
+  invoice:()=>`<h3>Create Invoice</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Invoice #</label><input class="field" id="ai-num" placeholder="INV-1044" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Amount ($)</label><input class="field" type="number" id="ai-amt" placeholder="0.00" style="margin-bottom:0"/></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Issue Date</label><input class="field" type="date" id="ai-issue" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Due Date</label><input class="field" type="date" id="ai-due" style="margin-bottom:0"/></div>
     </div>
-    <div class="form-group"><label class="form-label">Description</label><input class="field" placeholder="e.g. Ad Management — April 2026" id="i-desc"/></div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveInvoice()">Create Invoice</button></div>`,
+    <div style="margin-bottom:14px"><label class="form-label">Description</label><input class="field" id="ai-desc" placeholder="Ad Management — April 2026" style="margin-bottom:0"/></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminInvoice()">Create</button></div>`,
 
-  upload: ()=>`<h3>Upload Creative</h3>
+  upload:()=>`<h3>Upload Creative</h3>
     <div class="upload-zone" id="upload-zone" onclick="triggerFilePicker(onUploadFilePicked)">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <p id="upload-label">Tap to select file</p>
-      <span>Reels, MP4, Image, PDF</span>
+      <p id="upload-label">Tap to select file</p><span>Reels, MP4, Image, PDF</span>
       <div class="upload-progress" id="upload-progress"><div class="upload-progress-fill" id="upload-fill"></div></div>
     </div>
-    <div class="form-group"><label class="form-label">Creative Name</label><input class="field" placeholder="e.g. Spring Reel v1" id="u-name"/></div>
-    <div class="form-group"><label class="form-label">Needs Client Approval?</label>
-      <select class="field" id="u-approval"><option value="yes">Yes — send for approval</option><option value="no">No — file only</option></select></div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveUpload()">Upload to Drive</button></div>`,
+    <div style="margin-bottom:14px"><label class="form-label">Creative Name</label><input class="field" id="u-name" placeholder="e.g. Spring Reel v1" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Needs Approval?</label>
+      <select class="field" id="u-approval" style="margin-bottom:0"><option value="yes">Yes — send for approval</option><option value="no">No — file only</option></select></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminUpload()">Upload to Drive</button></div>`,
 
-  report: ()=>`<h3>Update Performance</h3>
-    <div class="form-group"><label class="form-label">Month</label><input class="field" placeholder="e.g. April 2026" id="r-month"/></div>
-    <div class="form-group form-row">
-      <div><label class="form-label">ROAS</label><input class="field" placeholder="3.8" id="r-roas"/></div>
-      <div><label class="form-label">CTR (%)</label><input class="field" placeholder="4.2" id="r-ctr"/></div>
-    </div>
-    <div class="form-group form-row">
-      <div><label class="form-label">Conv. Rate (%)</label><input class="field" placeholder="12" id="r-conv"/></div>
-      <div><label class="form-label">Ad Spend ($)</label><input class="field" placeholder="12400" id="r-spend"/></div>
-    </div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveReport()">Update Stats</button></div>`,
-
-  book: ()=>`<h3>Book a Call</h3>
-    <div class="form-group"><label class="form-label">What's this about?</label><input class="field" placeholder="e.g. Monthly Strategy Review" id="bk-title"/></div>
-    <div class="form-group form-row">
-      <div><label class="form-label">Date</label><input class="field" type="date" id="bk-date"/></div>
-      <div><label class="form-label">Time</label><input class="field" type="time" id="bk-time"/></div>
-    </div>
-    <div class="form-group"><label class="form-label">Duration</label>
-      <select class="field" id="bk-dur"><option>30 minutes</option><option>60 minutes</option><option>90 minutes</option></select></div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveBooking()">Confirm Booking</button></div>`,
-
-  'add-client': ()=>`<h3>Add New Client</h3>
-    <div class="form-group"><label class="form-label">Full Name</label><input class="field" placeholder="e.g. Alex Rivera" id="c-name"/></div>
-    <div class="form-group"><label class="form-label">Company</label><input class="field" placeholder="e.g. Growth Co." id="c-company"/></div>
-    <div class="form-group"><label class="form-label">Email</label><input class="field" type="email" placeholder="client@company.com" id="c-email"/></div>
-    <div class="form-group"><label class="form-label">Temporary Password</label><input class="field" type="password" placeholder="They'll change this on first login" id="c-pass"/></div>
-    <div class="form-group"><label class="form-label">Accent Colour</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-        ${['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'].map(col=>`
-          <div onclick="document.getElementById('c-color').value='${col}';document.querySelectorAll('.color-swatch').forEach(s=>s.style.outline='none');this.style.outline='3px solid ${col}'" 
-               class="color-swatch" style="width:32px;height:32px;border-radius:50%;background:${col};cursor:pointer;transition:outline .2s"></div>`).join('')}
-        <input type="hidden" id="c-color" value="#FF6B2C"/>
-      </div>
-    </div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveNewClient()">Create Account</button></div>`,
-
-  perf: ()=>modalTemplates.report()
+  'add-client':()=>`<h3>Add New Client</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Full Name</label><input class="field" id="c-name" placeholder="e.g. Alex Rivera" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Company</label><input class="field" id="c-company" placeholder="e.g. Growth Co." style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Email</label><input class="field" type="email" id="c-email" placeholder="client@company.com" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Temporary Password</label><input class="field" type="password" id="c-pass" placeholder="They will change this" style="margin-bottom:0"/></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveNewClient()">Create Account</button></div>`,
 };
 
-/* ── SAVE HANDLERS ── */
-async function saveProject(){
-  const cid = targetClientId();
-  if(!cid){ toast('No client selected.'); return; }
-  const name=v('p-name'), platform=v('p-platform'), due_date=v('p-due'), status=v('p-status');
+function openAdminModal(type){
+  const tpl=adminModalTemplates[type];
+  if(!tpl){toast('Unknown form: '+type);return;}
+  const overlay=document.getElementById('admin-modal-overlay');
+  const content=document.getElementById('admin-modal-content');
+  content.innerHTML=tpl();
+  overlay.style.display='flex';
+  // Populate client dropdown in modal
+  sb.from('clients').select('id,name').order('name').then(({data})=>{
+    if(!data)return;
+    const opts=data.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    ['ap-client'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.innerHTML='<option value="">Select client...</option>'+opts;
+    });
+    // Pre-select from section select
+    const ss=document.getElementById('upload-client-select')||document.getElementById('invoice-client-select');
+    if(ss?.value){
+      ['ap-client'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=ss.value;});
+    }
+  });
+}
+function closeAdminModal(){
+  document.getElementById('admin-modal-overlay').style.display='none';
+  _pendingUploadFile=null;
+}
+
+async function saveAdminProject(){
+  const cid=v('ap-client');
+  if(!cid){toast('Please select a client.');return;}
+  const name=v('ap-name'),platform=v('ap-platform'),due_date=v('ap-due'),status=v('ap-status');
   const colors=['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6'];
   const color=colors[Math.floor(Math.random()*colors.length)];
   const {error}=await sb.from('projects').insert({client_id:cid,name,platform,due_date,status,color,progress:0});
-  if(error){ toast('Error: '+error.message); return; }
-  addNotif('orange','New project added',`"${name}" has been added.`);
-  toast('✓ Project added!');
-  closeModal();
-  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+  if(error){toast('Error: '+error.message);return;}
+  closeAdminModal();toast('✓ Project added!');
 }
 
-async function saveInvoice(){
-  const cid=targetClientId();
-  if(!cid){ toast('No client selected.'); return; }
-  const invoice_number=v('i-num'), amount=v('i-amt'), issue_date=v('i-issue'), due_date=v('i-due'), description=v('i-desc');
+async function saveAdminInvoice(){
+  const cid=v('invoice-client-select');
+  if(!cid){toast('Please select a client first.');return;}
+  const invoice_number=v('ai-num'),amount=v('ai-amt'),issue_date=v('ai-issue'),due_date=v('ai-due'),description=v('ai-desc');
   const {error}=await sb.from('invoices').insert({client_id:cid,invoice_number,amount:Number(amount),issue_date,due_date,description,status:'upcoming'});
-  if(error){ toast('Error: '+error.message); return; }
-  addNotif('blue','New invoice created',`${invoice_number} for $${Number(amount).toLocaleString()} created.`);
-  toast('✓ Invoice created!');
-  closeModal();
-  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+  if(error){toast('Error: '+error.message);return;}
+  closeAdminModal();toast('✓ Invoice created!');loadAdminInvoices();
 }
 
 function onUploadFilePicked(file){
   _pendingUploadFile=file;
   const lbl=document.getElementById('upload-label');
   const zone=document.getElementById('upload-zone');
-  if(lbl) lbl.textContent='✓ '+file.name;
-  if(zone) zone.classList.add('active');
+  if(lbl)lbl.textContent='✓ '+file.name;
+  if(zone)zone.classList.add('active');
   const nameField=document.getElementById('u-name');
-  if(nameField&&!nameField.value) nameField.value=file.name.replace(/\.[^/.]+$/,'');
+  if(nameField&&!nameField.value)nameField.value=file.name.replace(/\.[^/.]+$/,'');
 }
 
-async function saveUpload(){
-  const cid=targetClientId();
-  if(!cid){ toast('No client selected.'); return; }
-  if(!_pendingUploadFile){ toast('Please select a file first.'); return; }
+async function saveAdminUpload(){
+  const cid=v('upload-client-select');
+  if(!cid){toast('Please select a client first.');return;}
+  if(!_pendingUploadFile){toast('Please select a file first.');return;}
   const file=_pendingUploadFile;
   const name=v('u-name')||file.name.replace(/\.[^/.]+$/,'');
   const needsApproval=v('u-approval')==='yes';
   const ext=file.name.split('.').pop().toUpperCase();
   const size=file.size>1024*1024?(file.size/1024/1024).toFixed(1)+' MB':(file.size/1024).toFixed(0)+' KB';
-
-  // Get client name for subfolder
-  let clientName='General';
+  const saveBtn=document.querySelector('#admin-modal-content .btn-save');
+  if(saveBtn){saveBtn.innerHTML='<span class="spinner"></span>';saveBtn.disabled=true;}
+  const prog=document.getElementById('upload-progress');
+  const fill=document.getElementById('upload-fill');
+  if(prog)prog.style.display='block';
+  if(fill)fill.style.width='30%';
   try{
-    const {data}=await sb.from('clients').select('name').eq('id',cid).single();
-    if(data) clientName=data.name;
-  }catch(e){}
-
-  try{
-    const saveBtn=document.querySelector('#modal-content .btn-save');
-    if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span>'; saveBtn.disabled=true; }
-    const prog=document.getElementById('upload-progress');
-    const fill=document.getElementById('upload-fill');
-    if(prog) prog.style.display='block';
-    if(fill) fill.style.width='30%';
-
-    const { driveFileId, driveViewUrl, driveEmbedUrl } = await uploadToDrive(file, clientName);
-    if(fill) fill.style.width='90%';
-
-    const approved = autoApproveOn || !needsApproval;
-    const {error}=await sb.from('files').insert({
-      client_id:cid, name, file_type:ext, size,
-      drive_file_id:driveFileId, drive_view_url:driveViewUrl, drive_embed_url:driveEmbedUrl,
-      needs_approval:needsApproval, approved, auto_approved:autoApproveOn
-    });
-    if(error){ toast('DB error: '+error.message); return; }
-    if(fill) fill.style.width='100%';
-
-    if(needsApproval&&!autoApproveOn){
-      addNotif('amber','New creative needs approval',`"${name}" is ready for your review.`);
-      toast('✓ Uploaded to Drive — sent for approval!');
-    } else {
-      addNotif('green', autoApproveOn?'Creative auto-approved 🚀':'File uploaded', `"${name}" is live.`);
-      toast(autoApproveOn?'✓ Uploaded & auto-approved — going live!':'✓ Uploaded to Google Drive!');
+    let driveViewUrl='',driveEmbedUrl='',driveFileId='';
+    if(googleAccessToken){
+      const {data:cl}=await sb.from('clients').select('name').eq('id',cid).maybeSingle();
+      const clientName=cl?.name||'General';
+      const result=await uploadToDrive(file,clientName);
+      driveViewUrl=result.driveViewUrl;driveEmbedUrl=result.driveEmbedUrl;driveFileId=result.driveFileId;
     }
+    if(fill)fill.style.width='90%';
+    const approved=autoApproveOn||!needsApproval;
+    const {error}=await sb.from('files').insert({
+      client_id:cid,name,file_type:ext,size,
+      drive_file_id:driveFileId,drive_view_url:driveViewUrl,drive_embed_url:driveEmbedUrl,
+      needs_approval:needsApproval,approved,auto_approved:autoApproveOn
+    });
+    if(error){toast('DB error: '+error.message);return;}
+    if(fill)fill.style.width='100%';
     _pendingUploadFile=null;
-    closeModal();
-    if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
-  } catch(err){
+    closeAdminModal();
+    toast(needsApproval&&!autoApproveOn?'✓ Uploaded — sent for approval!':'✓ Uploaded!');
+  }catch(err){
     toast('Upload failed: '+err.message);
-    const saveBtn=document.querySelector('#modal-content .btn-save');
-    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
+    if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}
   }
-}
-
-async function saveReport(){
-  const cid=targetClientId();
-  if(!cid){ toast('No client selected.'); return; }
-  const roas=v('r-roas'),ctr=v('r-ctr'),conv_rate=v('r-conv'),ad_spend=v('r-spend'),month=v('r-month');
-  const {error}=await sb.from('performance').insert({client_id:cid,roas,ctr,conv_rate,ad_spend:Number(ad_spend),month});
-  if(error){ toast('Error: '+error.message); return; }
-  addNotif('green','Performance updated 📈','Latest ad stats are live.');
-  toast('✓ Stats updated!');
-  closeModal();
-  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
-}
-
-async function saveBooking(){
-  const cid=targetClientId();
-  if(!cid){ toast('No client selected.'); return; }
-  const title=v('bk-title'),appointment_date=v('bk-date'),appointment_time=v('bk-time'),duration=v('bk-dur');
-  const {error}=await sb.from('appointments').insert({client_id:cid,title,appointment_date,appointment_time,duration});
-  if(error){ toast('Error: '+error.message); return; }
-  addNotif('amber','Call booked 📅',`"${title}" scheduled for ${appointment_date}.`);
-  toast('✓ Call booked!');
-  closeModal();
-  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
 }
 
 async function saveNewClient(){
-  const name=v('c-name'),company=v('c-company'),email=v('c-email'),pass=v('c-pass'),color=v('c-color')||'#FF6B2C';
-  if(!name||!email||!pass){ toast('Please fill in all fields.'); return; }
-  // Create Supabase auth user via admin (only works server-side; here we use signUp on their behalf)
-  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,company}}});
-  if(error&&!error.message.includes('already')){ toast('Error: '+error.message); return; }
-  // Upsert client record
-  const {error:e2}=await sb.from('clients').upsert({name,company,email,color},{onConflict:'email'});
-  if(e2){ toast('DB error: '+e2.message); return; }
-  toast('✓ Client account created!');
+  const name=v('c-name'),company=v('c-company'),email=v('c-email'),pass=v('c-pass');
+  if(!name||!email||!pass){toast('Please fill in all required fields.');return;}
+  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,company}}});
+  if(error&&!error.message.includes('already')){toast('Error: '+error.message);return;}
+  const {error:e2}=await sb.from('clients').upsert({name,company,email,color:'#FF6B2C'},{onConflict:'email'});
+  if(e2){toast('DB error: '+e2.message);return;}
+  closeAdminModal();toast('✓ Client account created!');
+  loadAdminClients();loadAdminClientSelects();
+}
+
+/* ══════════════════════════════════════════
+   GOOGLE DRIVE
+══════════════════════════════════════════ */
+function initGoogleDrive(){
+  return new Promise(resolve=>{
+    if(googleAccessToken){resolve();return;}
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/drive.file',
+      callback:(resp)=>{if(resp.access_token){googleAccessToken=resp.access_token;resolve();}}
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function uploadToDrive(file,clientName){
+  toast('Connecting to Google Drive...');
+  await initGoogleDrive();
+  toast('Uploading...');
+  let folderId=DRIVE_ROOT_FOLDER;
+  try{
+    const sr=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(clientName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      {headers:{Authorization:`Bearer ${googleAccessToken}`}});
+    const sd=await sr.json();
+    if(sd.files?.length){folderId=sd.files[0].id;}
+    else{
+      const mr=await fetch('https://www.googleapis.com/drive/v3/files',{
+        method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`,'Content-Type':'application/json'},
+        body:JSON.stringify({name:clientName,mimeType:'application/vnd.google-apps.folder',parents:[DRIVE_ROOT_FOLDER]})
+      });
+      const md=await mr.json();folderId=md.id||DRIVE_ROOT_FOLDER;
+    }
+  }catch(e){}
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify({name:file.name,parents:[folderId]})],{type:'application/json'}));
+  form.append('file',file);
+  const ur=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    {method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`},body:form});
+  const ud=await ur.json();
+  if(!ud.id)throw new Error('Upload failed');
+  await fetch(`https://www.googleapis.com/drive/v3/files/${ud.id}/permissions`,{
+    method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`,'Content-Type':'application/json'},
+    body:JSON.stringify({role:'reader',type:'anyone'})
+  });
+  return{
+    driveFileId:ud.id,
+    driveViewUrl:`https://drive.google.com/file/d/${ud.id}/view`,
+    driveEmbedUrl:`https://drive.google.com/file/d/${ud.id}/preview`
+  };
+}
+
+function playDriveVideo(embedUrl,name){
+  const modal=document.getElementById('video-modal');
+  const frame=document.getElementById('drive-embed-frame');
+  const title=document.getElementById('video-title-bar');
+  const player=document.getElementById('video-player');
+  if(player)player.style.display='none';
+  if(frame){frame.style.display='block';frame.src=embedUrl;}
+  if(title)title.textContent=name||'Preview';
+  if(modal)modal.style.display='flex';
+}
+function closeVideoModal(){
+  const modal=document.getElementById('video-modal');
+  const player=document.getElementById('video-player');
+  const frame=document.getElementById('drive-embed-frame');
+  if(modal)modal.style.display='none';
+  if(player){player.pause();player.src='';}
+  if(frame)frame.src='';
+}
+
+/* ══════════════════════════════════════════
+   FILE PICKER
+══════════════════════════════════════════ */
+let _uploadCallback=null;
+function triggerFilePicker(cb){_uploadCallback=cb;document.getElementById('file-picker').value='';document.getElementById('file-picker').click();}
+function onFilePicked(input){const f=input.files[0];if(f&&_uploadCallback)_uploadCallback(f);}
+
+/* ══════════════════════════════════════════
+   CLIENT PORTAL MODALS
+══════════════════════════════════════════ */
+const modalTemplates={
+  book:()=>`<h3>Book a Call</h3>
+    <div style="margin-bottom:14px"><label class="form-label">What is this about?</label><input class="field" id="bk-title" placeholder="e.g. Monthly Strategy Review" style="margin-bottom:0"/></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Date</label><input class="field" type="date" id="bk-date" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Time</label><input class="field" type="time" id="bk-time" style="margin-bottom:0"/></div>
+    </div>
+    <div style="margin-bottom:14px"><label class="form-label">Duration</label>
+      <select class="field" id="bk-dur" style="margin-bottom:0"><option>30 minutes</option><option>60 minutes</option><option>90 minutes</option></select></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveBooking()">Confirm</button></div>`,
+};
+
+function openModal(type){
+  const tpl=modalTemplates[type];
+  if(!tpl){toast('Form not found');return;}
+  document.getElementById('modal-content').innerHTML=tpl();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+
+async function saveBooking(){
+  if(!currentClientId){toast('Account not linked yet. Contact your account manager.');return;}
+  const title=v('bk-title'),appointment_date=v('bk-date'),appointment_time=v('bk-time'),duration=v('bk-dur');
+  const {error}=await sb.from('appointments').insert({client_id:currentClientId,title,appointment_date,appointment_time,duration});
+  if(error){toast('Error: '+error.message);return;}
+  addNotif('amber','Call booked!','Your call has been scheduled.');
+  toast('✓ Call booked!');
   closeModal();
-  await loadClientsPage();
+  await loadClientPortal();
 }
-
-/* ══════════════════════════════════════════
-   ADMIN ACCOUNTS PAGE
-══════════════════════════════════════════ */
-async function openAccountsPage(){
-  show('accounts-page');
-  await loadClientsPage();
-}
-function closeAccountsPage(){ hide('accounts-page'); }
-
-async function loadClientsPage(){
-  const {data,error}=await sb.from('clients').select('*').order('created_at',{ascending:false});
-  if(error){ toast('Error loading clients: '+error.message); return; }
-  const clients=data||[];
-  document.getElementById('accounts-summary').textContent=`${clients.length} client account${clients.length!==1?'s':''} · Lunar Agency`;
-  if(!clients.length){
-    document.getElementById('clients-list').innerHTML=`
-      <div style="text-align:center;padding:40px 20px;color:var(--muted)">
-        <div style="font-size:40px;margin-bottom:12px">☽</div>
-        <div style="font-size:16px;font-weight:600;margin-bottom:6px">No clients yet</div>
-        <div style="font-size:14px">Tap "+ Add" to create your first client account</div>
-      </div>`;
-    return;
-  }
-  document.getElementById('clients-list').innerHTML=clients.map(c=>`
-    <div class="client-card" onclick="openClientDetail('${c.id}','${esc(c.name)}','${esc(c.company||'')}','${c.color||'#FF6B2C'}')">
-      <div class="client-avatar" style="background:${c.color||'#FF6B2C'}">${(c.name||'?').charAt(0).toUpperCase()}</div>
-      <div class="client-info">
-        <div class="client-name">${esc(c.name)}</div>
-        <div class="client-company">${esc(c.company||c.email||'')}</div>
-        <div class="client-meta">
-          <div class="client-chip" style="background:${c.color||'#FF6B2C'}22;color:${c.color||'#FF6B2C'}">${esc(c.email||'')}</div>
-        </div>
-      </div>
-      <div class="client-arrow">›</div>
-    </div>`).join('');
-}
-
-/* ══════════════════════════════════════════
-   CLIENT DETAIL
-══════════════════════════════════════════ */
-async function openClientDetail(id, name, company, color){
-  currentDetailClientId=id;
-  _uploadContext='detail';
-  document.getElementById('detail-title').textContent=name;
-  document.getElementById('detail-client-name').textContent=name;
-  document.getElementById('detail-client-company').textContent=company||'No company';
-  document.getElementById('detail-header').style.background=`linear-gradient(135deg,${color},${lighten(color)})`;
-  show('client-detail');
-  await loadDetailData(id);
-}
-
-function closeClientDetail(){
-  hide('client-detail');
-  _uploadContext='client';
-  currentDetailClientId=null;
-}
-
-async function loadDetailData(cid){
-  const [proj,inv,files,appts,perf]=await Promise.all([
-    sb.from('projects').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('invoices').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('files').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('appointments').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('performance').select('*').eq('client_id',cid).order('created_at',{ascending:false}).limit(5),
-  ]);
-  renderProjects(proj.data||[],'detail-projects');
-  renderInvoices(inv.data||[],'detail-invoices');
-  renderFiles(files.data||[],'detail-files');
-  renderAppts(appts.data||[],'detail-appts');
-  renderDetailPerf(perf.data||[]);
-  await loadDetailMessages(cid);
-}
-
-function renderDetailPerf(data){
-  if(!data.length){ document.getElementById('detail-perf').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No performance stats yet</div>'; return; }
-  document.getElementById('detail-perf').innerHTML=data.map(p=>`
-    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
-      <div style="color:var(--muted)">${esc(p.month||'—')}</div>
-      <div>ROAS <strong>${p.roas||'—'}×</strong> · CTR <strong>${p.ctr||'—'}%</strong> · Conv <strong>${p.conv_rate||'—'}%</strong></div>
-    </div>`).join('');
-}
-
-function openDetailModal(type){
-  _uploadContext='detail';
-  openModal(type==='perf'?'report':type);
-}
-
-async function confirmDeleteClient(){
-  if(!confirm('Delete this client and all their data? This cannot be undone.')) return;
-  const {error}=await sb.from('clients').delete().eq('id',currentDetailClientId);
-  if(error){ toast('Error: '+error.message); return; }
-  toast('Client deleted.');
-  closeClientDetail();
-  await loadClientsPage();
-}
-
-/* ══════════════════════════════════════════
-   ADMIN GATE
-══════════════════════════════════════════ */
-/* ══════════════════════════════════════════
-   ADMIN GATE — Supabase server-side check
-   No password in source. Inspect element
-   reveals nothing useful.
-══════════════════════════════════════════ */
-async function openAdmin(){
-  if(adminUnlocked){ document.getElementById('admin-panel').classList.add('open'); return; }
-  if(!currentUser){ toast('Please sign in first.'); return; }
-  const gate = document.getElementById('admin-gate');
-  const msg  = document.getElementById('gate-msg');
-  const spin = gate ? gate.querySelector('.spinner') : null;
-  gate.style.display = 'flex';
-  if(msg)  msg.textContent = 'Checking your account…';
-  if(spin) spin.style.display = 'block';
-  const isAdmin = await checkIsAdmin();
-  if(isAdmin){
-    adminUnlocked = true;
-    closeGate();
-    document.getElementById('admin-panel').classList.add('open');
-  } else {
-    if(msg)  msg.textContent = '⛔ No admin access for this account.';
-    if(spin) spin.style.display = 'none';
-    setTimeout(closeGate, 2500);
-  }
-}
-
-function closeGate(){
-  const gate = document.getElementById('admin-gate');
-  gate.style.display = 'none';
-  // Reset for next time
-  const spinner = gate.querySelector('.spinner');
-  if(spinner) spinner.style.display = '';
-  const msg = document.getElementById('gate-msg');
-  if(msg) msg.textContent = 'Checking your account with Supabase';
-}
-
-function lockAdmin(){
-  adminUnlocked = false;
-  closeAdmin();
-  toast('🔒 Admin locked.');
-}
-function closeAdmin(){ document.getElementById('admin-panel').classList.remove('open'); }
 
 /* ══════════════════════════════════════════
    NOTIFICATIONS
@@ -1575,23 +1646,21 @@ function addNotif(color,title,body){
   DB_notifs.unshift({color,title,body,time:'Just now'});
   renderNotifs();
   const dot=document.getElementById('notif-dot');
-  if(dot){ dot.style.transform='scale(1.6)'; setTimeout(()=>dot.style.transform='',400); }
+  if(dot){dot.style.transform='scale(1.6)';setTimeout(()=>dot.style.transform='',400);}
 }
-function clearNotifs(){ DB_notifs.length=0; renderNotifs(); closeNotif(); }
 function renderNotifs(){
   const cm={orange:'var(--orange)',green:'var(--green)',blue:'var(--blue)',amber:'var(--amber)',red:'var(--red)',muted:'var(--muted)'};
-  const el=document.getElementById('notif-list');
-  if(!el) return;
-  el.innerHTML=DB_notifs.length ? DB_notifs.map(n=>`
+  const el=document.getElementById('notif-list');if(!el)return;
+  el.innerHTML=DB_notifs.length?DB_notifs.map(n=>`
     <div class="notif-row">
       <div class="n-dot" style="background:${cm[n.color]||cm.muted}"></div>
       <div><div class="n-text"><strong>${esc(n.title)}</strong></div><div class="n-text" style="color:var(--muted)">${esc(n.body)}</div><div class="n-time">${n.time}</div></div>
-    </div>`).join('') : '<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No notifications</div>';
+    </div>`).join(''):'<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No notifications</div>';
 }
 let notifOpen=false;
-function toggleNotif(){ notifOpen=!notifOpen; document.getElementById('notif-tray').classList.toggle('open',notifOpen); if(notifOpen) renderNotifs(); }
-function closeNotif(){ notifOpen=false; document.getElementById('notif-tray').classList.remove('open'); }
-document.addEventListener('click',e=>{ if(notifOpen&&!e.target.closest('#notif-tray')&&!e.target.closest('.icon-pill')) closeNotif(); });
+function toggleNotif(){notifOpen=!notifOpen;document.getElementById('notif-tray').classList.toggle('open',notifOpen);if(notifOpen)renderNotifs();}
+function closeNotif(){notifOpen=false;document.getElementById('notif-tray').classList.remove('open');}
+document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-tray')&&!e.target.closest('.icon-pill'))closeNotif();});
 
 /* ══════════════════════════════════════════
    NAV
@@ -1605,7 +1674,7 @@ function navTo(id,btn){
     files:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
     messages:()=>openChat(),
   };
-  if(targets[id]) targets[id]();
+  if(targets[id])targets[id]();
   setTimeout(()=>btn.classList.add('on'),300);
 }
 
@@ -1614,345 +1683,45 @@ function navTo(id,btn){
 ══════════════════════════════════════════ */
 function doSearch(q){
   const box=document.getElementById('search-results');
-  if(!q.trim()){ box.style.display='none'; return; }
+  if(!q.trim()){box.style.display='none';return;}
   const index=[
     {label:'Projects',tag:'Section',action:()=>document.getElementById('projects-list')?.scrollIntoView({behavior:'smooth'})},
     {label:'Invoices',tag:'Section',action:()=>document.getElementById('invoices-list')?.scrollIntoView({behavior:'smooth'})},
-    {label:'Files & Assets',tag:'Section',action:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Files',tag:'Section',action:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Messages',tag:'Chat',action:()=>openChat()},
     {label:'Book a Call',tag:'Action',action:()=>openModal('book')},
-    {label:'Upload Creative',tag:'Action',action:()=>openModal('upload')},
-    {label:'Add Invoice',tag:'Action',action:()=>openModal('invoice')},
-    {label:'Manage Clients',tag:'Admin',action:()=>openAdmin()},
   ];
   const res=index.filter(i=>i.label.toLowerCase().includes(q.toLowerCase())).slice(0,5);
-  if(!res.length){ box.style.display='none'; return; }
+  if(!res.length){box.style.display='none';return;}
   box.innerHTML=res.map((r,i)=>`
     <div class="search-result-item" onclick="searchPick(${i})">
       <div style="flex:1">${r.label}</div>
       <div class="search-tag bg-orange c-orange">${r.tag}</div>
     </div>`).join('');
-  box._res=res; box.style.display='block';
+  box._res=res;box.style.display='block';
 }
-function searchPick(i){
-  const box=document.getElementById('search-results');
-  box._res[i].action();
-  document.getElementById('search-input').value='';
-  box.style.display='none';
-}
-document.addEventListener('click',e=>{ if(!e.target.closest('.search-wrap')) document.getElementById('search-results').style.display='none'; });
-
-/* ══════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════ */
-let _tt;
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2800); }
+function searchPick(i){const box=document.getElementById('search-results');box._res[i].action();document.getElementById('search-input').value='';box.style.display='none';}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('search-results').style.display='none';});
 
 /* ══════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════ */
-function v(id){ return (document.getElementById(id)?.value||'').trim(); }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;'); }
+function v(id){return(document.getElementById(id)?.value||'').trim();}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
 function show(id){
-  const el=document.getElementById(id);
-  if(!el) return;
+  const el=document.getElementById(id);if(!el)return;
   el.classList.remove('hidden');
-  const flexIds=['app','admin-gate','admin-panel','modal-overlay','video-modal','accounts-page','client-detail','chat-screen','inbox-screen'];
-  el.style.display = flexIds.includes(id) ? 'flex' : '';
+  const flexIds=['app','admin-app','modal-overlay','video-modal','chat-screen'];
+  el.style.display=flexIds.includes(id)?'flex':'';
 }
-function hide(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; } }
-function toggle(id,on){ on?show(id):hide(id); }
-function lighten(hex){ try{ let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); r=Math.min(255,r+60);g=Math.min(255,g+40);b=Math.min(255,b+20); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; }catch(e){ return '#F5A623'; } }
-
-const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
-const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
-
-/* ── SHOW/HIDE PASSWORD ── */
-function togglePw(fieldId, btn){
-  const f = document.getElementById(fieldId);
-  const hidden = f.type === 'password';
-  f.type = hidden ? 'text' : 'password';
-  btn.innerHTML = hidden
-    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
-    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-}
-
-/* ── CHAT ── */
-let chatSubscription = null;
-let chatIsAdmin = false;
-let chatClientId = null;
-
-async function openChat(){
-  chatClientId = currentClientId;
-  chatIsAdmin = false;
-  if(!chatClientId){
-    toast('Your account is not linked yet. Contact: ' + ADMIN_EMAIL);
-    return;
-  }
-  document.getElementById('chat-am-name').textContent = 'Account Manager';
-  document.getElementById('chat-am-av').textContent = 'CM';
-  document.getElementById('chat-screen').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  await loadMessages(chatClientId);
-  subscribeToMessages(chatClientId);
-  setTimeout(()=>document.getElementById('chat-input')?.focus(), 300);
-}
-
-function closeChat(){
-  document.getElementById('chat-screen').classList.remove('open');
-  const inboxOpen = document.getElementById('inbox-screen').classList.contains('open');
-  if(!inboxOpen) document.body.style.overflow = '';
-  if(chatSubscription){ chatSubscription.unsubscribe(); chatSubscription = null; }
-  if(inboxOpen) loadInbox();
-}
-
-async function loadMessages(clientId){
-  if(!clientId) return;
-  const { data, error } = await sb.from('messages')
-    .select('*').eq('client_id', clientId)
-    .order('created_at', {ascending: true});
-  if(error){ console.error('loadMessages error:', error); return; }
-  renderChatMessages(data || []);
-  // Mark as read
-  const senderToMark = chatIsAdmin ? 'client' : 'admin';
-  if(data && data.length){
-    await sb.from('messages').update({read:true})
-      .eq('client_id', clientId).eq('sender', senderToMark).eq('read', false);
-  }
-  updateChatPreview(data || []);
-}
-
-function subscribeToMessages(clientId){
-  if(chatSubscription) chatSubscription.unsubscribe();
-  chatSubscription = sb.channel('chat:' + clientId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'client_id=eq.'+clientId},
-      payload => {
-        const container = document.getElementById('chat-messages');
-        const empty = document.getElementById('chat-empty');
-        if(empty) empty.style.display = 'none';
-        const m = payload.new;
-        const mine = chatIsAdmin ? m.sender==='admin' : m.sender==='client';
-        const dt = new Date(m.created_at);
-        const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-        const div = document.createElement('div');
-        div.className = 'chat-bubble-wrap ' + (mine?'mine':'theirs');
-        div.innerHTML = '<div class="chat-bubble ' + (mine?'mine':'theirs') + '">' + esc(m.body) + '</div>'
-          + '<div class="chat-time">' + time + '</div>';
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-        updateChatPreview([m]);
-        // Mark read if open
-        if(m.sender !== (chatIsAdmin?'admin':'client')){
-          sb.from('messages').update({read:true}).eq('id',m.id);
-        }
-      }
-    ).subscribe();
-}
-
-function renderChatMessages(msgs){
-  const container = document.getElementById('chat-messages');
-  const empty = document.getElementById('chat-empty');
-  if(!msgs.length){ if(empty) empty.style.display='flex'; return; }
-  if(empty) empty.style.display = 'none';
-  let lastDate = '';
-  let html = '';
-  msgs.forEach(m => {
-    const dt = new Date(m.created_at);
-    const dateStr = dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
-    if(dateStr !== lastDate){
-      html += '<div class="chat-date-divider">' + dateStr + '</div>';
-      lastDate = dateStr;
-    }
-    const mine = chatIsAdmin ? m.sender==='admin' : m.sender==='client';
-    const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    html += '<div class="chat-bubble-wrap ' + (mine?'mine':'theirs') + '">'
-      + '<div class="chat-bubble ' + (mine?'mine':'theirs') + '">' + esc(m.body) + '</div>'
-      + '<div class="chat-time">' + time + '</div></div>';
-  });
-  container.innerHTML = html;
-  container.scrollTop = container.scrollHeight;
-}
-
-async function sendMessage(){
-  const input = document.getElementById('chat-input');
-  const body = input.value.trim();
-  if(!body) return;
-  const cid = chatIsAdmin ? chatClientId : currentClientId;
-  if(!cid){ toast('No client profile linked yet.'); return; }
-  input.value = '';
-  const meta = currentUser?.user_metadata || {};
-  const name = chatIsAdmin ? 'Account Manager' : (meta.full_name || meta.name || currentUser?.email || 'Client');
-  const { error } = await sb.from('messages').insert({
-    client_id: cid,
-    sender: chatIsAdmin ? 'admin' : 'client',
-    sender_name: name,
-    body,
-    read: false
-  });
-  if(error){ console.error('Send error:', error); toast('Failed to send: ' + error.message); input.value = body; }
-}
-
-function updateChatPreview(msgs){
-  if(!msgs.length) return;
-  const last = msgs[msgs.length-1];
-  const preview = document.getElementById('chat-preview-text');
-  const time    = document.getElementById('chat-preview-time');
-  const badge   = document.getElementById('chat-unread-badge');
-  if(preview) preview.textContent = (last.sender==='client'?'You: ':'')+last.body;
-  if(time){
-    const dt = new Date(last.created_at);
-    const now = new Date();
-    time.textContent = dt.toDateString()===now.toDateString()
-      ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
-      : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  }
-  const unread = msgs.filter(m=>m.sender==='admin'&&!m.read).length;
-  if(badge) badge.innerHTML = unread>0 ? '<span class="msg-unread-badge">'+unread+'</span>' : '';
-}
-
-/* ── ADMIN CHAT from detail page ── */
-async function openAdminChat(){
-  if(!currentDetailClientId) return;
-  chatClientId  = currentDetailClientId;
-  chatIsAdmin   = true;
-  const { data } = await sb.from('clients').select('name,color').eq('id',currentDetailClientId).single();
-  const name  = data?.name || 'Client';
-  const color = data?.color || '#FF6B2C';
-  const nameEl = document.getElementById('chat-am-name');
-  const avEl   = document.getElementById('chat-am-av');
-  if(nameEl) nameEl.textContent = name;
-  if(avEl){ avEl.textContent = name.charAt(0).toUpperCase(); avEl.style.background='linear-gradient(135deg,'+color+',#F5A623)'; }
-  document.getElementById('chat-screen').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  await loadMessages(currentDetailClientId);
-  subscribeToMessages(currentDetailClientId);
-  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
-}
-
-async function sendAdminMessage(){
-  const input = document.getElementById('detail-msg-input');
-  const body = input.value.trim();
-  if(!body || !currentDetailClientId) return;
-  input.value = '';
-  const { error } = await sb.from('messages').insert({
-    client_id: currentDetailClientId, sender:'admin',
-    sender_name:'Account Manager', body, read:false
-  });
-  if(error){ toast('Failed: '+error.message); input.value=body; return; }
-  await loadDetailMessages(currentDetailClientId);
-}
-
-async function loadDetailMessages(clientId){
-  const { data } = await sb.from('messages').select('*')
-    .eq('client_id',clientId).order('created_at',{ascending:false}).limit(5);
-  const msgs = (data||[]).reverse();
-  const el = document.getElementById('detail-messages');
-  if(!el) return;
-  if(!msgs.length){ el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div>'; return; }
-  el.innerHTML = msgs.map(m=>{
-    const mine = m.sender==='admin';
-    const time = new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    return '<div style="margin-bottom:8px;text-align:'+(mine?'right':'left')+'">'
-      +'<div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:14px;font-size:13px;'+(mine?'background:var(--orange);color:white':'background:var(--off);color:var(--ink)')+'">'+esc(m.body)+'</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(mine?'You':'Client')+' · '+time+'</div></div>';
-  }).join('');
-}
-
-/* ── UNIFIED INBOX ── */
-async function openInbox(){
-  document.getElementById('inbox-screen').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  await loadInbox();
-}
-function closeInbox(){
-  document.getElementById('inbox-screen').classList.remove('open');
-  document.body.style.overflow = '';
-}
-async function loadInbox(){
-  const list = document.getElementById('inbox-list');
-  list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading…</div>';
-  const { data: clients, error } = await sb.from('clients').select('*').order('name');
-  if(error || !clients?.length){
-    list.innerHTML = '<div class="inbox-empty"><div>No clients yet</div></div>';
-    return;
-  }
-  const { data: msgs } = await sb.from('messages')
-    .select('*').in('client_id', clients.map(c=>c.id))
-    .order('created_at',{ascending:false});
-  const msgMap = {};
-  (msgs||[]).forEach(m=>{
-    if(!msgMap[m.client_id]) msgMap[m.client_id]={latest:m,unread:0};
-    if(m.sender==='client'&&!m.read) msgMap[m.client_id].unread++;
-  });
-  const sorted = [...clients].sort((a,b)=>{
-    const ta = msgMap[a.id]?.latest?.created_at || '0';
-    const tb = msgMap[b.id]?.latest?.created_at || '0';
-    return tb.localeCompare(ta);
-  });
-  const totalUnread = Object.values(msgMap).reduce((s,v)=>s+v.unread,0);
-  const countEl = document.getElementById('inbox-count');
-  if(countEl) countEl.textContent = totalUnread>0 ? totalUnread+' unread' : clients.length+' clients';
-  list.innerHTML = sorted.map((c,i)=>{
-    const info  = msgMap[c.id];
-    const color = c.color || CLIENT_COLORS[i%CLIENT_COLORS.length];
-    const init  = (c.name||'?').charAt(0).toUpperCase();
-    let preview = 'No messages yet', timeStr = '', unread = 0;
-    if(info){
-      const m = info.latest;
-      preview = (m.sender==='admin'?'You: ':'')+m.body;
-      unread  = info.unread;
-      const dt = new Date(m.created_at), now = new Date();
-      timeStr = dt.toDateString()===now.toDateString()
-        ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
-        : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    }
-    return '<div class="inbox-item" data-id="'+c.id+'" data-name="'+esc(c.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
-      +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
-      +'<div class="inbox-info">'
-        +'<div class="inbox-name">'+esc(c.name)+(c.company?' <span style="font-size:11px;color:var(--muted);font-weight:400">· '+esc(c.company)+'</span>':'')+'</div>'
-        +'<div class="inbox-preview">'+esc(preview)+'</div>'
-      +'</div>'
-      +'<div class="inbox-meta">'
-        +'<div class="inbox-time">'+timeStr+'</div>'
-        +(unread>0?'<div class="inbox-unread-dot"></div>':'')
-      +'</div></div>';
-  }).join('');
-}
-function handleInboxClick(el){
-  const id    = el.dataset.id;
-  const name  = el.dataset.name;
-  const color = el.dataset.color;
-  openInboxChat(id, name, color);
-}
-async function openInboxChat(clientId, clientName, color){
-  chatClientId = clientId;
-  chatIsAdmin  = true;
-  const nameEl = document.getElementById('chat-am-name');
-  const avEl   = document.getElementById('chat-am-av');
-  if(nameEl) nameEl.textContent = clientName;
-  if(avEl){ avEl.textContent=clientName.charAt(0).toUpperCase(); avEl.style.background='linear-gradient(135deg,'+color+',#F5A623)'; }
-  document.getElementById('chat-screen').classList.add('open');
-  await loadMessages(clientId);
-  subscribeToMessages(clientId);
-  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
-  await sb.from('messages').update({read:true}).eq('client_id',clientId).eq('sender','client').eq('read',false);
-  loadInbox();
-}
-
-/* ── LOAD CHAT PREVIEW ON APP LOAD ── */
-async function loadChatPreview(){
-  if(!currentClientId) return;
-  const {data} = await sb.from('messages').select('*')
-    .eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(10);
-  if(data) updateChatPreview(data.reverse());
-}
+function hide(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function toggle(id,on){on?show(id):hide(id);}
+let _tt;
+function toast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
 
 /* START */
-// Nuclear fallback — if boot stalls, show auth after 7s
-setTimeout(()=>{
-  const ls=document.getElementById('loading-screen');
-  if(ls && ls.style.display!=='none'){ ls.style.display='none'; show('auth-screen'); }
-},7000);
 boot();
+
 </script>
 </body>
 </html>
