@@ -1465,6 +1465,8 @@ const adminModalTemplates={
     <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminProject()">Save</button></div>`,
 
   invoice:()=>`<h3>Create Invoice</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Client</label>
+      <select class="field" id="modal-invoice-client" style="margin-bottom:0"><option value="">Loading…</option></select></div>
     <div style="margin-bottom:14px"><label class="form-label">Invoice #</label><input class="field" id="ai-num" placeholder="INV-1044" style="margin-bottom:0"/></div>
     <div style="margin-bottom:14px"><label class="form-label">Amount ($)</label><input class="field" type="number" id="ai-amt" placeholder="0.00" style="margin-bottom:0"/></div>
     <div style="display:flex;gap:10px;margin-bottom:14px">
@@ -1475,6 +1477,8 @@ const adminModalTemplates={
     <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminInvoice()">Create</button></div>`,
 
   upload:()=>`<h3>Upload Creative</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Client</label>
+      <select class="field" id="modal-upload-client" style="margin-bottom:0"><option value="">Loading…</option></select></div>
     <div class="upload-zone" id="upload-zone" onclick="triggerFilePicker(onUploadFilePicked)">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <p id="upload-label">Tap to select file</p><span>Reels, MP4, Image, PDF</span>
@@ -1486,10 +1490,11 @@ const adminModalTemplates={
     <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminUpload()">Upload to Drive</button></div>`,
 
   'add-client':()=>`<h3>Add New Client</h3>
-    <div style="margin-bottom:14px"><label class="form-label">Full Name</label><input class="field" id="c-name" placeholder="e.g. Alex Rivera" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Full Name *</label><input class="field" id="c-name" placeholder="e.g. Alex Rivera" style="margin-bottom:0"/></div>
     <div style="margin-bottom:14px"><label class="form-label">Company</label><input class="field" id="c-company" placeholder="e.g. Growth Co." style="margin-bottom:0"/></div>
-    <div style="margin-bottom:14px"><label class="form-label">Email</label><input class="field" type="email" id="c-email" placeholder="client@company.com" style="margin-bottom:0"/></div>
-    <div style="margin-bottom:14px"><label class="form-label">Temporary Password</label><input class="field" type="password" id="c-pass" placeholder="They will change this" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Email *</label><input class="field" type="email" id="c-email" placeholder="client@company.com" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:6px"><label class="form-label">Temporary Password <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input class="field" type="password" id="c-pass" placeholder="Leave blank to invite later" style="margin-bottom:0"/></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px">If set, client can sign in immediately with this password.</div>
     <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveNewClient()">Create Account</button></div>`,
 };
 
@@ -1500,19 +1505,18 @@ function openAdminModal(type){
   const content=document.getElementById('admin-modal-content');
   content.innerHTML=tpl();
   overlay.style.display='flex';
-  // Populate client dropdown in modal
-  sb.from('clients').select('id,name').order('name').then(({data})=>{
-    if(!data)return;
-    const opts=data.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-    ['ap-client'].forEach(id=>{
+  // Populate all client dropdowns that appear in any modal
+  sb.from('clients').select('id,name').order('name').then(({data,error})=>{
+    if(error){console.error('loadClients for modal:',error);return;}
+    const clients=data||[];
+    const opts=clients.length
+      ? clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')
+      : '';
+    const emptyOpt='<option value="">Select client...</option>';
+    ['ap-client','modal-invoice-client','modal-upload-client'].forEach(id=>{
       const el=document.getElementById(id);
-      if(el)el.innerHTML='<option value="">Select client...</option>'+opts;
+      if(el)el.innerHTML=emptyOpt+opts;
     });
-    // Pre-select from section select
-    const ss=document.getElementById('upload-client-select')||document.getElementById('invoice-client-select');
-    if(ss?.value){
-      ['ap-client'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=ss.value;});
-    }
   });
 }
 function closeAdminModal(){
@@ -1532,7 +1536,7 @@ async function saveAdminProject(){
 }
 
 async function saveAdminInvoice(){
-  const cid=v('invoice-client-select');
+  const cid=v('modal-invoice-client');
   if(!cid){toast('Please select a client first.');return;}
   const invoice_number=v('ai-num'),amount=v('ai-amt'),issue_date=v('ai-issue'),due_date=v('ai-due'),description=v('ai-desc');
   const {error}=await sb.from('invoices').insert({client_id:cid,invoice_number,amount:Number(amount),issue_date,due_date,description,status:'upcoming'});
@@ -1551,7 +1555,7 @@ function onUploadFilePicked(file){
 }
 
 async function saveAdminUpload(){
-  const cid=v('upload-client-select');
+  const cid=v('modal-upload-client');
   if(!cid){toast('Please select a client first.');return;}
   if(!_pendingUploadFile){toast('Please select a file first.');return;}
   const file=_pendingUploadFile;
@@ -1593,13 +1597,56 @@ async function saveAdminUpload(){
 
 async function saveNewClient(){
   const name=v('c-name'),company=v('c-company'),email=v('c-email'),pass=v('c-pass');
-  if(!name||!email||!pass){toast('Please fill in all required fields.');return;}
-  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,company}}});
-  if(error&&!error.message.includes('already')){toast('Error: '+error.message);return;}
-  const {error:e2}=await sb.from('clients').upsert({name,company,email,color:'#FF6B2C'},{onConflict:'email'});
-  if(e2){toast('DB error: '+e2.message);return;}
-  closeAdminModal();toast('✓ Client account created!');
-  loadAdminClients();loadAdminClientSelects();
+  if(!name||!email){toast('Please fill in name and email.');return;}
+  const saveBtn=document.querySelector('#admin-modal-content .btn-save');
+  if(saveBtn){saveBtn.textContent='Creating…';saveBtn.disabled=true;}
+
+  // Insert into clients table first
+  const {data:existing}=await sb.from('clients').select('id').eq('email',email).maybeSingle();
+  if(existing){
+    toast('A client with that email already exists.');
+    if(saveBtn){saveBtn.textContent='Create Account';saveBtn.disabled=false;}
+    return;
+  }
+  const {error:e2}=await sb.from('clients').insert({name,company,email,color:CLIENT_COLORS[Math.floor(Math.random()*CLIENT_COLORS.length)]});
+  if(e2){
+    toast('DB error: '+e2.message);
+    if(saveBtn){saveBtn.textContent='Create Account';saveBtn.disabled=false;}
+    return;
+  }
+
+  // Try to create auth account — but don't let it break the flow or sign us out
+  if(pass){
+    try{
+      // Use fetch directly to avoid Supabase JS client switching sessions
+      const res=await fetch(SUPABASE_URL+'/auth/v1/admin/users',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON},
+        body:JSON.stringify({email,password:pass,user_metadata:{full_name:name,company},email_confirm:true})
+      });
+      const result=await res.json();
+      if(result.error){
+        // Non-fatal — client row is saved, just flag the auth issue
+        console.warn('Auth create note:',result.error);
+        toast('✓ Client saved! Note: portal login needs to be set up manually.');
+      } else {
+        // Link the auth user id to the client row
+        if(result.id){
+          await sb.from('clients').update({auth_user_id:result.id}).eq('email',email);
+        }
+        toast('✓ Client account created!');
+      }
+    }catch(err){
+      console.warn('Auth signup skipped:',err);
+      toast('✓ Client saved! Portal login needs manual setup.');
+    }
+  } else {
+    toast('✓ Client added! No password set — they can be invited separately.');
+  }
+
+  closeAdminModal();
+  loadAdminClients();
+  loadAdminClientSelects();
 }
 
 /* ══════════════════════════════════════════
