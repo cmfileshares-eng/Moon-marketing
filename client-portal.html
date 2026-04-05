@@ -335,6 +335,34 @@ textarea.field{resize:none;line-height:1.5}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 
+/* ── ACCOUNT MENU ── */
+#account-menu{position:fixed;top:60px;right:12px;z-index:500;background:var(--white);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);border:1px solid var(--border);min-width:210px;overflow:hidden;display:none;animation:fadeIn .15s ease}
+#account-menu.open{display:block}
+.acct-header{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+.acct-name{font-size:14px;font-weight:600}
+.acct-email{font-size:11px;color:var(--muted);margin-top:1px;word-break:break-all}
+.acct-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink);transition:background .15s;border:none;background:none;width:100%;font-family:var(--font-body);text-align:left}
+.acct-item:active{background:var(--off)}
+.acct-item svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;flex-shrink:0}
+.acct-item.danger{color:var(--red)}
+.acct-item.danger svg{stroke:var(--red)}
+.acct-divider{height:1px;background:var(--border);margin:2px 0}
+
+/* ── CHANGE PASSWORD MODAL ── */
+#chpw-modal{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+#chpw-modal.open{display:flex}
+.chpw-card{background:var(--white);border-radius:24px;padding:28px 24px;width:340px;max-width:92vw;box-shadow:var(--shadow-lg);animation:slideUp .25s cubic-bezier(.22,1,.36,1)}
+.chpw-card h3{font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:4px}
+.chpw-card p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.pw-field-wrap{position:relative;margin-bottom:11px}
+.pw-field-wrap .field{margin-bottom:0;padding-right:46px}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)}
+
+/* ── REMEMBER ME ── */
+.remember-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;margin-top:2px}
+.remember-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--orange);cursor:pointer;flex-shrink:0}
+.remember-row label{font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+
 /* ── ADMIN AUTH ── */
 .admin-auth-link{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;padding:8px;background:none;border:none;font-family:var(--font-body);width:100%}
 .admin-auth-link:hover{color:var(--orange)}
@@ -398,15 +426,6 @@ textarea.field{resize:none;line-height:1.5}
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;text-align:center;padding:32px}
 .chat-empty svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
 .msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px}
-.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
-.upload-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:10px;display:none}
-.upload-progress-fill{height:100%;background:var(--orange);border-radius:4px;width:0;transition:width .3s}
-.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
-.upload-zone svg{width:28px;height:28px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto}
-.upload-zone p{font-size:14px;color:var(--muted)}
-.upload-zone span{font-size:12px;color:var(--orange);font-weight:600}
-.upload-zone.active{border-color:var(--orange);background:var(--orange-l)}
 
 </style>
 </head>
@@ -437,7 +456,11 @@ textarea.field{resize:none;line-height:1.5}
         </button>
       </div>
       <div class="auth-err" id="si-err"></div>
-      <button class="btn-primary" onclick="signIn()" style="margin-top:12px">Sign In →</button>
+      <div class="remember-row">
+        <input type="checkbox" id="si-remember" checked/>
+        <label for="si-remember">Remember me</label>
+      </div>
+      <button class="btn-primary" onclick="signIn()" style="margin-top:2px">Sign In →</button>
       <div style="margin-top:14px;padding:14px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
         <div style="font-size:12px;color:var(--muted)">Need access? Contact your account manager</div>
       </div>
@@ -482,7 +505,7 @@ textarea.field{resize:none;line-height:1.5}
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
         </div>
-        <div class="avatar-pill" id="avatar-pill" onclick="showSignOutConfirm()">?</div>
+        <div class="avatar-pill" id="avatar-pill" onclick="toggleAccountMenu(event)">?</div>
       </div>
     </div>
     <div class="search-wrap">
@@ -793,8 +816,62 @@ textarea.field{resize:none;line-height:1.5}
   </div>
 </div>
 
-<!-- HIDDEN FILE INPUT -->
-<input type="file" id="file-picker" accept="video/*,image/*,.pdf,.zip" style="display:none" onchange="onFilePicked(this)"/>
+<!-- ACCOUNT MENU -->
+<div id="account-menu">
+  <div class="acct-header">
+    <div class="acct-name" id="acct-menu-name">—</div>
+    <div class="acct-email" id="acct-menu-email">—</div>
+  </div>
+  <button class="acct-item" onclick="closeAccountMenu();openChangePassword()">
+    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Change Password
+  </button>
+  <button class="acct-item" onclick="closeAccountMenu();openChangeEmail()">
+    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Change Email
+  </button>
+  <div class="acct-divider"></div>
+  <button class="acct-item danger" onclick="closeAccountMenu();showSignOutConfirm()">
+    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out
+  </button>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="chpw-modal">
+  <div class="chpw-card">
+    <h3>Change Password</h3>
+    <p>Enter a new password for your account.</p>
+    <div class="pw-field-wrap">
+      <input class="field" id="chpw-new" type="password" placeholder="New password"/>
+      <button class="pw-toggle" type="button" onclick="togglePw('chpw-new',this)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <div class="pw-field-wrap">
+      <input class="field" id="chpw-confirm" type="password" placeholder="Confirm new password"/>
+      <button class="pw-toggle" type="button" onclick="togglePw('chpw-confirm',this)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <div id="chpw-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn-cancel" onclick="closeChangePassword()">Cancel</button>
+      <button class="btn-save" id="chpw-save-btn" onclick="saveNewPassword()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE EMAIL MODAL -->
+<div id="chemail-modal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center">
+  <div class="chpw-card">
+    <h3>Change Email</h3>
+    <p>A confirmation will be sent to your new address.</p>
+    <input class="field" id="chemail-new" type="email" placeholder="New email address"/>
+    <div id="chemail-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px;margin-top:-4px"></div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn-cancel" onclick="closeChangeEmail()">Cancel</button>
+      <button class="btn-save" id="chemail-save-btn" onclick="saveNewEmail()">Send Confirmation</button>
+    </div>
+  </div>
+</div>
 
 <!-- SIGN OUT CONFIRM -->
 <div id="signout-confirm">
@@ -837,16 +914,21 @@ let _pendingUploadFile = null;
 const DB_notifs = [];
 
 /* ══════════════════════════════════════════
-   BOOT
+   BOOT — fast path first, no long waits
 ══════════════════════════════════════════ */
 async function boot(){
-  setTimeout(()=>{
-    const ls=document.getElementById('loading-screen');
-    if(ls&&ls.style.display!=='none'){ls.style.display='none';show('auth-screen');}
-  },7000);
-  try {
+  // Pre-fill remembered email
+  const rem=localStorage.getItem('lunar_remember');
+  if(rem){
+    const el=document.getElementById('si-email');
+    if(el)el.value=rem;
+    const cb=document.getElementById('si-remember');
+    if(cb)cb.checked=true;
+  }
+  try{
+    // Short 2s timeout — Supabase session check is local storage, should be instant
     const p=sb.auth.getSession();
-    const t=new Promise(r=>setTimeout(()=>r({data:{session:null}}),6000));
+    const t=new Promise(r=>setTimeout(()=>r({data:{session:null}}),2000));
     const {data:{session}}=await Promise.race([p,t]);
     hide('loading-screen');
     if(session){currentUser=session.user;await routeUser();}
@@ -854,26 +936,32 @@ async function boot(){
   }catch(e){console.error('Boot:',e);hide('loading-screen');show('auth-screen');}
 }
 
+let _routing=false;
 sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_IN'&&session){
+  if(event==='SIGNED_IN'&&session&&!_routing){
     currentUser=session.user;
     hide('auth-screen');
     await routeUser();
   }
   if(event==='SIGNED_OUT'){
+    _routing=false;
     currentUser=null;currentClientId=null;isAdminUser=false;
     hide('app');hide('admin-app');
+    document.getElementById('admin-app')?.classList.remove('open');
     show('auth-screen');
     showClientAuth();
   }
 });
 
 async function routeUser(){
+  if(_routing)return;
+  _routing=true;
   try{
     const isAdmin=await checkIsAdmin();
     if(isAdmin){isAdminUser=true;await enterAdminApp();}
     else{isAdminUser=false;await enterApp();}
   }catch(e){console.error('routeUser:',e);await enterApp();}
+  finally{_routing=false;}
 }
 
 async function checkIsAdmin(){
@@ -906,19 +994,33 @@ function showClientAuth(){
 async function signIn(){
   const email=v('si-email'),pass=v('si-pass');
   const err=document.getElementById('si-err');
+  const btn=document.querySelector('#client-auth-card .btn-primary');
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
+  if(btn){btn.textContent='Signing in…';btn.disabled=true;}
+  const remember=document.getElementById('si-remember')?.checked;
+  // Supabase persists session by default; for "forget me" use local storage only flag
+  if(remember){localStorage.setItem('lunar_remember',email);}
+  else{localStorage.removeItem('lunar_remember');}
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error)err.textContent=error.message;
+  if(error){
+    err.textContent=error.message;
+    if(btn){btn.textContent='Sign In →';btn.disabled=false;}
+  }
 }
 
 async function adminSignIn(){
   const email=v('ai-email'),pass=v('ai-pass');
   const err=document.getElementById('ai-err');
+  const btn=document.querySelector('#admin-auth-card .btn-primary');
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
+  if(btn){btn.textContent='Signing in…';btn.disabled=true;}
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error)err.textContent=error.message;
+  if(error){
+    err.textContent=error.message;
+    if(btn){btn.textContent='Sign In as Admin →';btn.disabled=false;}
+  }
 }
 
 function togglePw(fieldId,btn){
@@ -932,8 +1034,110 @@ function togglePw(fieldId,btn){
 }
 
 /* ══════════════════════════════════════════
+   ACCOUNT MENU
+══════════════════════════════════════════ */
+let _acctMenuOpen=false;
+function toggleAccountMenu(e){
+  e.stopPropagation();
+  _acctMenuOpen=!_acctMenuOpen;
+  const menu=document.getElementById('account-menu');
+  menu.classList.toggle('open',_acctMenuOpen);
+  if(_acctMenuOpen){
+    // Populate user info
+    const meta=currentUser?.user_metadata||{};
+    const name=meta.full_name||meta.name||currentUser?.email?.split('@')[0]||'Account';
+    document.getElementById('acct-menu-name').textContent=name;
+    document.getElementById('acct-menu-email').textContent=currentUser?.email||'';
+  }
+}
+function closeAccountMenu(){
+  _acctMenuOpen=false;
+  document.getElementById('account-menu').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  if(_acctMenuOpen&&!e.target.closest('#account-menu')&&!e.target.closest('#avatar-pill'))closeAccountMenu();
+});
+
+function openChangePassword(){
+  document.getElementById('chpw-new').value='';
+  document.getElementById('chpw-confirm').value='';
+  document.getElementById('chpw-err').textContent='';
+  const btn=document.getElementById('chpw-save-btn');
+  if(btn){btn.textContent='Update';btn.disabled=false;}
+  document.getElementById('chpw-modal').classList.add('open');
+}
+function closeChangePassword(){document.getElementById('chpw-modal').classList.remove('open');}
+
+async function saveNewPassword(){
+  const np=document.getElementById('chpw-new').value;
+  const cp=document.getElementById('chpw-confirm').value;
+  const errEl=document.getElementById('chpw-err');
+  const btn=document.getElementById('chpw-save-btn');
+  errEl.textContent='';
+  if(!np){errEl.textContent='Please enter a new password.';return;}
+  if(np.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
+  if(np!==cp){errEl.textContent='Passwords do not match.';return;}
+  btn.textContent='Updating…';btn.disabled=true;
+  const {error}=await sb.auth.updateUser({password:np});
+  if(error){errEl.textContent=error.message;btn.textContent='Update';btn.disabled=false;return;}
+  closeChangePassword();
+  toast('✓ Password updated!');
+}
+
+function openChangeEmail(){
+  document.getElementById('chemail-new').value='';
+  document.getElementById('chemail-err').textContent='';
+  const btn=document.getElementById('chemail-save-btn');
+  if(btn){btn.textContent='Send Confirmation';btn.disabled=false;}
+  const modal=document.getElementById('chemail-modal');
+  modal.style.display='flex';
+}
+function closeChangeEmail(){document.getElementById('chemail-modal').style.display='none';}
+
+async function saveNewEmail(){
+  const ne=document.getElementById('chemail-new').value.trim();
+  const errEl=document.getElementById('chemail-err');
+  const btn=document.getElementById('chemail-save-btn');
+  errEl.textContent='';
+  if(!ne||!ne.includes('@')){errEl.textContent='Please enter a valid email.';return;}
+  btn.textContent='Sending…';btn.disabled=true;
+  const {error}=await sb.auth.updateUser({email:ne});
+  if(error){errEl.textContent=error.message;btn.textContent='Send Confirmation';btn.disabled=false;return;}
+  closeChangeEmail();
+  toast('✓ Check your new email to confirm the change.');
+}
+/* ══════════════════════════════════════════
    CLIENT PORTAL
 ══════════════════════════════════════════ */
+
+/* Check that the logged-in user still has an active auth account AND a
+   matching row in the clients table. If either is gone, sign them out
+   and show an appropriate message. */
+async function verifyAccountStillExists(){
+  if(!currentUser)return false;
+  try{
+    // 1. Confirm the auth session is still valid (getUser hits the server)
+    const {data:{user},error}=await sb.auth.getUser();
+    if(error||!user){
+      console.warn('verifyAccount: auth user gone',error?.message);
+      return false;
+    }
+    // 2. Confirm the clients row still exists (non-admins only)
+    if(!isAdminUser){
+      const {data:row,error:rowErr}=await sb.from('clients').select('id').eq('email',user.email).maybeSingle();
+      if(rowErr){console.warn('verifyAccount: clients query error',rowErr.message);}
+      if(!row){
+        console.warn('verifyAccount: no clients row for',user.email);
+        return false;
+      }
+    }
+    return true;
+  }catch(e){
+    console.error('verifyAccount error:',e);
+    return false;
+  }
+}
+
 async function enterApp(){
   try{
     show('app');hide('loading-screen');hide('auth-screen');
@@ -946,6 +1150,18 @@ async function enterApp(){
     if(ap)ap.textContent=firstName.charAt(0).toUpperCase();
     if(gn)gn.textContent=firstName+' ☽';
     if(gd)gd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+    // Verify account still exists before loading portal data
+    const exists=await verifyAccountStillExists();
+    if(!exists){
+      toast('Your account could not be found. Please sign in again.');
+      setTimeout(async()=>{
+        hide('app');
+        await sb.auth.signOut();
+      },1800);
+      return;
+    }
+
     const {data:cr}=await sb.from('clients').select('id').eq('email',currentUser.email).maybeSingle();
     if(cr)currentClientId=cr.id;
     await loadClientPortal();
