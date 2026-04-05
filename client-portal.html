@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Lunar · Client Portal — Moon Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Google API -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --orange:#FF6B2C;--orange-l:#FFF0E9;--orange-m:#FFD5BC;
+  --amber:#F5A623;--amber-l:#FFF8E6;
+  --green:#2ECC8F;--green-l:#E8FAF3;
+  --blue:#4A8FD4;--blue-l:#EAF2FB;
+  --red:#E5534B;--red-l:#FEECEB;
+  --purple:#8B5CF6;--purple-l:#F3EEFF;
+  --white:#FFFFFF;--off:#F8F7F5;--border:#EDEBE7;
+  --ink:#1C1917;--muted:#9C958F;
+  --radius:20px;--radius-sm:14px;--radius-xs:10px;
+  --shadow:0 2px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.10);
+  --font-body:'DM Sans',sans-serif;
+  --font-display:'Fraunces',serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--off);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.hidden{display:none!important}
+
+/* ── LOADING SCREEN ── */
+#loading-screen{position:fixed;inset:0;z-index:1000;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loader-orb{width:52px;height:52px;background:var(--orange);border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
+.loader-name{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--ink)}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.85);opacity:.6}}
+
+/* ── AUTH ── */
+#auth-screen{position:fixed;inset:0;z-index:900;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;animation:fadeIn .3s ease}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.brand-orb{width:42px;height:42px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.brand-orb svg{width:20px;height:20px;fill:white}
+.brand-name{font-family:var(--font-display);font-size:26px;font-weight:600}
+.auth-card{width:100%;max-width:380px;background:var(--white);border-radius:28px;padding:32px 28px;box-shadow:var(--shadow-lg)}
+.auth-card h2{font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:6px}
+.auth-card h2 em{font-style:italic;color:var(--orange)}
+.auth-card p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.tab-row{display:flex;background:var(--off);border-radius:var(--radius-xs);padding:3px;gap:3px;margin-bottom:20px}
+.tab-btn{flex:1;padding:9px;border:none;background:none;border-radius:8px;font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+.tab-btn.on{background:var(--white);color:var(--ink);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.field{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:15px;color:var(--ink);background:var(--white);outline:none;transition:border .2s;margin-bottom:11px;-webkit-appearance:none}
+.field:focus{border-color:var(--orange)}
+.field::placeholder{color:var(--muted)}
+select.field{cursor:pointer}
+textarea.field{resize:none;line-height:1.5}
+.btn-primary{width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.btn-primary:active{background:#d95620;transform:scale(.98)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin-bottom:14px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--white);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-google img{width:20px;height:20px}
+.auth-err{font-size:12px;color:var(--red);margin-top:-6px;margin-bottom:8px;min-height:16px}
+
+/* ── TOPBAR ── */
+#app{display:none;flex-direction:column;min-height:100vh;padding-bottom:80px}
+.topbar{position:sticky;top:0;z-index:200;background:rgba(248,247,245,.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px 16px 10px;border-bottom:1px solid var(--border)}
+.topbar-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.topbar-brand{display:flex;align-items:center;gap:8px}
+.topbar-orb{width:32px;height:32px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-orb svg{width:15px;height:15px;fill:white}
+.topbar-name{font-family:var(--font-display);font-size:18px;font-weight:600}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.icon-pill{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .2s}
+.icon-pill svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2}
+.notif-dot{position:absolute;top:1px;right:1px;width:10px;height:10px;background:var(--orange);border-radius:50%;border:2px solid var(--off);transition:transform .3s}
+.avatar-pill{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--amber));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;cursor:pointer;flex-shrink:0}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;pointer-events:none}
+#search-input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:40px;font-family:var(--font-body);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border .2s;-webkit-appearance:none}
+#search-input:focus{border-color:var(--orange)}
+#search-input::placeholder{color:var(--muted)}
+#search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--white);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:300;overflow:hidden;display:none}
+.search-result-item{padding:12px 16px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:active{background:var(--off)}
+.search-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;flex-shrink:0}
+
+/* ── NOTIF TRAY ── */
+#notif-tray{position:fixed;top:0;right:0;left:0;z-index:350;background:var(--white);border-radius:0 0 var(--radius) var(--radius);padding:60px 20px 20px;box-shadow:var(--shadow-lg);transform:translateY(-100%);transition:transform .3s cubic-bezier(.22,1,.36,1);max-height:70vh;overflow-y:auto}
+#notif-tray.open{transform:translateY(0)}
+.notif-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.notif-hd span{font-family:var(--font-display);font-size:18px;font-weight:400}
+.notif-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.notif-row:last-child{border-bottom:none}
+.n-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.n-text{font-size:13px;flex:1}
+.n-time{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── PAGE ── */
+.page{padding:16px}
+
+/* ── SECTION HEADER ── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;margin-top:8px}
+.section-title{font-family:var(--font-display);font-size:20px;font-weight:400}
+.section-action{font-size:13px;font-weight:600;color:var(--orange);background:none;border:none;font-family:var(--font-body);cursor:pointer;padding:4px 0}
+
+/* ── GREETING ── */
+.greeting-card{background:linear-gradient(135deg,#FF6B2C 0%,#F5A623 100%);border-radius:var(--radius);padding:24px 22px;margin-bottom:14px;position:relative;overflow:hidden}
+.greeting-card::after{content:'☽';position:absolute;right:16px;top:12px;font-size:52px;color:rgba(255,255,255,.15)}
+.greeting-card h1{font-family:var(--font-display);font-size:26px;font-weight:400;color:white;line-height:1.2;margin-bottom:4px}
+.greeting-card h1 em{font-style:italic;font-weight:300}
+.greeting-card p{color:rgba(255,255,255,.8);font-size:13px}
+.greeting-meta{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.greeting-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:white;backdrop-filter:blur(4px)}
+
+/* ── STAT SCROLL ── */
+.stat-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.stat-scroll::-webkit-scrollbar{display:none}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:18px 16px;min-width:140px;flex-shrink:0;box-shadow:var(--shadow)}
+.stat-ic{width:36px;height:36px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.stat-ic svg{width:18px;height:18px;fill:none;stroke-width:2}
+.stat-val{font-family:var(--font-display);font-size:26px;font-weight:600;line-height:1}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500}
+.stat-pill{display:inline-flex;align-items:center;margin-top:8px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+
+/* ── BUBBLE ── */
+.bubble{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px}
+.lnk{font-size:12px;font-weight:600;color:var(--orange);background:none;border:none;font-family:var(--font-body);cursor:pointer;padding:0}
+
+/* ── APPROVAL CARDS ── */
+.approval-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.approval-scroll::-webkit-scrollbar{display:none}
+.approval-card{min-width:240px;background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;flex-shrink:0;box-shadow:var(--shadow)}
+.approval-thumb{width:100%;height:130px;background:linear-gradient(135deg,#1C1917,#3D3530);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.play-btn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;z-index:2}
+.play-btn:active{transform:scale(.92)}
+.play-btn svg{width:16px;height:16px;fill:var(--ink);margin-left:3px}
+.media-type-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:white;backdrop-filter:blur(4px);z-index:2}
+.approval-body{padding:14px}
+.approval-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.approval-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.approval-btns{display:flex;gap:8px}
+.btn-approve{flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-decline{flex:1;padding:10px;background:var(--red-l);color:var(--red);border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.revise-box{margin-top:10px}
+.revise-ta{resize:none;margin-bottom:10px;font-size:14px;line-height:1.5}
+
+/* ── AUTO APPROVE ── */
+.auto-approve-row{display:flex;align-items:center;justify-content:space-between;background:var(--off);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px}
+.toggle{position:relative;width:48px;height:28px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:40px;cursor:pointer;transition:background .3s}
+.toggle-slider::before{content:'';position:absolute;width:22px;height:22px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-slider{background:var(--green)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+
+/* ── PROJECT LIST ── */
+.proj-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.proj-item:last-child{border-bottom:none}
+.proj-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.proj-info{flex:1;min-width:0}
+.proj-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.proj-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.prog-mini{width:60px;height:5px;background:var(--border);border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.22,1,.36,1)}
+
+/* ── INVOICE ── */
+.inv-item{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}
+.inv-item:last-child{border-bottom:none}
+.inv-left{display:flex;align-items:center;gap:12px}
+.inv-icon{width:36px;height:36px;background:var(--off);border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.inv-icon svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2}
+.inv-id{font-size:14px;font-weight:600}
+.inv-date{font-size:11px;color:var(--muted);margin-top:2px}
+.inv-right{text-align:right}
+.inv-amt{font-size:15px;font-weight:700}
+.inv-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:3px;display:inline-block}
+
+/* ── FILES ── */
+.file-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.file-item:last-child{border-bottom:none}
+.file-item:active{opacity:.6}
+.file-ic{width:38px;height:38px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.file-name{flex:1;font-size:14px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:11px;color:var(--muted);text-align:right;flex-shrink:0}
+
+/* ── MESSAGES ── */
+.msg-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.msg-item:last-child{border-bottom:none}
+.msg-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+.msg-body{flex:1;min-width:0}
+.msg-name{font-size:14px;font-weight:600}
+.msg-role{font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px;margin-bottom:3px}
+.msg-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.msg-time{font-size:11px;color:var(--muted)}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+
+/* ── ANALYTICS ── */
+.metric-row{display:flex;gap:10px;margin-bottom:14px}
+.metric-card{flex:1;background:var(--off);border-radius:var(--radius-sm);padding:14px 12px;text-align:center}
+.metric-val{font-family:var(--font-display);font-size:22px;font-weight:600}
+.metric-lbl{font-size:10px;color:var(--muted);margin-top:2px;font-weight:500}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{width:100%;border-radius:5px 5px 0 0;background:var(--orange-m);min-height:4px;transition:height .8s cubic-bezier(.22,1,.36,1)}
+.bar.hi{background:var(--orange)}
+.bar-lbl{font-size:9px;color:var(--muted)}
+
+/* ── APPOINTMENTS ── */
+.appt-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.appt-item:last-child{border-bottom:none}
+.time-block{background:var(--orange-l);border-radius:var(--radius-xs);padding:8px 10px;text-align:center;flex-shrink:0;min-width:50px}
+.time-block .t{font-size:14px;font-weight:700;color:var(--orange);line-height:1}
+.time-block .p{font-size:9px;color:var(--orange);opacity:.7;margin-top:2px}
+.appt-info{flex:1}
+.appt-name{font-size:14px;font-weight:600}
+.appt-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted);transition:color .2s}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-btn.on{color:var(--orange)}
+
+/* ── ADMIN GATE ── */
+#admin-gate{display:none;position:fixed;inset:0;z-index:450;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.gate-card{background:var(--white);border-radius:28px;padding:32px 28px;width:320px;max-width:92vw;box-shadow:var(--shadow-lg);animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
+
+/* ── ADMIN PANEL (sheet) ── */
+#admin-panel{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:none;align-items:flex-end}
+#admin-panel.open{display:flex}
+.admin-sheet{width:100%;max-height:90vh;background:var(--white);border-radius:28px 28px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));overflow-y:auto;animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px}
+.sheet-title{font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:20px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.admin-item{background:var(--off);border-radius:var(--radius);padding:18px 16px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:10px;border:1.5px solid transparent}
+.admin-item:active{border-color:var(--orange);background:var(--orange-l)}
+.ai-icon{width:40px;height:40px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center}
+.ai-icon svg{width:20px;height:20px;fill:none;stroke-width:2}
+.ai-label{font-size:14px;font-weight:600}
+.ai-sub{font-size:12px;color:var(--muted)}
+
+/* ── MODAL ── */
+#modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:none;align-items:flex-end}
+#modal-overlay.open{display:flex}
+.modal-sheet{width:100%;max-height:92vh;background:var(--white);border-radius:28px 28px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
+.modal-sheet h3{font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.06em}
+.form-row{display:flex;gap:10px}
+.form-row .field{flex:1}
+.btn-row{display:flex;gap:10px;margin-top:8px}
+.btn-cancel{flex:1;padding:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:none;font-family:var(--font-body);font-size:14px;cursor:pointer;color:var(--ink)}
+.btn-save{flex:2;padding:13px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.upload-zone:active,.upload-zone.active{border-color:var(--orange);background:var(--orange-l)}
+.upload-zone svg{width:28px;height:28px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px}
+.upload-zone p{font-size:14px;color:var(--muted)}
+.upload-zone span{font-size:12px;color:var(--orange);font-weight:600}
+.upload-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:10px;display:none}
+.upload-progress-fill{height:100%;background:var(--orange);border-radius:4px;width:0;transition:width .3s}
+
+/* ── VIDEO MODAL ── */
+#video-modal{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.95);align-items:center;justify-content:center;flex-direction:column}
+.video-wrap{width:100%;max-width:480px;padding:16px;position:relative}
+.video-close{position:absolute;top:-4px;right:16px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#video-player{width:100%;border-radius:16px;background:#000;max-height:65vh}
+#drive-embed-frame{width:100%;height:65vw;max-height:400px;border:none;border-radius:16px;background:#000}
+.video-title-bar{color:white;font-size:14px;font-weight:600;margin-top:12px;text-align:center;opacity:.8}
+
+/* ── ADMIN ACCOUNTS PAGE ── */
+#accounts-page{display:none;position:fixed;inset:0;z-index:300;background:var(--off);overflow-y:auto;padding-bottom:80px}
+.accounts-topbar{position:sticky;top:0;background:rgba(248,247,245,.93);backdrop-filter:blur(16px);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;z-index:10}
+.back-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.back-btn svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2}
+.accounts-title{font-family:var(--font-display);font-size:18px;font-weight:400;flex:1}
+.client-card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:12px;cursor:pointer;transition:all .2s;border:1.5px solid transparent;display:flex;align-items:center;gap:14px}
+.client-card:active{border-color:var(--orange);transform:scale(.99)}
+.client-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:white;flex-shrink:0}
+.client-info{flex:1;min-width:0}
+.client-name{font-size:16px;font-weight:600}
+.client-company{font-size:12px;color:var(--muted);margin-top:2px}
+.client-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.client-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px}
+.client-arrow{color:var(--muted);font-size:20px;flex-shrink:0}
+.add-client-btn{width:100%;padding:16px;background:var(--orange);color:white;border:none;border-radius:var(--radius);font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+
+/* ── CLIENT DETAIL PAGE ── */
+#client-detail{display:none;position:fixed;inset:0;z-index:310;background:var(--off);overflow-y:auto;padding-bottom:80px}
+.client-header-card{background:linear-gradient(135deg,var(--orange),var(--amber));border-radius:0 0 var(--radius) var(--radius);padding:20px 16px 24px;margin-bottom:16px;position:relative}
+.client-header-card h2{font-family:var(--font-display);font-size:24px;font-weight:400;color:white}
+.client-header-card p{color:rgba(255,255,255,.8);font-size:13px;margin-top:4px}
+.client-action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.client-action-btn{padding:8px 14px;background:rgba(255,255,255,.2);color:white;border:none;border-radius:20px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;backdrop-filter:blur(4px);transition:background .2s}
+.client-action-btn:active{background:rgba(255,255,255,.35)}
+.detail-section{padding:0 16px;margin-bottom:14px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:12px 22px;border-radius:40px;font-size:14px;font-weight:500;z-index:999;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+
+/* ── SPINNER ── */
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── COLOURS ── */
+.c-orange{color:var(--orange)}.c-green{color:var(--green)}.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-red{color:var(--red)}
+.bg-orange{background:var(--orange-l)}.bg-green{background:var(--green-l)}.bg-blue{background:var(--blue-l)}.bg-amber{background:var(--amber-l)}
+.up{background:var(--green-l);color:var(--green)}.down{background:var(--red-l);color:var(--red)}
+.s-active{background:var(--green-l);color:var(--green)}.s-review{background:var(--blue-l);color:var(--blue)}.s-hold{background:var(--amber-l);color:var(--amber)}
+.f-pdf{background:#FFEBEA;color:#E55}.f-fig{background:#EBF3FF;color:var(--blue)}.f-mp4{background:var(--green-l);color:var(--green)}.f-zip{background:var(--amber-l);color:var(--amber)}.f-png{background:var(--purple-l);color:var(--purple)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loader-orb"></div>
+  <div class="loader-name">Lunar</div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-brand">
+    <div class="brand-orb"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+    <div class="brand-name">Lunar</div>
+  </div>
+  <div class="auth-card">
+    <h2>Your creative hub<br><em>awaits ☽</em></h2>
+    <p>Sign in to access your portal</p>
+    <div class="tab-row">
+      <button class="tab-btn on" onclick="authTab('in',this)">Sign In</button>
+      <button class="tab-btn" onclick="authTab('up',this)">Create Account</button>
+    </div>
+    <div id="form-in">
+      <input class="field" id="si-email" type="email" placeholder="Email address" autocomplete="email"/>
+      <input class="field" id="si-pass" type="password" placeholder="Password" autocomplete="current-password"/>
+      <div class="auth-err" id="si-err"></div>
+      <button class="btn-primary" onclick="signIn()">Sign In →</button>
+    </div>
+    <div id="form-up" class="hidden">
+      <input class="field" id="su-name" type="text" placeholder="Your full name"/>
+      <input class="field" id="su-company" type="text" placeholder="Company name"/>
+      <input class="field" id="su-email" type="email" placeholder="Email address" autocomplete="email"/>
+      <input class="field" id="su-pass" type="password" placeholder="Create password" autocomplete="new-password"/>
+      <div class="auth-err" id="su-err"></div>
+      <button class="btn-primary" onclick="signUp()">Create Account →</button>
+    </div>
+    <div class="divider">or</div>
+    <button class="btn-google" onclick="signInGoogle()">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"/>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-row1">
+      <div class="topbar-brand">
+        <a href="/index.html" style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);text-decoration:none;margin-right:10px;padding:4px 0" title="Back to Moon Marketing">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Moon
+        </a>
+        <div style="width:1px;height:18px;background:var(--border);margin-right:10px"></div>
+        <div class="topbar-orb"><svg viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+        <div class="topbar-name">Lunar</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-pill" onclick="toggleNotif()">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot" id="notif-dot"></div>
+        </div>
+        <div class="avatar-pill" id="avatar-pill" onclick="toast('Signing out…');setTimeout(()=>supabase.auth.signOut(),800)">?</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search-input" type="search" placeholder="Search projects, invoices, files…" oninput="doSearch(this.value)" autocomplete="off"/>
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <!-- NOTIF TRAY -->
+  <div id="notif-tray">
+    <div class="notif-hd">
+      <span>Notifications</span>
+      <button class="lnk" onclick="clearNotifs()">Clear all</button>
+    </div>
+    <div id="notif-list"><div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No notifications yet</div></div>
+  </div>
+
+  <!-- CLIENT PORTAL PAGE -->
+  <div class="page" id="page-home">
+    <div class="greeting-card">
+      <h1>Welcome back,<br><em id="greeting-name">there ☽</em></h1>
+      <p id="greeting-date"></p>
+      <div class="greeting-meta">
+        <div class="greeting-badge" id="badge-campaigns">🚀 No active campaigns</div>
+        <div class="greeting-badge" id="badge-approvals">⚡ Nothing to approve</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-scroll" id="stat-scroll">
+      <div class="stat-card">
+        <div class="stat-ic bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="stat-val c-orange" id="s-campaigns">—</div>
+        <div class="stat-lbl">Live Campaigns</div>
+        <div class="stat-pill up">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green)"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="stat-val c-green" id="s-roas">—</div>
+        <div class="stat-lbl">ROAS</div>
+        <div class="stat-pill up" id="s-roas-pill">Latest</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--blue)"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="stat-val c-blue" id="s-outstanding">—</div>
+        <div class="stat-lbl">Outstanding</div>
+        <div class="stat-pill down" id="s-inv-pill">Invoices</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic bg-amber"><svg viewBox="0 0 24 24" style="stroke:var(--amber)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        <div class="stat-val c-amber" id="s-leads">—</div>
+        <div class="stat-lbl">Leads</div>
+        <div class="stat-pill up">This month</div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div class="section-head">
+      <div class="section-title">Needs Your Approval</div>
+    </div>
+    <div class="approval-scroll" id="approvals-container"></div>
+    <div class="auto-approve-row">
+      <div>
+        <div style="font-size:14px;font-weight:600">Auto-approve future videos</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">We'll run new creatives without waiting</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="auto-approve-toggle" onchange="onAutoApprove(this)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section-head">
+      <div class="section-title">Projects</div>
+    </div>
+    <div class="bubble"><div id="projects-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No projects here yet</div></div></div>
+
+    <!-- PERFORMANCE -->
+    <div class="section-head">
+      <div class="section-title">Performance</div>
+    </div>
+    <div class="bubble">
+      <div class="metric-row">
+        <div class="metric-card"><div class="metric-val c-orange" id="m-roas">—</div><div class="metric-lbl">ROAS</div></div>
+        <div class="metric-card"><div class="metric-val c-green" id="m-ctr">—</div><div class="metric-lbl">CTR</div></div>
+        <div class="metric-card"><div class="metric-val c-amber" id="m-conv">—</div><div class="metric-lbl">Conv. Rate</div></div>
+      </div>
+      <div class="bar-chart" id="bar-chart"></div>
+      <div style="display:flex;gap:5px" id="bar-labels"></div>
+    </div>
+
+    <!-- INVOICES -->
+    <div class="section-head">
+      <div class="section-title">Invoices</div>
+    </div>
+    <div class="bubble"><div id="invoices-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No invoices here yet</div></div></div>
+
+    <!-- FILES -->
+    <div class="section-head">
+      <div class="section-title">Files & Assets</div>
+      <div style="font-size:11px;color:var(--muted)">Stored in Google Drive</div>
+    </div>
+    <div class="bubble"><div id="files-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div></div></div>
+
+    <!-- MESSAGES -->
+    <div class="section-head"><div class="section-title">Messages</div></div>
+    <div class="bubble"><div id="messages-list">
+      <div class="msg-item" onclick="toast('Chat coming soon!')">
+        <div class="msg-av" style="background:linear-gradient(135deg,#FF6B2C,#F5A623)">J</div>
+        <div class="msg-body">
+          <div class="msg-name">Jordan Kim</div>
+          <div class="msg-role">Account Manager</div>
+          <div class="msg-preview">Your creatives are live — great results this week!</div>
+        </div>
+        <div class="msg-right"><div class="msg-time">Today</div><div class="unread-dot"></div></div>
+      </div>
+    </div></div>
+
+    <!-- APPOINTMENTS -->
+    <div class="section-head">
+      <div class="section-title">Upcoming Calls</div>
+      <button class="section-action" onclick="openModal('book')">+ Book</button>
+    </div>
+    <div class="bubble">
+      <div id="appts-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No calls booked yet</div></div>
+      <button class="btn-primary" style="margin-top:16px;margin-bottom:0" onclick="openModal('book')">📅 Book a New Call</button>
+    </div>
+  </div><!-- /page-home -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn on" id="nav-home" onclick="navTo('home',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+    </button>
+    <button class="nav-btn" id="nav-projects" onclick="navTo('projects',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Projects
+    </button>
+    <button class="nav-btn" id="nav-files" onclick="navTo('files',this)">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Files
+    </button>
+    <button class="nav-btn" id="nav-messages" onclick="navTo('messages',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
+    </button>
+    <button class="nav-btn" id="nav-admin" onclick="openAdmin()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Admin
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════ ADMIN ACCOUNTS PAGE ══════════ -->
+<div id="accounts-page">
+  <div class="accounts-topbar">
+    <div class="back-btn" onclick="closeAccountsPage()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="accounts-title">Client Accounts</div>
+    <button style="background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer" onclick="openModal('add-client')">+ Add</button>
+  </div>
+  <div style="padding:16px">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="accounts-summary">Loading accounts…</div>
+    <div id="clients-list"></div>
+  </div>
+</div>
+
+<!-- ══════════ CLIENT DETAIL PAGE ══════════ -->
+<div id="client-detail">
+  <div class="accounts-topbar">
+    <div class="back-btn" onclick="closeClientDetail()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="accounts-title" id="detail-title">Client</div>
+    <button style="background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;color:var(--red)" onclick="confirmDeleteClient()">Delete</button>
+  </div>
+  <div class="client-header-card" id="detail-header">
+    <h2 id="detail-client-name">—</h2>
+    <p id="detail-client-company">—</p>
+    <div class="client-action-row">
+      <button class="client-action-btn" onclick="openDetailModal('project')">+ Project</button>
+      <button class="client-action-btn" onclick="openDetailModal('invoice')">+ Invoice</button>
+      <button class="client-action-btn" onclick="openDetailModal('upload')">+ Upload</button>
+      <button class="client-action-btn" onclick="openDetailModal('perf')">+ Stats</button>
+      <button class="client-action-btn" onclick="openDetailModal('book')">+ Call</button>
+    </div>
+  </div>
+  <div class="detail-section">
+    <div class="section-head"><div class="section-title">Projects</div></div>
+    <div class="bubble"><div id="detail-projects"></div></div>
+    <div class="section-head"><div class="section-title">Invoices</div></div>
+    <div class="bubble"><div id="detail-invoices"></div></div>
+    <div class="section-head"><div class="section-title">Files & Assets</div><div style="font-size:11px;color:var(--muted)">Google Drive</div></div>
+    <div class="bubble"><div id="detail-files"></div></div>
+    <div class="section-head"><div class="section-title">Performance Stats</div></div>
+    <div class="bubble"><div id="detail-perf"></div></div>
+    <div class="section-head"><div class="section-title">Upcoming Calls</div></div>
+    <div class="bubble"><div id="detail-appts"></div></div>
+  </div>
+</div>
+
+<!-- ADMIN GATE — shows while Supabase verifies admin status -->
+<div id="admin-gate" onclick="if(event.target===this)closeGate()">
+  <div class="gate-card">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:52px;height:52px;background:var(--orange-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:4px">Verifying access…</div>
+      <div style="font-size:13px;color:var(--muted)" id="gate-msg">Checking your account with Supabase</div>
+    </div>
+    <div style="display:flex;justify-content:center;margin-bottom:16px">
+      <div class="spinner" style="border-color:rgba(255,107,44,.3);border-top-color:var(--orange);width:28px;height:28px"></div>
+    </div>
+    <button class="btn-cancel" style="width:100%" onclick="closeGate()">Cancel</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL SHEET -->
+<div id="admin-panel" onclick="if(event.target===this)closeAdmin()">
+  <div class="admin-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">What do you want to do?</div>
+    <div class="admin-grid">
+      <div class="admin-item" onclick="openAccountsPage();closeAdmin()">
+        <div class="ai-icon" style="background:#EEF2FF"><svg viewBox="0 0 24 24" style="stroke:#6366F1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="ai-label">Manage Clients</div><div class="ai-sub">View all accounts</div>
+      </div>
+      <div class="admin-item" onclick="openModal('upload');closeAdmin()">
+        <div class="ai-icon" style="background:var(--purple-l)"><svg viewBox="0 0 24 24" style="stroke:var(--purple)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="ai-label">Upload Creative</div><div class="ai-sub">Video to Drive</div>
+      </div>
+      <div class="admin-item" onclick="openModal('invoice');closeAdmin()">
+        <div class="ai-icon bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--blue)"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="ai-label">New Invoice</div><div class="ai-sub">Bill your client</div>
+      </div>
+      <div class="admin-item" onclick="openModal('project');closeAdmin()">
+        <div class="ai-icon bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="ai-label">New Project</div><div class="ai-sub">Add a campaign</div>
+      </div>
+      <div class="admin-item" onclick="openModal('report');closeAdmin()">
+        <div class="ai-icon" style="background:#EEF2FF"><svg viewBox="0 0 24 24" style="stroke:#6366F1"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="ai-label">Update Report</div><div class="ai-sub">Ad performance</div>
+      </div>
+      <div class="admin-item" onclick="openModal('book');closeAdmin()">
+        <div class="ai-icon bg-amber"><svg viewBox="0 0 24 24" style="stroke:var(--amber)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="ai-label">Book a Call</div><div class="ai-sub">Schedule meeting</div>
+      </div>
+    </div>
+    <button style="width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--muted);cursor:pointer;margin-top:4px" onclick="lockAdmin()">🔒 Lock Admin Panel</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet" id="modal-content"></div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal" onclick="if(event.target===this)closeVideoModal()">
+  <div class="video-wrap">
+    <button class="video-close" onclick="closeVideoModal()">✕</button>
+    <video id="video-player" controls playsinline style="display:none"></video>
+    <iframe id="drive-embed-frame" style="display:none" allowfullscreen></iframe>
+    <div class="video-title-bar" id="video-title-bar"></div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-picker" accept="video/*,image/*,.pdf,.zip" style="display:none" onchange="onFilePicked(this)"/>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG — your keys are pre-filled
+══════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://onxodaeoqvttrazzklgn.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_mq-p3HHfwzropQeceoQVGw_Ci92qFEd';
+const GOOGLE_CLIENT_ID  = '55525879916-ukhn0eugsuku8oad987lngvm0vanrq04.apps.googleusercontent.com';
+const DRIVE_ROOT_FOLDER = '1Gdze4pOGygErK6NpLjUZwL5Br_oCpR30';
+// No hardcoded password — admin access is verified server-side via Supabase
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+let currentUser = null;
+let currentClientId = null; // which client's data we're viewing
+let adminUnlocked = false;
+let autoApproveOn = false;
+let currentDetailClientId = null;
+let googleAccessToken = null;
+let _pendingUploadFile = null;
+let _uploadContext = 'client';
+
+/* ══════════════════════════════════════════
+   ADMIN CHECK — server-side via Supabase
+   No password is stored in this file.
+   Access is granted only if the signed-in
+   user's uid exists in the admins table.
+══════════════════════════════════════════ */
+async function checkIsAdmin(){
+  if(!currentUser) return false;
+  const { data, error } = await sb
+    .from('admins')
+    .select('id')
+    .eq('id', currentUser.id)
+    .single();
+  return !error && !!data;
+}
+
+const DB_notifs = [];
+
+/* ══════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════ */
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  hide('loading-screen');
+  if(session){
+    currentUser = session.user;
+    await enterApp();
+  } else {
+    show('auth-screen');
+  }
+}
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(event === 'SIGNED_IN' && session){
+    currentUser = session.user;
+    hide('auth-screen');
+    await enterApp();
+  }
+  if(event === 'SIGNED_OUT'){
+    currentUser = null;
+    currentClientId = null;
+    show('auth-screen');
+    hide('app');
+  }
+});
+
+async function enterApp(){
+  show('app');
+  hide('auth-screen');
+  // Set avatar + greeting from Google/auth metadata
+  const meta = currentUser.user_metadata || {};
+  // Google sign-in populates 'full_name' or 'name'; email/password uses what was typed at signup
+  const fullName = meta.full_name || meta.name || meta.email?.split('@')[0] || currentUser.email?.split('@')[0] || 'there';
+  const firstName = fullName.split(' ')[0];
+  document.getElementById('avatar-pill').textContent = firstName.charAt(0).toUpperCase();
+  document.getElementById('greeting-name').textContent = firstName + ' ☽';
+  document.getElementById('greeting-date').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  // Find this user's client record
+  const { data: clients } = await sb.from('clients').select('id').eq('email', currentUser.email).limit(1);
+  if(clients && clients.length){
+    currentClientId = clients[0].id;
+  }
+  await loadClientPortal();
+}
+
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+function authTab(tab, btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  toggle('form-in', tab==='in');
+  toggle('form-up', tab==='up');
+}
+
+async function signIn(){
+  const email = v('si-email'), pass = v('si-pass');
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(error) document.getElementById('si-err').textContent = error.message;
+}
+
+async function signUp(){
+  const name = v('su-name'), company = v('su-company');
+  const email = v('su-email'), pass = v('su-pass');
+  const { data, error } = await sb.auth.signUp({ email, password: pass,
+    options: { data: { full_name: name, company } }
+  });
+  if(error){ document.getElementById('su-err').textContent = error.message; return; }
+  // Create client record
+  await sb.from('clients').insert({ name, company, email, color: '#FF6B2C' });
+  toast('✓ Account created! Check your email to confirm.');
+}
+
+async function signInGoogle(){
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google',
+    options: { scopes: 'https://www.googleapis.com/auth/drive.file' }
+  });
+  if(error) toast('Google sign-in failed: ' + error.message);
+}
+
+/* ══════════════════════════════════════════
+   LOAD CLIENT PORTAL DATA
+══════════════════════════════════════════ */
+async function loadClientPortal(){
+  if(!currentClientId){ renderEmptyState(); return; }
+  const cid = currentClientId;
+  const [proj, inv, files, appts, perf, approvals] = await Promise.all([
+    sb.from('projects').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
+    sb.from('invoices').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
+    sb.from('files').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
+    sb.from('appointments').select('*').eq('client_id', cid).order('created_at',{ascending:false}),
+    sb.from('performance').select('*').eq('client_id', cid).order('created_at',{ascending:false}).limit(1),
+    sb.from('files').select('*').eq('client_id', cid).eq('needs_approval', true).eq('approved', false),
+  ]);
+
+  renderProjects(proj.data||[], 'projects-list');
+  renderInvoices(inv.data||[], 'invoices-list');
+  renderFiles(files.data||[], 'files-list');
+  renderAppts(appts.data||[], 'appts-list');
+  renderPerf(perf.data?.[0]);
+  renderApprovals(approvals.data||[]);
+  updateStats(proj.data||[], inv.data||[], perf.data?.[0]);
+}
+
+function renderEmptyState(){
+  document.getElementById('projects-list').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No projects here yet</div>';
+  document.getElementById('invoices-list').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No invoices here yet</div>';
+  document.getElementById('files-list').innerHTML   ='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div>';
+  document.getElementById('appts-list').innerHTML   ='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No calls booked yet</div>';
+  document.getElementById('badge-campaigns').textContent='🚀 No active campaigns';
+  document.getElementById('badge-approvals').textContent='⚡ Nothing to approve';
+  document.getElementById('s-campaigns').textContent='—';
+  document.getElementById('s-outstanding').textContent='—';
+  document.getElementById('s-roas').textContent='—';
+  document.getElementById('s-leads').textContent='—';
+  document.getElementById('m-roas').textContent='—';
+  document.getElementById('m-ctr').textContent='—';
+  document.getElementById('m-conv').textContent='—';
+}
+
+function updateStats(projects, invoices, perf){
+  const active = projects.filter(p=>p.status==='active').length;
+  const outstanding = invoices.filter(i=>i.status==='upcoming'||i.status==='due').reduce((s,i)=>s+Number(i.amount||0),0);
+  document.getElementById('s-campaigns').textContent = active;
+  document.getElementById('s-outstanding').textContent = '$'+(outstanding/1000).toFixed(1)+'k';
+  document.getElementById('s-roas').textContent = perf?.roas ? perf.roas+'×' : '—';
+  document.getElementById('s-leads').textContent = perf?.ad_spend ? '$'+Number(perf.ad_spend).toLocaleString() : '—';
+  document.getElementById('badge-campaigns').textContent = `🚀 ${active} Active Campaigns`;
+  document.getElementById('m-roas').textContent = perf?.roas ? perf.roas+'×' : '—';
+  document.getElementById('m-ctr').textContent = perf?.ctr ? perf.ctr+'%' : '—';
+  document.getElementById('m-conv').textContent = perf?.conv_rate ? perf.conv_rate+'%' : '—';
+}
+
+/* ══════════════════════════════════════════
+   RENDER HELPERS
+══════════════════════════════════════════ */
+function renderProjects(data, containerId){
+  const map={active:'s-active',review:'s-review',hold:'s-hold'};
+  const lbl={active:'Active',review:'In Review',hold:'On Hold'};
+  const colors=['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6'];
+  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No projects here yet</div>'; return; }
+  document.getElementById(containerId).innerHTML = data.map((p,i)=>`
+    <div class="proj-item">
+      <div class="proj-dot" style="background:${p.color||colors[i%5]}"></div>
+      <div class="proj-info">
+        <div class="proj-name">${esc(p.name)}</div>
+        <div class="proj-sub">${esc(p.platform||'')} · Due ${esc(p.due_date||'TBD')}</div>
+      </div>
+      <div class="proj-right">
+        <div class="status-badge ${map[p.status]||'s-hold'}">${lbl[p.status]||p.status}</div>
+        <div class="prog-mini"><div class="prog-fill" style="width:0%;background:${p.color||colors[i%5]}" data-pct="${p.progress||0}"></div></div>
+      </div>
+    </div>`).join('');
+  setTimeout(()=>document.querySelectorAll('.prog-fill').forEach(b=>b.style.width=b.dataset.pct+'%'),100);
+}
+
+function renderInvoices(data, containerId){
+  const bg={paid:'bg-green c-green',due:'bg-orange c-orange',upcoming:'bg-amber c-amber',overdue:'bg-red c-red'};
+  const lbl={paid:'Paid',due:'Due Soon',upcoming:'Upcoming',overdue:'Overdue'};
+  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No invoices here yet</div>'; return; }
+  document.getElementById(containerId).innerHTML = data.map(i=>`
+    <div class="inv-item">
+      <div class="inv-left">
+        <div class="inv-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div><div class="inv-id">${esc(i.invoice_number)}</div><div class="inv-date">${esc(i.due_date||i.issue_date||'')}</div></div>
+      </div>
+      <div class="inv-right">
+        <div class="inv-amt">$${Number(i.amount||0).toLocaleString()}</div>
+        <div class="inv-badge ${bg[i.status]||'bg-amber c-amber'}">${lbl[i.status]||i.status}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderFiles(data, containerId){
+  const extCls={PDF:'f-pdf',FIG:'f-fig',MP4:'f-mp4',MOV:'f-mp4',WEBM:'f-mp4',ZIP:'f-zip',PNG:'f-png',JPG:'f-png',JPEG:'f-png'};
+  const videoTypes=new Set(['MP4','MOV','WEBM']);
+  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div>'; return; }
+  document.getElementById(containerId).innerHTML = data.map(f=>{
+    const ext=(f.file_type||'FILE').toUpperCase();
+    const isVid=videoTypes.has(ext);
+    const action = isVid && f.drive_embed_url
+      ? `playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')`
+      : f.drive_view_url ? `window.open('${esc(f.drive_view_url)}','_blank')` : `toast('No file link available')`;
+    return `<div class="file-item" onclick="${action}">
+      <div class="file-ic ${extCls[ext]||'f-zip'}">${ext}</div>
+      <div class="file-name">${esc(f.name)}</div>
+      <div class="file-meta">
+        <div style="font-size:16px">${isVid && f.drive_embed_url ? '▶' : '↗'}</div>
+        <div>${esc(f.size||'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAppts(data, containerId){
+  if(!data.length){ document.getElementById(containerId).innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No calls booked yet</div>'; return; }
+  document.getElementById(containerId).innerHTML = data.map(a=>`
+    <div class="appt-item">
+      <div class="time-block"><div class="t">${esc(a.appointment_time||'—')}</div><div class="p">Scheduled</div></div>
+      <div class="appt-info"><div class="appt-name">${esc(a.title)}</div><div class="appt-sub">${esc(a.appointment_date||'')} · ${esc(a.duration||'')}</div></div>
+    </div>`).join('');
+}
+
+function renderPerf(p){
+  if(!p){ renderBars([]); return; }
+  document.getElementById('m-roas').textContent = p.roas ? p.roas+'×' : '—';
+  document.getElementById('m-ctr').textContent  = p.ctr  ? p.ctr+'%' : '—';
+  document.getElementById('m-conv').textContent = p.conv_rate ? p.conv_rate+'%' : '—';
+  renderBars([]);
+}
+
+function renderBars(data){
+  if(!data.length){
+    const bc=document.getElementById('bar-chart');
+    const bl=document.getElementById('bar-labels');
+    if(bc) bc.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;width:100%;padding:20px 0">No performance data yet</div>';
+    if(bl) bl.innerHTML='';
+    return;
+  }
+  const bars = data;
+  const max = Math.max(...bars.map(b=>b.v));
+  const bc=document.getElementById('bar-chart');
+  const bl=document.getElementById('bar-labels');
+  if(!bc||!bl) return;
+  bc.innerHTML=bars.map(b=>`<div class="bar-col"><div class="bar${b.hi?' hi':''}" style="height:0" data-h="${Math.round(b.v/max*70)}px"></div></div>`).join('');
+  bl.innerHTML=bars.map(b=>`<div class="bar-col"><div class="bar-lbl">${b.l}</div></div>`).join('');
+  setTimeout(()=>document.querySelectorAll('.bar').forEach(b=>b.style.height=b.dataset.h),200);
+}
+
+function renderApprovals(data){
+  const c=document.getElementById('approvals-container');
+  document.getElementById('badge-approvals').textContent = `⚡ ${data.length} Awaiting Approval`;
+  if(!data.length){
+    c.innerHTML='<div style="padding:20px 0;color:var(--muted);font-size:14px;text-align:center">No creatives to approve</div>';
+    return;
+  }
+  c.innerHTML=data.map(a=>{
+    const ext=(a.file_type||'MP4').toUpperCase();
+    const isVid=['MP4','MOV','WEBM'].includes(ext);
+    const thumbStyle = a.drive_embed_url ? '' : 'background:linear-gradient(135deg,#1C1917,#3D3530)';
+    return `<div class="approval-card" id="acard-${a.id}">
+      <div class="approval-thumb" style="${thumbStyle}">
+        <div class="media-type-badge">${ext}</div>
+        ${a.drive_embed_url ? `<iframe src="${esc(a.drive_embed_url)}" style="position:absolute;inset:0;width:100%;height:100%;opacity:.5;border:none;pointer-events:none"></iframe>` : ''}
+        <div class="play-btn" onclick="${isVid && a.drive_embed_url ? `playDriveVideo('${esc(a.drive_embed_url)}','${esc(a.name)}')` : `toast('Preview not available')`}">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <div class="approval-body">
+        <div class="approval-name">${esc(a.name)}</div>
+        <div class="approval-sub">${esc(a.drive_view_url ? 'Google Drive · Tap ▶ to preview' : 'Pending review')}</div>
+        <div class="approval-btns" id="abtns-${a.id}">
+          <button class="btn-approve" onclick="approveAsset('${a.id}')">✓ Approve</button>
+          <button class="btn-decline" onclick="showReviseBox('${a.id}')">✗ Revise</button>
+        </div>
+        <div class="revise-box hidden" id="rbox-${a.id}">
+          <textarea class="field revise-ta" id="rtxt-${a.id}" placeholder="What would you like changed?" rows="3"></textarea>
+          <div class="btn-row" style="margin-top:0">
+            <button class="btn-cancel" style="flex:1;padding:10px;font-size:13px" onclick="hideReviseBox('${a.id}')">Back</button>
+            <button class="btn-save" style="flex:2;padding:10px;font-size:13px" onclick="submitRevision('${a.id}')">Send Feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approveAsset(id){
+  await sb.from('files').update({approved:true}).eq('id',id);
+  addNotif('green','Creative approved ✓','Your approval has been sent — we\'ll start running it.');
+  toast('✓ Approved! We\'ll get it live.');
+  await loadClientPortal();
+}
+
+function showReviseBox(id){ toggle('abtns-'+id,false); toggle('rbox-'+id,true); document.getElementById('rtxt-'+id)?.focus(); }
+function hideReviseBox(id){ toggle('abtns-'+id,true); toggle('rbox-'+id,false); }
+
+async function submitRevision(id){
+  const txt=document.getElementById('rtxt-'+id)?.value.trim();
+  if(!txt){ toast('Please describe what you\'d like changed.'); return; }
+  await sb.from('files').update({revision_note:txt, needs_approval:false}).eq('id',id);
+  addNotif('amber','Revision sent','Your feedback has been sent to your account manager.');
+  toast('✓ Feedback sent!');
+  await loadClientPortal();
+}
+
+function onAutoApprove(cb){
+  autoApproveOn=cb.checked;
+  addNotif(cb.checked?'green':'muted', cb.checked?'Auto-approve ON 🚀':'Auto-approve off', cb.checked?'New creatives will run automatically.':'You\'ll review each creative before it goes live.');
+  toast(cb.checked?'Auto-approve ON 🚀':'Auto-approve turned off.');
+}
+
+/* ══════════════════════════════════════════
+   GOOGLE DRIVE INTEGRATION
+══════════════════════════════════════════ */
+function initGoogleDrive(){
+  return new Promise(resolve=>{
+    if(googleAccessToken){ resolve(); return; }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp)=>{
+        if(resp.access_token){
+          googleAccessToken = resp.access_token;
+          resolve();
+        }
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function uploadToDrive(file, clientName){
+  toast('Connecting to Google Drive…');
+  await initGoogleDrive();
+  toast('Uploading to Drive…');
+
+  // Step 1: find or create client subfolder
+  const folderName = clientName || 'General';
+  let folderId = DRIVE_ROOT_FOLDER;
+  try {
+    // Search for subfolder
+    const searchResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(folderName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      { headers:{ Authorization:`Bearer ${googleAccessToken}` } }
+    );
+    const searchData = await searchResp.json();
+    if(searchData.files && searchData.files.length){
+      folderId = searchData.files[0].id;
+    } else {
+      // Create subfolder
+      const mkResp = await fetch('https://www.googleapis.com/drive/v3/files',{
+        method:'POST',
+        headers:{ Authorization:`Bearer ${googleAccessToken}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ name:folderName, mimeType:'application/vnd.google-apps.folder', parents:[DRIVE_ROOT_FOLDER] })
+      });
+      const mkData = await mkResp.json();
+      folderId = mkData.id || DRIVE_ROOT_FOLDER;
+    }
+  } catch(e){ folderId = DRIVE_ROOT_FOLDER; }
+
+  // Step 2: upload file with metadata
+  const metadata = { name: file.name, parents: [folderId] };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+  form.append('file', file);
+
+  const uploadResp = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink',
+    { method:'POST', headers:{ Authorization:`Bearer ${googleAccessToken}` }, body:form }
+  );
+  const uploadData = await uploadResp.json();
+
+  if(!uploadData.id) throw new Error('Upload failed: ' + JSON.stringify(uploadData));
+
+  // Step 3: make file viewable by anyone with link
+  await fetch(`https://www.googleapis.com/drive/v3/files/${uploadData.id}/permissions`,{
+    method:'POST',
+    headers:{ Authorization:`Bearer ${googleAccessToken}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({ role:'reader', type:'anyone' })
+  });
+
+  const driveViewUrl  = `https://drive.google.com/file/d/${uploadData.id}/view`;
+  const driveEmbedUrl = `https://drive.google.com/file/d/${uploadData.id}/preview`;
+
+  return { driveFileId: uploadData.id, driveViewUrl, driveEmbedUrl };
+}
+
+/* ══════════════════════════════════════════
+   VIDEO PLAYER (Google Drive embed)
+══════════════════════════════════════════ */
+function playDriveVideo(embedUrl, name){
+  const modal=document.getElementById('video-modal');
+  const player=document.getElementById('video-player');
+  const frame=document.getElementById('drive-embed-frame');
+  const title=document.getElementById('video-title-bar');
+  player.style.display='none';
+  frame.style.display='block';
+  frame.src=embedUrl;
+  title.textContent=name||'Preview';
+  modal.style.display='flex';
+}
+
+function closeVideoModal(){
+  document.getElementById('video-modal').style.display='none';
+  document.getElementById('video-player').pause();
+  document.getElementById('video-player').src='';
+  document.getElementById('drive-embed-frame').src='';
+}
+
+/* ══════════════════════════════════════════
+   FILE PICKER
+══════════════════════════════════════════ */
+let _uploadCallback = null;
+function triggerFilePicker(cb){ _uploadCallback=cb; document.getElementById('file-picker').value=''; document.getElementById('file-picker').click(); }
+function onFilePicked(input){ const f=input.files[0]; if(f&&_uploadCallback) _uploadCallback(f); }
+
+/* ══════════════════════════════════════════
+   MODAL FORMS
+══════════════════════════════════════════ */
+function openModal(type){
+  const tpl = modalTemplates[type];
+  if(!tpl){ toast('Form not found: '+type); return; }
+  document.getElementById('modal-content').innerHTML = typeof tpl==='function' ? tpl() : tpl;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); _pendingUploadFile=null; }
+
+// Which client are we adding data for?
+function targetClientId(){ return _uploadContext==='detail' ? currentDetailClientId : currentClientId; }
+
+const modalTemplates = {
+  project: ()=>`<h3>Add Project</h3>
+    <div class="form-group"><label class="form-label">Campaign Name</label><input class="field" placeholder="e.g. Google Ads — Summer Sale" id="p-name"/></div>
+    <div class="form-group"><label class="form-label">Platform</label>
+      <select class="field" id="p-platform"><option>Google Ads</option><option>Meta Ads</option><option>TikTok Ads</option><option>Email</option><option>Other</option></select></div>
+    <div class="form-group form-row">
+      <div><label class="form-label">Due Date</label><input class="field" type="date" id="p-due"/></div>
+      <div><label class="form-label">Status</label>
+        <select class="field" id="p-status"><option value="active">Active</option><option value="review">In Review</option><option value="hold">On Hold</option></select></div>
+    </div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveProject()">Save Project</button></div>`,
+
+  invoice: ()=>`<h3>Create Invoice</h3>
+    <div class="form-group"><label class="form-label">Invoice #</label><input class="field" placeholder="INV-1044" id="i-num"/></div>
+    <div class="form-group"><label class="form-label">Amount ($)</label><input class="field" type="number" placeholder="0.00" id="i-amt"/></div>
+    <div class="form-group form-row">
+      <div><label class="form-label">Issue Date</label><input class="field" type="date" id="i-issue"/></div>
+      <div><label class="form-label">Due Date</label><input class="field" type="date" id="i-due"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><input class="field" placeholder="e.g. Ad Management — April 2026" id="i-desc"/></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveInvoice()">Create Invoice</button></div>`,
+
+  upload: ()=>`<h3>Upload Creative</h3>
+    <div class="upload-zone" id="upload-zone" onclick="triggerFilePicker(onUploadFilePicked)">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p id="upload-label">Tap to select file</p>
+      <span>Reels, MP4, Image, PDF</span>
+      <div class="upload-progress" id="upload-progress"><div class="upload-progress-fill" id="upload-fill"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Creative Name</label><input class="field" placeholder="e.g. Spring Reel v1" id="u-name"/></div>
+    <div class="form-group"><label class="form-label">Needs Client Approval?</label>
+      <select class="field" id="u-approval"><option value="yes">Yes — send for approval</option><option value="no">No — file only</option></select></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveUpload()">Upload to Drive</button></div>`,
+
+  report: ()=>`<h3>Update Performance</h3>
+    <div class="form-group"><label class="form-label">Month</label><input class="field" placeholder="e.g. April 2026" id="r-month"/></div>
+    <div class="form-group form-row">
+      <div><label class="form-label">ROAS</label><input class="field" placeholder="3.8" id="r-roas"/></div>
+      <div><label class="form-label">CTR (%)</label><input class="field" placeholder="4.2" id="r-ctr"/></div>
+    </div>
+    <div class="form-group form-row">
+      <div><label class="form-label">Conv. Rate (%)</label><input class="field" placeholder="12" id="r-conv"/></div>
+      <div><label class="form-label">Ad Spend ($)</label><input class="field" placeholder="12400" id="r-spend"/></div>
+    </div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveReport()">Update Stats</button></div>`,
+
+  book: ()=>`<h3>Book a Call</h3>
+    <div class="form-group"><label class="form-label">What's this about?</label><input class="field" placeholder="e.g. Monthly Strategy Review" id="bk-title"/></div>
+    <div class="form-group form-row">
+      <div><label class="form-label">Date</label><input class="field" type="date" id="bk-date"/></div>
+      <div><label class="form-label">Time</label><input class="field" type="time" id="bk-time"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Duration</label>
+      <select class="field" id="bk-dur"><option>30 minutes</option><option>60 minutes</option><option>90 minutes</option></select></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveBooking()">Confirm Booking</button></div>`,
+
+  'add-client': ()=>`<h3>Add New Client</h3>
+    <div class="form-group"><label class="form-label">Full Name</label><input class="field" placeholder="e.g. Alex Rivera" id="c-name"/></div>
+    <div class="form-group"><label class="form-label">Company</label><input class="field" placeholder="e.g. Growth Co." id="c-company"/></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="field" type="email" placeholder="client@company.com" id="c-email"/></div>
+    <div class="form-group"><label class="form-label">Temporary Password</label><input class="field" type="password" placeholder="They'll change this on first login" id="c-pass"/></div>
+    <div class="form-group"><label class="form-label">Accent Colour</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        ${['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'].map(col=>`
+          <div onclick="document.getElementById('c-color').value='${col}';document.querySelectorAll('.color-swatch').forEach(s=>s.style.outline='none');this.style.outline='3px solid ${col}'" 
+               class="color-swatch" style="width:32px;height:32px;border-radius:50%;background:${col};cursor:pointer;transition:outline .2s"></div>`).join('')}
+        <input type="hidden" id="c-color" value="#FF6B2C"/>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveNewClient()">Create Account</button></div>`,
+
+  perf: ()=>modalTemplates.report()
+};
+
+/* ── SAVE HANDLERS ── */
+async function saveProject(){
+  const cid = targetClientId();
+  if(!cid){ toast('No client selected.'); return; }
+  const name=v('p-name'), platform=v('p-platform'), due_date=v('p-due'), status=v('p-status');
+  const colors=['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6'];
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  const {error}=await sb.from('projects').insert({client_id:cid,name,platform,due_date,status,color,progress:0});
+  if(error){ toast('Error: '+error.message); return; }
+  addNotif('orange','New project added',`"${name}" has been added.`);
+  toast('✓ Project added!');
+  closeModal();
+  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+}
+
+async function saveInvoice(){
+  const cid=targetClientId();
+  if(!cid){ toast('No client selected.'); return; }
+  const invoice_number=v('i-num'), amount=v('i-amt'), issue_date=v('i-issue'), due_date=v('i-due'), description=v('i-desc');
+  const {error}=await sb.from('invoices').insert({client_id:cid,invoice_number,amount:Number(amount),issue_date,due_date,description,status:'upcoming'});
+  if(error){ toast('Error: '+error.message); return; }
+  addNotif('blue','New invoice created',`${invoice_number} for $${Number(amount).toLocaleString()} created.`);
+  toast('✓ Invoice created!');
+  closeModal();
+  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+}
+
+function onUploadFilePicked(file){
+  _pendingUploadFile=file;
+  const lbl=document.getElementById('upload-label');
+  const zone=document.getElementById('upload-zone');
+  if(lbl) lbl.textContent='✓ '+file.name;
+  if(zone) zone.classList.add('active');
+  const nameField=document.getElementById('u-name');
+  if(nameField&&!nameField.value) nameField.value=file.name.replace(/\.[^/.]+$/,'');
+}
+
+async function saveUpload(){
+  const cid=targetClientId();
+  if(!cid){ toast('No client selected.'); return; }
+  if(!_pendingUploadFile){ toast('Please select a file first.'); return; }
+  const file=_pendingUploadFile;
+  const name=v('u-name')||file.name.replace(/\.[^/.]+$/,'');
+  const needsApproval=v('u-approval')==='yes';
+  const ext=file.name.split('.').pop().toUpperCase();
+  const size=file.size>1024*1024?(file.size/1024/1024).toFixed(1)+' MB':(file.size/1024).toFixed(0)+' KB';
+
+  // Get client name for subfolder
+  let clientName='General';
+  try{
+    const {data}=await sb.from('clients').select('name').eq('id',cid).single();
+    if(data) clientName=data.name;
+  }catch(e){}
+
+  try{
+    const saveBtn=document.querySelector('#modal-content .btn-save');
+    if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span>'; saveBtn.disabled=true; }
+    const prog=document.getElementById('upload-progress');
+    const fill=document.getElementById('upload-fill');
+    if(prog) prog.style.display='block';
+    if(fill) fill.style.width='30%';
+
+    const { driveFileId, driveViewUrl, driveEmbedUrl } = await uploadToDrive(file, clientName);
+    if(fill) fill.style.width='90%';
+
+    const approved = autoApproveOn || !needsApproval;
+    const {error}=await sb.from('files').insert({
+      client_id:cid, name, file_type:ext, size,
+      drive_file_id:driveFileId, drive_view_url:driveViewUrl, drive_embed_url:driveEmbedUrl,
+      needs_approval:needsApproval, approved, auto_approved:autoApproveOn
+    });
+    if(error){ toast('DB error: '+error.message); return; }
+    if(fill) fill.style.width='100%';
+
+    if(needsApproval&&!autoApproveOn){
+      addNotif('amber','New creative needs approval',`"${name}" is ready for your review.`);
+      toast('✓ Uploaded to Drive — sent for approval!');
+    } else {
+      addNotif('green', autoApproveOn?'Creative auto-approved 🚀':'File uploaded', `"${name}" is live.`);
+      toast(autoApproveOn?'✓ Uploaded & auto-approved — going live!':'✓ Uploaded to Google Drive!');
+    }
+    _pendingUploadFile=null;
+    closeModal();
+    if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+  } catch(err){
+    toast('Upload failed: '+err.message);
+    const saveBtn=document.querySelector('#modal-content .btn-save');
+    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
+  }
+}
+
+async function saveReport(){
+  const cid=targetClientId();
+  if(!cid){ toast('No client selected.'); return; }
+  const roas=v('r-roas'),ctr=v('r-ctr'),conv_rate=v('r-conv'),ad_spend=v('r-spend'),month=v('r-month');
+  const {error}=await sb.from('performance').insert({client_id:cid,roas,ctr,conv_rate,ad_spend:Number(ad_spend),month});
+  if(error){ toast('Error: '+error.message); return; }
+  addNotif('green','Performance updated 📈','Latest ad stats are live.');
+  toast('✓ Stats updated!');
+  closeModal();
+  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+}
+
+async function saveBooking(){
+  const cid=targetClientId();
+  if(!cid){ toast('No client selected.'); return; }
+  const title=v('bk-title'),appointment_date=v('bk-date'),appointment_time=v('bk-time'),duration=v('bk-dur');
+  const {error}=await sb.from('appointments').insert({client_id:cid,title,appointment_date,appointment_time,duration});
+  if(error){ toast('Error: '+error.message); return; }
+  addNotif('amber','Call booked 📅',`"${title}" scheduled for ${appointment_date}.`);
+  toast('✓ Call booked!');
+  closeModal();
+  if(_uploadContext==='detail') await loadDetailData(cid); else await loadClientPortal();
+}
+
+async function saveNewClient(){
+  const name=v('c-name'),company=v('c-company'),email=v('c-email'),pass=v('c-pass'),color=v('c-color')||'#FF6B2C';
+  if(!name||!email||!pass){ toast('Please fill in all fields.'); return; }
+  // Create Supabase auth user via admin (only works server-side; here we use signUp on their behalf)
+  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,company}}});
+  if(error&&!error.message.includes('already')){ toast('Error: '+error.message); return; }
+  // Upsert client record
+  const {error:e2}=await sb.from('clients').upsert({name,company,email,color},{onConflict:'email'});
+  if(e2){ toast('DB error: '+e2.message); return; }
+  toast('✓ Client account created!');
+  closeModal();
+  await loadClientsPage();
+}
+
+/* ══════════════════════════════════════════
+   ADMIN ACCOUNTS PAGE
+══════════════════════════════════════════ */
+async function openAccountsPage(){
+  show('accounts-page');
+  await loadClientsPage();
+}
+function closeAccountsPage(){ hide('accounts-page'); }
+
+async function loadClientsPage(){
+  const {data,error}=await sb.from('clients').select('*').order('created_at',{ascending:false});
+  if(error){ toast('Error loading clients: '+error.message); return; }
+  const clients=data||[];
+  document.getElementById('accounts-summary').textContent=`${clients.length} client account${clients.length!==1?'s':''} · Lunar Agency`;
+  if(!clients.length){
+    document.getElementById('clients-list').innerHTML=`
+      <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+        <div style="font-size:40px;margin-bottom:12px">☽</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">No clients yet</div>
+        <div style="font-size:14px">Tap "+ Add" to create your first client account</div>
+      </div>`;
+    return;
+  }
+  document.getElementById('clients-list').innerHTML=clients.map(c=>`
+    <div class="client-card" onclick="openClientDetail('${c.id}','${esc(c.name)}','${esc(c.company||'')}','${c.color||'#FF6B2C'}')">
+      <div class="client-avatar" style="background:${c.color||'#FF6B2C'}">${(c.name||'?').charAt(0).toUpperCase()}</div>
+      <div class="client-info">
+        <div class="client-name">${esc(c.name)}</div>
+        <div class="client-company">${esc(c.company||c.email||'')}</div>
+        <div class="client-meta">
+          <div class="client-chip" style="background:${c.color||'#FF6B2C'}22;color:${c.color||'#FF6B2C'}">${esc(c.email||'')}</div>
+        </div>
+      </div>
+      <div class="client-arrow">›</div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   CLIENT DETAIL
+══════════════════════════════════════════ */
+async function openClientDetail(id, name, company, color){
+  currentDetailClientId=id;
+  _uploadContext='detail';
+  document.getElementById('detail-title').textContent=name;
+  document.getElementById('detail-client-name').textContent=name;
+  document.getElementById('detail-client-company').textContent=company||'No company';
+  document.getElementById('detail-header').style.background=`linear-gradient(135deg,${color},${lighten(color)})`;
+  show('client-detail');
+  await loadDetailData(id);
+}
+
+function closeClientDetail(){
+  hide('client-detail');
+  _uploadContext='client';
+  currentDetailClientId=null;
+}
+
+async function loadDetailData(cid){
+  const [proj,inv,files,appts,perf]=await Promise.all([
+    sb.from('projects').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('invoices').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('files').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('appointments').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+    sb.from('performance').select('*').eq('client_id',cid).order('created_at',{ascending:false}).limit(5),
+  ]);
+  renderProjects(proj.data||[],'detail-projects');
+  renderInvoices(inv.data||[],'detail-invoices');
+  renderFiles(files.data||[],'detail-files');
+  renderAppts(appts.data||[],'detail-appts');
+  renderDetailPerf(perf.data||[]);
+}
+
+function renderDetailPerf(data){
+  if(!data.length){ document.getElementById('detail-perf').innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No performance stats yet</div>'; return; }
+  document.getElementById('detail-perf').innerHTML=data.map(p=>`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
+      <div style="color:var(--muted)">${esc(p.month||'—')}</div>
+      <div>ROAS <strong>${p.roas||'—'}×</strong> · CTR <strong>${p.ctr||'—'}%</strong> · Conv <strong>${p.conv_rate||'—'}%</strong></div>
+    </div>`).join('');
+}
+
+function openDetailModal(type){
+  _uploadContext='detail';
+  openModal(type==='perf'?'report':type);
+}
+
+async function confirmDeleteClient(){
+  if(!confirm('Delete this client and all their data? This cannot be undone.')) return;
+  const {error}=await sb.from('clients').delete().eq('id',currentDetailClientId);
+  if(error){ toast('Error: '+error.message); return; }
+  toast('Client deleted.');
+  closeClientDetail();
+  await loadClientsPage();
+}
+
+/* ══════════════════════════════════════════
+   ADMIN GATE
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   ADMIN GATE — Supabase server-side check
+   No password in source. Inspect element
+   reveals nothing useful.
+══════════════════════════════════════════ */
+async function openAdmin(){
+  if(adminUnlocked){ document.getElementById('admin-panel').classList.add('open'); return; }
+  if(!currentUser){ toast('Please sign in first.'); return; }
+
+  // Show the verifying gate
+  const gate = document.getElementById('admin-gate');
+  gate.style.display = 'flex';
+  document.getElementById('gate-msg').textContent = 'Checking your account with Supabase…';
+
+  const isAdmin = await checkIsAdmin();
+
+  if(isAdmin){
+    adminUnlocked = true;
+    closeGate();
+    document.getElementById('admin-panel').classList.add('open');
+  } else {
+    document.getElementById('gate-msg').textContent = '⛔ Your account does not have admin access.';
+    // Hide spinner, show just the cancel button after a moment
+    gate.querySelector('.spinner').style.display = 'none';
+    setTimeout(closeGate, 2200);
+  }
+}
+
+function closeGate(){
+  const gate = document.getElementById('admin-gate');
+  gate.style.display = 'none';
+  // Reset for next time
+  const spinner = gate.querySelector('.spinner');
+  if(spinner) spinner.style.display = '';
+  const msg = document.getElementById('gate-msg');
+  if(msg) msg.textContent = 'Checking your account with Supabase';
+}
+
+function lockAdmin(){
+  adminUnlocked = false;
+  closeAdmin();
+  toast('🔒 Admin locked.');
+}
+function closeAdmin(){ document.getElementById('admin-panel').classList.remove('open'); }
+
+/* ══════════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════════ */
+function addNotif(color,title,body){
+  DB_notifs.unshift({color,title,body,time:'Just now'});
+  renderNotifs();
+  const dot=document.getElementById('notif-dot');
+  if(dot){ dot.style.transform='scale(1.6)'; setTimeout(()=>dot.style.transform='',400); }
+}
+function clearNotifs(){ DB_notifs.length=0; renderNotifs(); closeNotif(); }
+function renderNotifs(){
+  const cm={orange:'var(--orange)',green:'var(--green)',blue:'var(--blue)',amber:'var(--amber)',red:'var(--red)',muted:'var(--muted)'};
+  const el=document.getElementById('notif-list');
+  if(!el) return;
+  el.innerHTML=DB_notifs.length ? DB_notifs.map(n=>`
+    <div class="notif-row">
+      <div class="n-dot" style="background:${cm[n.color]||cm.muted}"></div>
+      <div><div class="n-text"><strong>${esc(n.title)}</strong></div><div class="n-text" style="color:var(--muted)">${esc(n.body)}</div><div class="n-time">${n.time}</div></div>
+    </div>`).join('') : '<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No notifications</div>';
+}
+let notifOpen=false;
+function toggleNotif(){ notifOpen=!notifOpen; document.getElementById('notif-tray').classList.toggle('open',notifOpen); if(notifOpen) renderNotifs(); }
+function closeNotif(){ notifOpen=false; document.getElementById('notif-tray').classList.remove('open'); }
+document.addEventListener('click',e=>{ if(notifOpen&&!e.target.closest('#notif-tray')&&!e.target.closest('.icon-pill')) closeNotif(); });
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+function navTo(id,btn){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const targets={
+    home:()=>window.scrollTo({top:0,behavior:'smooth'}),
+    projects:()=>document.getElementById('projects-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
+    files:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
+    messages:()=>document.getElementById('messages-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
+  };
+  if(targets[id]) targets[id]();
+  setTimeout(()=>btn.classList.add('on'),300);
+}
+
+/* ══════════════════════════════════════════
+   SEARCH
+══════════════════════════════════════════ */
+function doSearch(q){
+  const box=document.getElementById('search-results');
+  if(!q.trim()){ box.style.display='none'; return; }
+  const index=[
+    {label:'Projects',tag:'Section',action:()=>document.getElementById('projects-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Invoices',tag:'Section',action:()=>document.getElementById('invoices-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Files & Assets',tag:'Section',action:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Book a Call',tag:'Action',action:()=>openModal('book')},
+    {label:'Upload Creative',tag:'Action',action:()=>openModal('upload')},
+    {label:'Add Invoice',tag:'Action',action:()=>openModal('invoice')},
+    {label:'Manage Clients',tag:'Admin',action:()=>openAdmin()},
+  ];
+  const res=index.filter(i=>i.label.toLowerCase().includes(q.toLowerCase())).slice(0,5);
+  if(!res.length){ box.style.display='none'; return; }
+  box.innerHTML=res.map((r,i)=>`
+    <div class="search-result-item" onclick="searchPick(${i})">
+      <div style="flex:1">${r.label}</div>
+      <div class="search-tag bg-orange c-orange">${r.tag}</div>
+    </div>`).join('');
+  box._res=res; box.style.display='block';
+}
+function searchPick(i){
+  const box=document.getElementById('search-results');
+  box._res[i].action();
+  document.getElementById('search-input').value='';
+  box.style.display='none';
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.search-wrap')) document.getElementById('search-results').style.display='none'; });
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+let _tt;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2800); }
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function v(id){ return (document.getElementById(id)?.value||'').trim(); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;'); }
+function show(id){ const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); } }
+function hide(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; } }
+function toggle(id,on){ on?show(id):hide(id); }
+function lighten(hex){ try{ let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); r=Math.min(255,r+60);g=Math.min(255,g+40);b=Math.min(255,b+20); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; }catch(e){ return '#F5A623'; } }
+
+/* START */
+boot();
+</script>
+</body>
+</html>

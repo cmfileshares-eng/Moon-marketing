@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moon Marketing — Find Your Ad Strategy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #080A0E;
+  --bg2:        #0D1017;
+  --bg3:        #111620;
+  --bg4:        #161C2A;
+  --gold:       #C9A84C;
+  --gold-light: #E8C96A;
+  --gold-dim:   #7A6130;
+  --gold-glow:  rgba(201,168,76,0.12);
+  --teal:       #2EC4B6;
+  --teal-light: #5ED8CC;
+  --teal-dim:   rgba(46,196,182,0.15);
+  --red:        #c0392b;
+  --red-glow:   rgba(192,57,43,0.14);
+  --text:       #E8EAF0;
+  --text-dim:   #9CA3AF;
+  --text-muted: #6B7280;
+  --border:     rgba(201,168,76,0.13);
+  --border-t:   rgba(46,196,182,0.13);
+  --white:      #f0f0ee;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+body{
+  font-family:'Inconsolata',monospace;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:crosshair;
+}
+a{color:inherit;text-decoration:none;}
+
+/* GRAIN */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.5;mix-blend-mode:overlay;
+}
+
+/* CUSTOM CURSOR */
+.cursor{width:8px;height:8px;background:var(--teal);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:transform 0.08s ease;mix-blend-mode:screen;}
+.cursor-ring{width:32px;height:32px;border:1px solid rgba(201,168,76,0.5);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9997;transition:transform 0.16s ease;}
+@media(hover:none),(pointer:coarse){
+  .cursor,.cursor-ring{display:none;}
+  body{cursor:auto;}
+}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  padding:1.1rem 2.8rem;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(8,10,14,0.95);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  transition:background 0.3s;
+  gap:1rem;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.45rem;font-weight:300;
+  letter-spacing:0.14em;color:var(--text);
+  flex-shrink:0;
+}
+.logo span{color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:1.8rem;}
+.nav-link{
+  font-family:'Inconsolata',monospace;
+  font-size:0.72rem;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--text-muted);
+  transition:color 0.2s;white-space:nowrap;
+}
+.nav-link:hover{color:var(--text);}
+.nav-buttons{display:flex;align-items:center;gap:0.6rem;flex-shrink:0;}
+.nav-cta{
+  font-family:'Syne',sans-serif;
+  font-size:0.68rem;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  padding:0.5rem 1.1rem;
+  transition:all 0.2s;cursor:crosshair;
+  white-space:nowrap;
+  display:inline-block;
+}
+.nav-cta:hover{background:var(--gold);color:var(--bg);}
+.nav-cta-portal{
+  border-color:var(--teal);
+  color:var(--teal);
+}
+.nav-cta-portal:hover{background:var(--teal);color:var(--bg);}
+
+/* ── HAMBURGER ── */
+.nav-hamburger{
+  display:none;
+  flex-direction:column;justify-content:center;
+  gap:5px;background:none;border:none;
+  padding:6px;cursor:pointer;z-index:600;
+  flex-shrink:0;
+}
+.nav-hamburger span{
+  display:block;width:22px;height:1.5px;
+  background:var(--text);
+  transition:transform 0.3s,opacity 0.3s;
+}
+.nav-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+.nav-hamburger.open span:nth-child(2){opacity:0;}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+
+/* ── MOBILE DRAWER ── */
+.nav-drawer{
+  position:fixed;inset:0;z-index:490;
+  background:rgba(8,10,14,0.98);
+  backdrop-filter:blur(20px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.3s ease;
+}
+.nav-drawer.open{opacity:1;pointer-events:all;}
+.nav-drawer a{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:300;
+  color:var(--text-dim);letter-spacing:0.06em;
+  text-decoration:none;
+  padding:1rem 2rem;
+  width:100%;text-align:center;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:color 0.2s;
+  display:block;
+}
+.nav-drawer a:hover{color:var(--text);}
+.nav-drawer-buttons{
+  display:flex;flex-direction:column;
+  gap:0.75rem;margin-top:2rem;
+  width:80%;max-width:280px;
+}
+.nav-drawer-btn{
+  font-family:'Syne',sans-serif;
+  font-size:0.78rem;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;
+  padding:1rem;text-align:center;
+  transition:all 0.2s;display:block;
+  text-decoration:none;
+}
+.nav-drawer-btn-apply{
+  background:var(--gold);color:var(--bg);
+  border:1px solid var(--gold);
+}
+.nav-drawer-btn-apply:hover{background:var(--gold-light);}
+.nav-drawer-btn-portal{
+  background:transparent;color:var(--teal);
+  border:1px solid var(--teal);
+}
+.nav-drawer-btn-portal:hover{background:var(--teal);color:var(--bg);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:8rem 2.8rem 5rem;
+  position:relative;overflow:hidden;
+  border-bottom:1px solid var(--border);
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 40%, rgba(46,196,182,0.055) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 15% 65%, var(--gold-glow) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 10%, var(--red-glow) 0%, transparent 50%),
+    linear-gradient(160deg, #080A0E 0%, #0D1017 60%, #0A0E16 100%);
+}
+.hero-grid-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+  background-size:80px 80px;
+}
+.hero-tag{
+  font-size:0.68rem;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--teal);
+  margin-bottom:1.8rem;
+  display:flex;align-items:center;gap:0.8rem;
+  opacity:0;animation:fadeUp 0.8s 0.1s forwards;
+}
+.hero-tag::before{content:'';display:block;width:28px;height:1px;background:var(--teal);}
+.hero h1{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(3rem,8vw,7rem);
+  line-height:0.93;
+  letter-spacing:-0.03em;
+  color:var(--white);
+  max-width:860px;
+  margin-bottom:1.8rem;
+  opacity:0;animation:fadeUp 0.9s 0.25s forwards;
+}
+.hero h1 em{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-weight:300;
+  color:var(--gold);
+}
+.hero h1 .dim{color:rgba(232,234,240,0.25);}
+.hero-sub{
+  font-size:0.95rem;line-height:1.85;
+  color:var(--text-dim);font-weight:300;
+  max-width:480px;margin-bottom:3rem;
+  opacity:0;animation:fadeUp 0.9s 0.4s forwards;
+}
+.hero-actions{
+  display:flex;gap:1.2rem;align-items:center;
+  opacity:0;animation:fadeUp 0.9s 0.55s forwards;
+}
+.btn-primary{
+  font-family:'Syne',sans-serif;
+  font-size:0.75rem;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:1rem 2.2rem;border:none;cursor:crosshair;
+  transition:all 0.2s;display:inline-block;
+  text-decoration:none;
+}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);}
+.btn-ghost{
+  font-family:'Inconsolata',monospace;
+  font-size:0.8rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text-dim);
+  display:flex;align-items:center;gap:0.6rem;
+  transition:color 0.2s;cursor:crosshair;
+  background:none;border:none;padding:0;
+}
+.btn-ghost::after{content:'→';transition:transform 0.2s;}
+.btn-ghost:hover{color:var(--text);}
+.btn-ghost:hover::after{transform:translateX(4px);}
+
+.hero-corner-stat{
+  position:absolute;bottom:3.5rem;right:2.8rem;
+  text-align:right;
+  opacity:0;animation:fadeUp 0.9s 0.7s forwards;
+}
+.corner-num{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:4.5rem;line-height:1;
+  color:rgba(201,168,76,0.12);
+  letter-spacing:-0.02em;
+}
+.corner-label{
+  font-size:0.62rem;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+
+/* ── MARQUEE ── */
+.marquee-wrap{
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+  padding:1.1rem 0;overflow:hidden;
+  white-space:nowrap;background:var(--bg2);
+}
+.marquee-track{display:inline-flex;animation:scroll 28s linear infinite;}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.marquee-item{
+  font-family:'Syne',sans-serif;
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:rgba(201,168,76,0.3);
+  padding:0 2.5rem;border-right:1px solid var(--border);
+}
+.marquee-item.hi{color:var(--teal);}
+
+/* ── QUIZ SECTION ── */
+.quiz-section{
+  padding:6rem 2.8rem;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.quiz-section::before{
+  content:'';position:absolute;
+  top:-100px;right:-100px;
+  width:500px;height:500px;
+  background:radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+  pointer-events:none;
+}
+.section-label{
+  font-size:0.68rem;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--teal);
+  margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:0.8rem;
+}
+.section-label::before{content:'';display:block;width:28px;height:1px;background:var(--teal);}
+.section-title{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(2rem,4vw,3.2rem);
+  letter-spacing:-0.02em;color:var(--white);
+  margin-bottom:0.8rem;line-height:1.1;
+}
+.section-title em{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-weight:300;color:var(--gold);
+}
+.section-sub{
+  font-size:0.88rem;color:var(--text-dim);
+  line-height:1.8;max-width:500px;margin-bottom:3.5rem;
+}
+
+/* QUIZ SHELL */
+.quiz-shell{
+  max-width:780px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+.quiz-shell::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--teal),var(--gold));
+}
+.quiz-progress-bar{
+  height:2px;background:var(--bg3);
+  position:relative;overflow:hidden;
+}
+.quiz-progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--gold),var(--teal));
+  transition:width 0.4s ease;
+  width:0%;
+}
+.quiz-step{
+  padding:3rem;
+  display:none;
+}
+.quiz-step.active{display:block;}
+.quiz-step-num{
+  font-size:0.62rem;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:1.2rem;
+}
+.quiz-q{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:clamp(1.2rem,2.5vw,1.65rem);
+  line-height:1.25;color:var(--white);
+  margin-bottom:0.6rem;letter-spacing:-0.01em;
+}
+.quiz-hint{
+  font-size:0.8rem;color:var(--text-muted);
+  margin-bottom:2.2rem;line-height:1.6;
+}
+.quiz-options{
+  display:grid;gap:0.75rem;
+}
+.quiz-options.two-col{grid-template-columns:1fr 1fr;}
+.quiz-opt{
+  padding:1.1rem 1.4rem;
+  border:1px solid rgba(201,168,76,0.18);
+  background:transparent;
+  color:var(--text-dim);
+  font-family:'Inconsolata',monospace;
+  font-size:0.88rem;letter-spacing:0.04em;
+  text-align:left;cursor:crosshair;
+  transition:all 0.2s;
+  display:flex;align-items:center;gap:0.9rem;
+  position:relative;overflow:hidden;
+}
+.quiz-opt::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:0;background:var(--gold-glow);
+  transition:width 0.3s ease;
+}
+.quiz-opt:hover{
+  border-color:var(--gold);color:var(--white);
+}
+.quiz-opt:hover::before{width:100%;}
+.quiz-opt.selected{
+  border-color:var(--gold);
+  color:var(--white);
+  background:rgba(201,168,76,0.08);
+}
+.quiz-opt.selected::before{width:100%;}
+.opt-marker{
+  width:20px;height:20px;min-width:20px;
+  border:1px solid rgba(201,168,76,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;color:var(--gold);
+  transition:all 0.2s;position:relative;z-index:1;
+}
+.quiz-opt.selected .opt-marker{
+  background:var(--gold);color:var(--bg);
+  border-color:var(--gold);
+}
+.opt-text{position:relative;z-index:1;}
+.quiz-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:2.5rem;padding-top:1.8rem;
+  border-top:1px solid rgba(201,168,76,0.1);
+}
+.quiz-back{
+  font-family:'Inconsolata',monospace;
+  font-size:0.75rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text-muted);
+  background:none;border:none;cursor:crosshair;
+  transition:color 0.2s;
+}
+.quiz-back:hover{color:var(--text);}
+.quiz-next{
+  font-family:'Syne',sans-serif;
+  font-size:0.72rem;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:0.8rem 1.8rem;border:none;cursor:crosshair;
+  transition:all 0.2s;
+}
+.quiz-next:hover{background:var(--gold-light);}
+.quiz-next:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* RESULT PANEL */
+.quiz-result{
+  padding:3rem;display:none;
+}
+.quiz-result.active{display:block;}
+.result-badge{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:1.5rem;
+}
+.result-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--teal);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.6);}}
+.result-title{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(1.6rem,3vw,2.4rem);
+  letter-spacing:-0.02em;color:var(--white);
+  margin-bottom:1rem;
+}
+.result-title span{color:var(--gold);}
+.result-desc{
+  font-size:0.9rem;color:var(--text-dim);
+  line-height:1.85;max-width:540px;margin-bottom:2rem;
+}
+.result-package{
+  background:var(--bg3);border:1px solid var(--border);
+  padding:1.8rem;margin-bottom:2rem;
+  position:relative;
+}
+.result-package::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+}
+.pkg-label{
+  font-size:0.62rem;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:0.8rem;
+}
+.pkg-name{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:1.2rem;color:var(--white);margin-bottom:0.5rem;
+}
+.pkg-price{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:300;color:var(--gold);
+  margin-bottom:1rem;
+}
+.pkg-price span{font-size:0.9rem;color:var(--text-muted);}
+.pkg-includes{
+  list-style:none;display:grid;gap:0.5rem;
+}
+.pkg-includes li{
+  font-size:0.82rem;color:var(--text-dim);
+  display:flex;align-items:flex-start;gap:0.7rem;
+  line-height:1.5;
+}
+.pkg-includes li::before{
+  content:'→';color:var(--gold);
+  flex-shrink:0;margin-top:0.05rem;
+}
+.result-cta{
+  font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:1rem 2.4rem;border:none;cursor:crosshair;
+  transition:all 0.2s;display:inline-block;
+  width:100%;text-align:center;
+}
+.result-cta:hover{background:var(--gold-light);}
+.result-restart{
+  text-align:center;margin-top:1rem;
+  font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text-muted);cursor:crosshair;
+  background:none;border:none;transition:color 0.2s;
+  width:100%;
+}
+.result-restart:hover{color:var(--text);}
+
+/* ── WHY US ── */
+.why-section{
+  padding:6rem 2.8rem;
+  border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr;gap:5rem;
+  align-items:start;
+}
+.why-left{}
+.why-statement{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:300;line-height:1.35;
+  color:var(--white);margin-top:1.5rem;
+}
+.why-statement em{font-style:italic;color:var(--gold);}
+.why-right{padding-top:0.5rem;}
+.why-cards{display:grid;gap:1px;background:var(--border);}
+.why-card{
+  padding:2rem;background:var(--bg);
+  transition:background 0.2s;
+}
+.why-card:hover{background:var(--bg2);}
+.why-card-num{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:0.65rem;letter-spacing:0.2em;
+  color:var(--gold-dim);margin-bottom:0.8rem;
+}
+.why-card-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:1rem;color:var(--white);margin-bottom:0.5rem;
+}
+.why-card-body{
+  font-size:0.82rem;color:var(--text-dim);line-height:1.75;
+}
+
+/* ── PROCESS ── */
+.process-section{
+  padding:6rem 2.8rem;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.process-section::before{
+  content:'';position:absolute;bottom:-80px;left:-80px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(46,196,182,0.055) 0%,transparent 70%);
+  pointer-events:none;
+}
+.process-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+  margin-top:3.5rem;
+}
+.process-step{
+  background:var(--bg);padding:2.2rem 1.8rem;
+  position:relative;overflow:hidden;
+  transition:background 0.25s;
+}
+.process-step:hover{background:var(--bg2);}
+.process-step::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  opacity:0;transition:opacity 0.25s;
+}
+.process-step:hover::after{opacity:1;}
+.step-num{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:3.5rem;line-height:1;
+  color:rgba(201,168,76,0.08);
+  margin-bottom:1.2rem;letter-spacing:-0.02em;
+}
+.step-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:0.9rem;color:var(--white);
+  margin-bottom:0.6rem;text-transform:uppercase;
+  letter-spacing:0.05em;
+}
+.step-body{
+  font-size:0.8rem;color:var(--text-muted);line-height:1.75;
+}
+
+/* ── PRICING TEASE ── */
+.pricing-section{
+  padding:6rem 2.8rem;
+  border-bottom:1px solid var(--border);
+}
+.pricing-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  margin-top:3.5rem;
+}
+.pricing-card{
+  background:var(--bg);padding:2.5rem 2rem;
+  position:relative;overflow:hidden;
+  transition:background 0.25s;
+}
+.pricing-card.featured{background:var(--bg2);}
+.pricing-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:var(--border);transition:background 0.25s;
+}
+.pricing-card.featured::before{background:linear-gradient(90deg,var(--gold),var(--teal));}
+.pricing-card:hover{background:var(--bg3);}
+.card-tag{
+  font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:1rem;
+}
+.card-tag.gold{color:var(--gold);}
+.card-name{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:1.3rem;color:var(--white);margin-bottom:0.5rem;
+}
+.card-from{
+  font-size:0.72rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:0.3rem;
+}
+.card-price{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.8rem;font-weight:300;
+  color:var(--gold);line-height:1;margin-bottom:0.4rem;
+}
+.card-price-note{
+  font-size:0.75rem;color:var(--text-muted);margin-bottom:1.8rem;
+}
+.card-features{list-style:none;display:grid;gap:0.6rem;margin-bottom:2rem;}
+.card-features li{
+  font-size:0.82rem;color:var(--text-dim);
+  display:flex;align-items:flex-start;gap:0.7rem;line-height:1.5;
+}
+.card-features li::before{content:'→';color:var(--gold);flex-shrink:0;}
+.card-blur{
+  font-size:0.82rem;color:var(--text-muted);
+  display:flex;align-items:center;gap:0.5rem;
+  margin-bottom:2rem;
+  filter:blur(3.5px);user-select:none;
+}
+.card-blur::before{content:'◈';color:var(--gold-dim);filter:blur(0);}
+.card-apply{
+  font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  width:100%;padding:0.85rem;border:none;cursor:crosshair;
+  transition:all 0.2s;
+}
+.card-apply.outline{
+  background:transparent;border:1px solid var(--border);color:var(--text-dim);
+}
+.card-apply.outline:hover{border-color:var(--gold);color:var(--gold);}
+.card-apply.solid{background:var(--gold);color:var(--bg);}
+.card-apply.solid:hover{background:var(--gold-light);}
+
+/* ── OBJECTION ── */
+.objection-section{
+  padding:5rem 2.8rem;
+  border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;
+}
+.objection-left{
+  padding:3rem;
+  border:1px solid var(--border);
+  position:relative;background:var(--bg2);
+}
+.objection-left::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--red),transparent);
+}
+.obj-tag{
+  font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--red);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.6rem;
+}
+.obj-tag::before{content:'';width:20px;height:1px;background:var(--red);}
+.obj-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;font-weight:300;font-style:italic;
+  color:var(--white);line-height:1.5;margin-bottom:1.2rem;
+}
+.obj-answer{
+  font-size:0.85rem;color:var(--text-dim);line-height:1.8;
+}
+.objection-right{}
+.diff-items{display:grid;gap:1.5rem;}
+.diff-item{
+  display:flex;gap:1.2rem;align-items:flex-start;
+  padding-bottom:1.5rem;
+  border-bottom:1px solid rgba(201,168,76,0.07);
+}
+.diff-item:last-child{border-bottom:none;padding-bottom:0;}
+.diff-icon{
+  width:36px;height:36px;min-width:36px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;color:var(--gold);
+}
+.diff-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:0.9rem;color:var(--white);margin-bottom:0.3rem;
+}
+.diff-body{font-size:0.8rem;color:var(--text-muted);line-height:1.7;}
+
+/* ── APPLICATION FORM ── */
+.apply-section{
+  padding:7rem 2.8rem;
+  position:relative;overflow:hidden;
+}
+.apply-section::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:600px;height:600px;
+  background:radial-gradient(circle,var(--gold-glow) 0%,transparent 70%);
+  pointer-events:none;
+}
+.apply-grid{
+  display:grid;grid-template-columns:1fr 1.4fr;gap:5rem;align-items:start;
+}
+.apply-left{}
+.apply-promise{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.6rem,3vw,2.4rem);
+  font-weight:300;line-height:1.4;
+  color:var(--white);margin-top:1.5rem;margin-bottom:2rem;
+}
+.apply-promise em{font-style:italic;color:var(--gold);}
+.apply-meta{display:grid;gap:1rem;margin-bottom:2.5rem;}
+.apply-meta-item{
+  display:flex;align-items:flex-start;gap:0.8rem;
+  font-size:0.82rem;color:var(--text-dim);line-height:1.6;
+}
+.apply-meta-item::before{content:'◈';color:var(--gold);flex-shrink:0;margin-top:0.1rem;}
+.apply-disclaimer{
+  font-size:0.72rem;color:var(--text-muted);
+  line-height:1.7;padding-top:1.5rem;
+  border-top:1px solid rgba(201,168,76,0.08);
+}
+
+/* FORM */
+.form-shell{
+  background:var(--bg2);border:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.form-shell::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--teal),var(--gold));
+}
+.form-steps{display:flex;border-bottom:1px solid var(--border);}
+.form-tab{
+  flex:1;padding:1.1rem;text-align:center;
+  font-family:'Syne',sans-serif;font-size:0.65rem;
+  font-weight:700;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--text-muted);border-right:1px solid var(--border);
+  transition:all 0.2s;position:relative;
+}
+.form-tab:last-child{border-right:none;}
+.form-tab.active{color:var(--gold);background:rgba(201,168,76,0.04);}
+.form-tab.active::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:var(--gold);
+}
+.form-tab.done{color:var(--teal);}
+.form-body{padding:2.5rem;}
+.form-step{display:none;}
+.form-step.active{display:block;}
+.form-group{margin-bottom:1.5rem;}
+.form-label{
+  display:block;font-size:0.68rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:0.6rem;
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:0.85rem 1rem;
+  background:var(--bg3);border:1px solid rgba(201,168,76,0.15);
+  color:var(--text);font-family:'Inconsolata',monospace;
+  font-size:0.88rem;outline:none;
+  transition:border-color 0.2s;
+  appearance:none;-webkit-appearance:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--gold);
+}
+.form-textarea{resize:vertical;min-height:100px;line-height:1.6;}
+.form-select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%23C9A84C'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 1rem center;
+  padding-right:2.5rem;
+}
+.form-select option{background:var(--bg3);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:2rem;padding-top:1.8rem;
+  border-top:1px solid rgba(201,168,76,0.08);
+}
+.form-back{
+  font-family:'Inconsolata',monospace;font-size:0.75rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text-muted);background:none;border:none;cursor:crosshair;
+  transition:color 0.2s;
+}
+.form-back:hover{color:var(--text);}
+.form-next{
+  font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:0.85rem 2rem;border:none;cursor:crosshair;
+  transition:all 0.2s;
+}
+.form-next:hover{background:var(--gold-light);}
+.form-submit{
+  font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:1rem 2.5rem;border:none;cursor:crosshair;
+  transition:all 0.2s;width:100%;
+}
+.form-submit:hover{background:var(--gold-light);}
+
+/* SUCCESS */
+.form-success{
+  padding:3rem;text-align:center;display:none;
+}
+.form-success.active{display:block;}
+.success-icon{
+  width:56px;height:56px;border:1px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.5rem;font-size:1.2rem;color:var(--gold);
+}
+.success-title{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:1.5rem;color:var(--white);margin-bottom:0.8rem;
+}
+.success-body{font-size:0.88rem;color:var(--text-dim);line-height:1.8;}
+
+/* ── FOOTER ── */
+footer{
+  padding:3rem 2.8rem;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.footer-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem;font-weight:300;letter-spacing:0.14em;
+}
+.footer-logo span{color:var(--gold);}
+.footer-copy{
+  font-size:0.7rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* ── DATA CALLOUT ── */
+.data-section{padding:5rem 2.8rem;border-bottom:1px solid var(--border);background:var(--bg2);position:relative;overflow:hidden;}
+.data-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(46,196,182,0.04) 0%,transparent 70%);pointer-events:none;}
+.data-inner{max-width:960px;margin:0 auto;position:relative;z-index:1;}
+.data-headline{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.4rem,3vw,2.4rem);letter-spacing:-0.02em;color:var(--white);text-align:center;line-height:1.25;margin-bottom:3.5rem;}
+.data-headline .red{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;color:var(--red);}
+.data-headline .gold{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;color:var(--gold);}
+.data-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:2rem;align-items:center;}
+.data-card{background:var(--bg3);padding:2.5rem;}
+.data-card.them{border:1px solid rgba(192,57,43,0.2);}
+.data-card.us{border:1px solid rgba(201,168,76,0.2);position:relative;}
+.data-card.us::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.data-card-tag{font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:0.6rem;}
+.data-card-tag .tag-line{width:16px;height:1px;display:block;flex-shrink:0;}
+.data-card.them .data-card-tag{color:var(--red);}
+.data-card.them .tag-line{background:var(--red);}
+.data-card.us .data-card-tag{color:var(--teal);}
+.data-card.us .tag-line{background:var(--teal);}
+.data-num{font-family:'Syne',sans-serif;font-weight:800;font-size:4rem;line-height:1;letter-spacing:-0.02em;margin-bottom:0.5rem;}
+.data-card.them .data-num{color:rgba(192,57,43,0.6);}
+.data-card.us .data-num{color:var(--gold);}
+.data-body{font-size:0.8rem;line-height:1.7;}
+.data-card.them .data-body{color:var(--text-muted);}
+.data-card.us .data-body{color:var(--text-dim);}
+.data-vs{text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;font-style:italic;color:var(--text-muted);}
+.data-cta{text-align:center;margin-top:3rem;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .data-section{padding:4rem 1.5rem;}
+  .data-grid{grid-template-columns:1fr;gap:0;}
+  .data-vs{padding:1.2rem 0;font-size:1.4rem;}
+  .data-card{padding:2rem 1.5rem;}
+  nav{padding:1rem 1.5rem;}
+  .nav-right{display:none;}
+  .nav-buttons{display:none;}
+  .nav-hamburger{display:flex;}
+  .hero{padding:7rem 1.5rem 4rem;}
+  .hero-corner-stat{display:none;}
+  .quiz-section,.why-section,.process-section,.pricing-section,
+  .objection-section,.apply-section{padding:4rem 1.5rem;}
+  .why-section,.objection-section,.apply-grid{grid-template-columns:1fr;gap:3rem;}
+  .process-grid{grid-template-columns:1fr 1fr;}
+  .pricing-cards{grid-template-columns:1fr;}
+  .quiz-options.two-col{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .footer{padding:2rem 1.5rem;flex-direction:column;gap:1rem;text-align:center;}
+}
+@media(hover:none),(pointer:coarse){
+  button,a,.quiz-opt{cursor:auto;}
+}
+@media(max-width:600px){
+  .hero h1{font-size:2.6rem;}
+  .process-grid{grid-template-columns:1fr;}
+  .form-steps{display:none;}
+  .quiz-shell,.form-shell{border-left:none;border-right:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="#" onclick="closeDrawer();document.getElementById('how').scrollIntoView({behavior:'smooth'});">How It Works</a>
+  <a href="#" onclick="closeDrawer();document.getElementById('pricing').scrollIntoView({behavior:'smooth'});">Pricing</a>
+  <div class="nav-drawer-buttons">
+    <a href="#" class="nav-drawer-btn nav-drawer-btn-apply" onclick="closeDrawer();document.getElementById('apply').scrollIntoView({behavior:'smooth'});">Apply Now</a>
+    <a href="/client-portal.html" class="nav-drawer-btn nav-drawer-btn-portal">Client Portal</a>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Moon <span>Marketing</span></a>
+  <div class="nav-right">
+    <a href="#" class="nav-link" onclick="event.preventDefault();document.getElementById('how').scrollIntoView({behavior:'smooth'});">How It Works</a>
+    <a href="#" class="nav-link" onclick="event.preventDefault();document.getElementById('pricing').scrollIntoView({behavior:'smooth'});">Pricing</a>
+  </div>
+  <div class="nav-buttons">
+    <a href="#" class="nav-cta" onclick="event.preventDefault();document.getElementById('apply').scrollIntoView({behavior:'smooth'});">Apply Now</a>
+    <a href="/client-portal.html" class="nav-cta nav-cta-portal">Client Portal</a>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-tag">Meta Ad Creatives & Management</div>
+  <h1>
+    Stop Burning<br>
+    Budget on <em>Ads</em><br>
+    <span class="dim">That Don't Convert.</span>
+  </h1>
+  <p class="hero-sub">
+    We build, test, and scale scroll-stopping Meta ad creatives for SMBs.
+    Tell us where you're at — we'll tell you exactly what you need.
+  </p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('quiz').scrollIntoView({behavior:'smooth'});">Find My Strategy →</button>
+    <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'});">See how it works</button>
+  </div>
+  <div class="hero-corner-stat">
+    <div class="corner-num">20+</div>
+    <div class="corner-label">Data points per month</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Meta Ads</span>
+    <span class="marquee-item hi">Facebook & Instagram</span>
+    <span class="marquee-item">Ad Creatives</span>
+    <span class="marquee-item">Video Production</span>
+    <span class="marquee-item hi">Split Testing</span>
+    <span class="marquee-item">Variation Testing</span>
+    <span class="marquee-item">Ads Management</span>
+    <span class="marquee-item hi">SMB Growth</span>
+    <span class="marquee-item">High-Converting Creatives</span>
+    <span class="marquee-item">Performance Creative</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">Meta Ads</span>
+    <span class="marquee-item hi">Facebook & Instagram</span>
+    <span class="marquee-item">Ad Creatives</span>
+    <span class="marquee-item">Video Production</span>
+    <span class="marquee-item hi">Split Testing</span>
+    <span class="marquee-item">Variation Testing</span>
+    <span class="marquee-item">Ads Management</span>
+    <span class="marquee-item hi">SMB Growth</span>
+    <span class="marquee-item">High-Converting Creatives</span>
+    <span class="marquee-item">Performance Creative</span>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<section class="quiz-section" id="quiz">
+  <div class="section-label">The Strategy Finder</div>
+  <h2 class="section-title">Find Your <em>Perfect</em> Package</h2>
+  <p class="section-sub">3 quick questions. No fluff. We'll match you to exactly what your business needs — and nothing you don't.</p>
+
+  <div class="quiz-shell">
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgress"></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="quiz-step active" id="qStep1">
+      <div class="quiz-step-num">Question 01 / 03</div>
+      <div class="quiz-q">What's your biggest problem with ads right now?</div>
+      <div class="quiz-hint">Don't sugarcoat it. We've heard it all.</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-q="1" data-v="no-creatives" onclick="selectOpt(this)">
+          <span class="opt-marker">A</span>
+          <span class="opt-text">We don't have good video content — our ads look cheap</span>
+        </button>
+        <button class="quiz-opt" data-q="1" data-v="running-blind" onclick="selectOpt(this)">
+          <span class="opt-marker">B</span>
+          <span class="opt-text">We're running ads but don't know what's actually working</span>
+        </button>
+        <button class="quiz-opt" data-q="1" data-v="no-time" onclick="selectOpt(this)">
+          <span class="opt-marker">C</span>
+          <span class="opt-text">We have no time to manage or optimise — it's chaos</span>
+        </button>
+        <button class="quiz-opt" data-q="1" data-v="not-started" onclick="selectOpt(this)">
+          <span class="opt-marker">D</span>
+          <span class="opt-text">We haven't started with paid ads yet and don't know where to begin</span>
+        </button>
+      </div>
+      <div class="quiz-nav">
+        <span></span>
+        <button class="quiz-next" id="qNext1" onclick="nextStep(1)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="quiz-step" id="qStep2">
+      <div class="quiz-step-num">Question 02 / 03</div>
+      <div class="quiz-q">How much are you currently spending on ads per month?</div>
+      <div class="quiz-hint">Be honest — it helps us give you the right recommendation.</div>
+      <div class="quiz-options two-col">
+        <button class="quiz-opt" data-q="2" data-v="none" onclick="selectOpt(this)">
+          <span class="opt-marker">A</span>
+          <span class="opt-text">$0 — not yet</span>
+        </button>
+        <button class="quiz-opt" data-q="2" data-v="low" onclick="selectOpt(this)">
+          <span class="opt-marker">B</span>
+          <span class="opt-text">Under $2k/mo</span>
+        </button>
+        <button class="quiz-opt" data-q="2" data-v="mid" onclick="selectOpt(this)">
+          <span class="opt-marker">C</span>
+          <span class="opt-text">$2k – $10k/mo</span>
+        </button>
+        <button class="quiz-opt" data-q="2" data-v="high" onclick="selectOpt(this)">
+          <span class="opt-marker">D</span>
+          <span class="opt-text">$10k+/mo</span>
+        </button>
+      </div>
+      <div class="quiz-nav">
+        <button class="quiz-back" onclick="prevStep(2)">← Back</button>
+        <button class="quiz-next" id="qNext2" onclick="nextStep(2)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="quiz-step" id="qStep3">
+      <div class="quiz-step-num">Question 03 / 03</div>
+      <div class="quiz-q">What do you actually need most right now?</div>
+      <div class="quiz-hint">Pick the one that hits hardest.</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-q="3" data-v="creatives-only" onclick="selectOpt(this)">
+          <span class="opt-marker">A</span>
+          <span class="opt-text">Just great video creatives — I'll manage the ads myself</span>
+        </button>
+        <button class="quiz-opt" data-q="3" data-v="creatives-plus" onclick="selectOpt(this)">
+          <span class="opt-marker">B</span>
+          <span class="opt-text">Creatives + variations to test — I want to find what works</span>
+        </button>
+        <button class="quiz-opt" data-q="3" data-v="full-service" onclick="selectOpt(this)">
+          <span class="opt-marker">C</span>
+          <span class="opt-text">Full creative + management — I want it completely handled</span>
+        </button>
+      </div>
+      <div class="quiz-nav">
+        <button class="quiz-back" onclick="prevStep(3)">← Back</button>
+        <button class="quiz-next" id="qNext3" onclick="showResult()" disabled>See My Strategy →</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="quiz-result" id="quizResult">
+      <div class="result-badge"><div class="result-badge-dot"></div> Your Strategy</div>
+      <div class="result-title" id="resultTitle">The <span>Full Stack</span> Package</div>
+      <p class="result-desc" id="resultDesc">Based on your answers, you need creatives that stop the scroll AND a backend manager who knows what to do with them. Here's what we'd build for you.</p>
+      <div class="result-package">
+        <div class="pkg-label">Recommended Package</div>
+        <div class="pkg-name" id="pkgName">Creative + Management</div>
+        <div class="pkg-price" id="pkgPrice">$480 <span>/ starting from</span></div>
+        <ul class="pkg-includes" id="pkgIncludes">
+          <li>1 base video ad (professionally edited)</li>
+          <li>4 variations for split testing</li>
+          <li>Full Meta ads management on the backend</li>
+          <li>Expand any time — add more videos or variations</li>
+        </ul>
+      </div>
+      <button class="result-cta" onclick="scrollToApply()">Apply For This Package →</button>
+      <button class="result-restart" onclick="restartQuiz()">← Retake the quiz</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why-section" id="why">
+  <div class="why-left">
+    <div class="section-label">Why Moon Marketing</div>
+    <div class="why-statement">
+      We don't sell you a<br>
+      retainer and <em>disappear.</em><br>
+      We're in the backend<br>
+      making it work.
+    </div>
+  </div>
+  <div class="why-right">
+    <div class="why-cards">
+      <div class="why-card">
+        <div class="why-card-num">01 ——</div>
+        <div class="why-card-title">Creative-First Thinking</div>
+        <div class="why-card-body">Most agencies bolt on creatives as an afterthought. We start there. Every ad starts with a scroll-stopping video built to convert — before we touch the ad account.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">02 ——</div>
+        <div class="why-card-title">Variation Testing That Actually Finds Winners</div>
+        <div class="why-card-body">One video isn't enough. We produce 4 variations per base creative — different hooks, edits, formats — so you find what your audience responds to, fast.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">03 ——</div>
+        <div class="why-card-title">More Data. Better Decisions.</div>
+        <div class="why-card-body">The average agency gives you 4–5 data points a month. We deliver 20+. More variations means faster answers — what's working, what isn't, and where your budget should go.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">04 ——</div>
+        <div class="why-card-title">Real Accountability</div>
+        <div class="why-card-body">We know you've been burned. So we don't hide behind vanity metrics. You'll see exactly what's running, what's working, and what we're doing about what isn't.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process-section" id="how">
+  <div class="section-label">The Process</div>
+  <h2 class="section-title">From <em>Application</em> to Live Ads</h2>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="step-num">01</div>
+      <div class="step-title">You Apply</div>
+      <div class="step-body">Fill out our short application. No fluff — we ask what we need to know to confirm it's a fit. Takes less than 3 minutes.</div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">02</div>
+      <div class="step-title">We Brief & Build</div>
+      <div class="step-body">Once approved, we put together a creative brief, produce your base video ad, and edit it into your 4 variations.</div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">03</div>
+      <div class="step-title">We Launch & Test</div>
+      <div class="step-body">We push your ads live on Meta and start gathering real data. No guessing — every variation is tracked from day one.</div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">04</div>
+      <div class="step-title">We Scale What Works</div>
+      <div class="step-body">Winners get scaled. Losers get cut. We manage the backend so your budget goes to what's actually converting — and we keep improving.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA CALLOUT -->
+<section class="data-section">
+  <div class="data-inner">
+    <div class="section-label" style="justify-content:center;text-align:center;margin-bottom:1.5rem;">The Data Difference</div>
+    <div class="data-headline">
+      Most agencies give you <span class="red">4–5 data points</span> a month.<br>We give you <span class="gold">20 or more.</span>
+    </div>
+    <div class="data-grid">
+      <div class="data-card them">
+        <div class="data-card-tag"><span class="tag-line"></span>Average Agency</div>
+        <div class="data-num">4–5</div>
+        <div class="data-body">video creatives per month. One angle, one hook, one shot at finding what works. When it doesn't, you wait another month.</div>
+      </div>
+      <div class="data-vs">vs</div>
+      <div class="data-card us">
+        <div class="data-card-tag"><span class="tag-line"></span>Moon Marketing</div>
+        <div class="data-num">20+</div>
+        <div class="data-body">variations tested every month. Different hooks, edits, formats — the algorithm has real signal to optimise against, and you know what works in weeks.</div>
+      </div>
+    </div>
+    <div class="data-cta">
+      <a href="#apply" class="btn-primary">Get 20+ Data Points Working For You →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING TEASE -->
+<section class="pricing-section" id="pricing">
+  <div class="section-label">Investment</div>
+  <h2 class="section-title">Transparent Starting Points.<br><em>Everything Else on the Call.</em></h2>
+  <div class="pricing-cards">
+    <div class="pricing-card">
+      <div class="card-tag">Creatives Focus</div>
+      <div class="card-name">Creative + Variations</div>
+      <div class="card-from">Starting from</div>
+      <div class="card-price">$520<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">1 base video + 4 tested variations</div>
+      <ul class="card-features">
+        <li>1 professionally edited base video</li>
+        <li>4 variations — hooks, pacing, formats</li>
+        <li>Built for Meta: Feed, Reels & Stories</li>
+        <li>20+ data points per month vs. industry avg of 4–5</li>
+      </ul>
+      <div class="card-blur">+ Full backend management available</div>
+      <button class="card-apply outline" onclick="scrollToApply()">Apply →</button>
+    </div>
+    <div class="pricing-card featured">
+      <div class="card-tag gold">Most Popular</div>
+      <div class="card-name">Creative + Management</div>
+      <div class="card-from">Starting from</div>
+      <div class="card-price">$720<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">creatives + full backend ads management</div>
+      <ul class="card-features">
+        <li>Everything in Creative + Variations</li>
+        <li>Full Meta ads management</li>
+        <li>Ongoing optimisation & winner scaling</li>
+        <li>Monthly reporting — no black boxes</li>
+      </ul>
+      <div class="card-blur">+ Scale with additional video packages</div>
+      <button class="card-apply solid" onclick="scrollToApply()">Apply →</button>
+    </div>
+    <div class="pricing-card">
+      <div class="card-tag">Growth</div>
+      <div class="card-name">Scale Package</div>
+      <div class="card-from">Starting from</div>
+      <div class="card-price">$1,200<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">high-volume creative + full management</div>
+      <ul class="card-features">
+        <li>Multiple base videos per week</li>
+        <li>Full variation suite — maximum data</li>
+        <li>Priority production & turnaround</li>
+        <li>Dedicated strategy & reporting cadence</li>
+      </ul>
+      <div class="card-blur">+ Custom volume & strategy pricing</div>
+      <button class="card-apply outline" onclick="scrollToApply()">Apply →</button>
+    </div>
+  </div>
+</section>
+
+<!-- OBJECTION -->
+<section class="objection-section">
+  <div class="objection-left">
+    <div class="obj-tag">We Hear You</div>
+    <div class="obj-quote">"We've been burned by agencies before. Why would this be any different?"</div>
+    <p class="obj-answer">We get it. You've paid for promises that evaporated into vague reports and excuses. Moon Marketing is built differently — we start with the creative (the thing most agencies skip) and our backend management is transparent by design. You see exactly what's running, what's not, and why. While most agencies hand you 4 or 5 data points a month and call it a strategy, we're producing 20+ variations so decisions are driven by real performance — not guesswork.</p>
+  </div>
+  <div class="objection-right">
+    <div class="section-label" style="margin-bottom:1.5rem;">What Makes Us Different</div>
+    <div class="diff-items">
+      <div class="diff-item">
+        <div class="diff-icon">▶</div>
+        <div>
+          <div class="diff-title">20+ Data Points a Month</div>
+          <div class="diff-body">The average agency runs 4–5 videos and calls it testing. We produce 20+ variations so the algorithm has real data to work with — and you get real answers, fast.</div>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-icon">◈</div>
+        <div>
+          <div class="diff-title">Creative-first, always</div>
+          <div class="diff-body">The ad creative IS the biggest lever in your Meta campaigns. We obsess over it instead of treating it as an afterthought.</div>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-icon">→</div>
+        <div>
+          <div class="diff-title">Transparent backend access</div>
+          <div class="diff-body">You always know what's live, what's performing, and what we're doing with your budget. No black boxes.</div>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-icon">+</div>
+        <div>
+          <div class="diff-title">Grow at your own pace</div>
+          <div class="diff-body">Add more videos, more variations, more management as your confidence and results build. It's your roadmap.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATION FORM -->
+<section class="apply-section" id="apply">
+  <div class="apply-grid">
+    <div class="apply-left">
+      <div class="section-label">Apply Now</div>
+      <div class="apply-promise">
+        Let's see if we're<br>
+        the right fit for<br>
+        <em>your business.</em>
+      </div>
+      <div class="apply-meta">
+        <div class="apply-meta-item">Takes less than 3 minutes to complete</div>
+        <div class="apply-meta-item">We review every application personally</div>
+        <div class="apply-meta-item">You'll hear back within 1 business day</div>
+        <div class="apply-meta-item">No obligation — just a conversation</div>
+      </div>
+      <div class="apply-disclaimer">
+        We only take on businesses we're confident we can get results for. If it's not a fit, we'll tell you — and point you in the right direction.
+      </div>
+    </div>
+    <div class="apply-right">
+      <div class="form-shell">
+        <div class="form-steps">
+          <div class="form-tab active" id="ftab1">01 — You</div>
+          <div class="form-tab" id="ftab2">02 — Business</div>
+          <div class="form-tab" id="ftab3">03 — Ads</div>
+        </div>
+
+        <div class="form-body">
+          <!-- Step 1: You -->
+          <div class="form-step active" id="fStep1">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-input" id="fname" placeholder="Alex">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-input" id="lname" placeholder="Smith">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="femail" placeholder="alex@yourbusiness.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" id="fphone" placeholder="+61 400 000 000">
+            </div>
+            <div class="form-nav">
+              <span></span>
+              <button class="form-next" onclick="nextFormStep(1)">Next →</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Business -->
+          <div class="form-step" id="fStep2">
+            <div class="form-group">
+              <label class="form-label">Business Name</label>
+              <input type="text" class="form-input" id="fbiz" placeholder="Your Business Pty Ltd">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Industry / Niche</label>
+              <select class="form-select" id="findustry">
+                <option value="">Select your industry…</option>
+                <option>eCommerce / DTC</option>
+                <option>Local Services (trades, health, etc.)</option>
+                <option>Hospitality / Food & Beverage</option>
+                <option>Professional Services (B2B)</option>
+                <option>Retail</option>
+                <option>Real Estate</option>
+                <option>Fitness / Wellness</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">How many staff?</label>
+              <select class="form-select" id="fstaff">
+                <option value="">Select…</option>
+                <option>1–5 (solo or micro)</option>
+                <option>5–20</option>
+                <option>20–50</option>
+                <option>50+</option>
+              </select>
+            </div>
+            <div class="form-nav">
+              <button class="form-back" onclick="prevFormStep(2)">← Back</button>
+              <button class="form-next" onclick="nextFormStep(2)">Next →</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Ads -->
+          <div class="form-step" id="fStep3">
+            <div class="form-group">
+              <label class="form-label">Current monthly ad spend (AUD)</label>
+              <select class="form-select" id="fspend">
+                <option value="">Select…</option>
+                <option>$0 — not running ads yet</option>
+                <option>Under $1,000/mo</option>
+                <option>$1,000 – $5,000/mo</option>
+                <option>$5,000 – $15,000/mo</option>
+                <option>$15,000+/mo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Which package are you interested in?</label>
+              <select class="form-select" id="fpkg">
+                <option value="">Select…</option>
+                <option>Creative + Variations ($520/wk)</option>
+                <option>Creative + Management ($720/wk)</option>
+                <option>Scale Package ($1,200/wk)</option>
+                <option>Not sure — recommend something</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Anything else we should know?</label>
+              <textarea class="form-textarea" id="fnotes" placeholder="Tell us about your goals, past ad experience, or anything you want us to know…"></textarea>
+            </div>
+            <div class="form-nav">
+              <button class="form-back" onclick="prevFormStep(3)">← Back</button>
+              <button class="form-submit" onclick="submitForm()">Submit Application →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success -->
+        <div class="form-success" id="formSuccess">
+          <div class="success-icon">✓</div>
+          <div class="success-title">Application Received.</div>
+          <p class="success-body">We'll review your details and get back to you within 1 business day. Check your inbox — and in the meantime, keep running those ads badly so there's plenty of room for us to improve things.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Moon <span>Marketing</span></div>
+  <div class="footer-copy">© 2026 Moon Marketing — Meta Ad Creatives & Management</div>
+</footer>
+
+<script>
+// ── CURSOR ──
+const cur = document.getElementById('cur');
+const ring = document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.transform=`translate(${mx-4}px,${my-4}px)`;
+});
+function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.transform=`translate(${rx-16}px,${ry-16}px)`;
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('button,a,.quiz-opt').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='52px';ring.style.height='52px';ring.style.borderColor='rgba(201,168,76,0.8)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,168,76,0.5)';});
+});
+
+// ── NAV SCROLL ──
+window.addEventListener('scroll',()=>{
+  document.querySelector('nav').style.background=
+    window.scrollY>60?'rgba(8,10,14,0.97)':'rgba(8,10,14,0.9)';
+});
+
+// ── QUIZ LOGIC ──
+const answers={};
+function selectOpt(btn){
+  const q=btn.dataset.q;
+  document.querySelectorAll(`.quiz-opt[data-q="${q}"]`).forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers[q]=btn.dataset.v;
+  const nextBtn=document.getElementById(`qNext${q}`);
+  if(nextBtn) nextBtn.disabled=false;
+}
+function nextStep(step){
+  document.getElementById(`qStep${step}`).classList.remove('active');
+  document.getElementById(`qStep${step+1}`).classList.add('active');
+  updateProgress(step+1);
+}
+function prevStep(step){
+  document.getElementById(`qStep${step}`).classList.remove('active');
+  document.getElementById(`qStep${step-1}`).classList.add('active');
+  updateProgress(step-1);
+}
+function updateProgress(step){
+  document.getElementById('quizProgress').style.width=(step/3*100)+'%';
+}
+function showResult(){
+  const a1=answers['1'],a3=answers['3'];
+  let title,desc,pkg,price,includes;
+  if(a3==='creatives-only'){
+    title='Creative + <span>Variation Testing</span>';
+    desc="You want great ads built — and you'll take it from there. We produce a base video plus 4 variations weekly, giving you 20+ data points a month. That's the difference between guessing and knowing.";
+    pkg='Creative + Variations';price='$520 <span>/ per week, starting from</span>';
+    includes=['1 professionally edited base video ad','4 variations — hooks, pacing & formats','20+ data points/month vs. industry avg of 4–5','Built for Meta: Feed, Reels & Stories'];
+  } else if(a3==='creatives-plus'){
+    title='Creative + <span>Variation Testing</span>';
+    desc="You know one creative isn't enough. Smart move. We produce 4+ variations every week — that's 20+ data points a month while the average agency gives you 4 or 5. You'll know what works in weeks, not quarters.";
+    pkg='Creative + 4 Variations';price='$520 <span>/ per week, starting from</span>';
+    includes=['1 base video ad per week','4 variations for split testing','20+ data points/month — industry avg is 4–5','Different hooks, pacing & format edits'];
+  } else {
+    title='The <span>Full Stack</span> Package';
+    desc="You need great creatives AND someone who knows what to do with them. We build the ads, run 20+ variations a month, and manage the backend — while most agencies are still waiting on their 5th data point.";
+    pkg='Creative + Variations + Management';price='$720 <span>/ per week, starting from</span>';
+    includes=['1 base video + 4 variations per week','Full Meta ads management','20+ data points monthly — maximum signal','Backend optimisation & winner scaling','Monthly reporting — no black boxes'];
+  }
+  document.getElementById('resultTitle').innerHTML=title;
+  document.getElementById('resultDesc').textContent=desc;
+  document.getElementById('pkgName').textContent=pkg;
+  document.getElementById('pkgPrice').innerHTML=price;
+  document.getElementById('pkgIncludes').innerHTML=includes.map(i=>`<li>${i}</li>`).join('');
+  document.querySelectorAll('.quiz-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('quizResult').classList.add('active');
+  document.getElementById('quizProgress').style.width='100%';
+}
+function restartQuiz(){
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.quiz-next').forEach(b=>b.disabled=true);
+  document.getElementById('quizResult').classList.remove('active');
+  document.getElementById('qStep1').classList.add('active');
+  document.getElementById('quizProgress').style.width='0%';
+}
+function scrollToApply(){
+  document.getElementById('apply').scrollIntoView({behavior:'smooth'});
+}
+
+// ── FORM LOGIC ──
+let formStep=1;
+function nextFormStep(step){
+  if(step===1){
+    const f=document.getElementById('fname').value;
+    const e=document.getElementById('femail').value;
+    if(!f||!e){alert('Please fill in your name and email.');return;}
+  }
+  if(step===2){
+    const b=document.getElementById('fbiz').value;
+    if(!b){alert('Please enter your business name.');return;}
+  }
+  document.getElementById(`fStep${step}`).classList.remove('active');
+  document.getElementById(`fStep${step+1}`).classList.add('active');
+  document.getElementById(`ftab${step}`).classList.remove('active');
+  document.getElementById(`ftab${step}`).classList.add('done');
+  document.getElementById(`ftab${step+1}`).classList.add('active');
+  formStep=step+1;
+}
+function prevFormStep(step){
+  document.getElementById(`fStep${step}`).classList.remove('active');
+  document.getElementById(`fStep${step-1}`).classList.add('active');
+  document.getElementById(`ftab${step}`).classList.remove('active');
+  document.getElementById(`ftab${step-1}`).classList.remove('done');
+  document.getElementById(`ftab${step-1}`).classList.add('active');
+  formStep=step-1;
+}
+function submitForm(){
+  const spend = document.getElementById('fspend').value;
+  const pkg   = document.getElementById('fpkg').value;
+  if(!spend || !pkg){ alert('Please fill in your ad spend and package preference.'); return; }
+
+  const submitBtn = document.querySelector('.form-submit');
+  submitBtn.textContent = 'Sending…';
+  submitBtn.disabled = true;
+
+  const templateParams = {
+    from_name:  document.getElementById('fname').value + ' ' + document.getElementById('lname').value,
+    from_email: document.getElementById('femail').value,
+    phone:      document.getElementById('fphone').value,
+    business:   document.getElementById('fbiz').value,
+    industry:   document.getElementById('findustry').value,
+    staff:      document.getElementById('fstaff').value,
+    spend:      spend,
+    package:    pkg,
+    notes:      document.getElementById('fnotes').value || 'None provided'
+  };
+
+  emailjs.send('service_6kv4sgv', 'template_1804t4o', templateParams)
+    .then(() => {
+      document.querySelector('.form-steps').style.display = 'none';
+      document.querySelector('.form-body').style.display  = 'none';
+      document.getElementById('formSuccess').classList.add('active');
+    })
+    .catch((err) => {
+      console.error('EmailJS error:', err);
+      submitBtn.textContent = 'Submit Application →';
+      submitBtn.disabled = false;
+      alert('Something went wrong. Please try again or email us directly.');
+    });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('oXiFHfdL1FLPyxCqf');</script>
+<script>
+function toggleDrawer(){
+  const drawer = document.getElementById('navDrawer');
+  const burger = document.getElementById('navHamburger');
+  const open = drawer.classList.toggle('open');
+  burger.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeDrawer(){
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navHamburger').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close drawer on outside tap
+document.getElementById('navDrawer').addEventListener('click', function(e){
+  if(e.target === this) closeDrawer();
+});
+</script>
+</body>
+</html>
