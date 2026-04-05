@@ -323,26 +323,26 @@ textarea.field{resize:none;line-height:1.5}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── CHAT ── */
-#chat-screen{display:none;position:fixed;inset:0;z-index:250;background:var(--off);flex-direction:column}
+/* ── CHAT SCREEN ── */
+#chat-screen{display:none;position:fixed;inset:0;z-index:260;background:var(--off);flex-direction:column}
 #chat-screen.open{display:flex}
 .chat-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
 .chat-back{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .chat-back svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2}
-.chat-am-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--amber));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+.chat-am-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--amber));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
 .chat-am-info{flex:1}
 .chat-am-name{font-size:14px;font-weight:600}
-.chat-am-role{font-size:11px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.chat-am-role{font-size:10px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .chat-online{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
 .chat-bubble-wrap{display:flex;flex-direction:column;gap:3px}
 .chat-bubble-wrap.mine{align-items:flex-end}
 .chat-bubble-wrap.theirs{align-items:flex-start}
-.chat-bubble{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word}
+.chat-bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word}
 .chat-bubble.mine{background:var(--orange);color:white;border-bottom-right-radius:4px}
 .chat-bubble.theirs{background:var(--white);color:var(--ink);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
 .chat-time{font-size:10px;color:var(--muted);padding:0 4px}
-.chat-date-divider{text-align:center;font-size:11px;color:var(--muted);margin:8px 0;display:flex;align-items:center;gap:8px}
+.chat-date-divider{text-align:center;font-size:11px;color:var(--muted);margin:6px 0;display:flex;align-items:center;gap:8px}
 .chat-date-divider::before,.chat-date-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .chat-input-bar{display:flex;gap:8px;padding:12px 16px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 .chat-input{flex:1;padding:11px 16px;border:1.5px solid var(--border);border-radius:40px;font-family:var(--font-body);font-size:14px;color:var(--ink);background:var(--off);outline:none;transition:border .2s}
@@ -352,11 +352,23 @@ textarea.field{resize:none;line-height:1.5}
 .chat-send svg{width:18px;height:18px;fill:none;stroke:white;stroke-width:2.5}
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;text-align:center;padding:32px}
 .chat-empty svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
-.msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px;margin-left:6px}
-/* Show pw button */
-.pw-wrap{position:relative;margin-bottom:12px}
-.pw-wrap .field{margin-bottom:0;padding-right:48px}
-.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)}
+.msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px}
+/* ── UNIFIED INBOX ── */
+#inbox-screen{display:none;position:fixed;inset:0;z-index:260;background:var(--off);flex-direction:column}
+#inbox-screen.open{display:flex}
+.inbox-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
+.inbox-title{font-family:var(--font-display);font-size:18px;font-weight:400;flex:1}
+.inbox-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--white)}
+.inbox-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.inbox-item:active{background:var(--off)}
+.inbox-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:white;flex-shrink:0}
+.inbox-info{flex:1;min-width:0}
+.inbox-name{font-size:15px;font-weight:600}
+.inbox-preview{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.inbox-time{font-size:11px;color:var(--muted)}
+.inbox-unread-dot{width:10px;height:10px;border-radius:50%;background:var(--orange)}
+.inbox-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;padding:40px;text-align:center}
 
 </style>
 </head>
@@ -379,18 +391,19 @@ textarea.field{resize:none;line-height:1.5}
     <p>Sign in to access your portal</p>
     <div id="form-in">
       <input class="field" id="si-email" type="email" placeholder="Email address" autocomplete="email"/>
-      <div style="position:relative">
+      <div style="position:relative;margin-bottom:12px">
         <input class="field" id="si-pass" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:48px;margin-bottom:0"/>
         <button type="button" onclick="togglePw('si-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)">
-          <svg id="si-pass-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
       <div class="auth-err" id="si-err"></div>
-      <button class="btn-primary" onclick="signIn()" style="margin-top:14px">Sign In →</button>
+      <button class="btn-primary" onclick="signIn()" style="margin-top:4px">Sign In →</button>
     </div>
     <div style="margin-top:20px;padding:16px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px">Need access?</div>
-      <div style="font-size:12px;color:var(--muted)">Contact your account manager to get your login details</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Contact your account manager to get your login details</div>
+      <a href="mailto:cm.fileshares@gmail.com" style="font-size:13px;color:var(--orange);font-weight:600;text-decoration:none">cm.fileshares@gmail.com</a>
     </div>
   </div>
 </div>
@@ -525,19 +538,17 @@ textarea.field{resize:none;line-height:1.5}
       <div class="section-title">Messages</div>
       <button class="section-action" onclick="openChat()">Open chat</button>
     </div>
-    <div class="bubble" onclick="openChat()" style="cursor:pointer" id="messages-preview">
-      <div id="messages-list">
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
-          <div class="msg-av" style="background:linear-gradient(135deg,#FF6B2C,#F5A623);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0">J</div>
-          <div style="flex:1">
-            <div class="msg-name">Your Account Manager</div>
-            <div class="msg-role" style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Lunar Agency</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to open chat</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-            <div style="font-size:11px;color:var(--muted)" id="chat-preview-time"></div>
-            <div id="chat-unread-badge"></div>
-          </div>
+    <div class="bubble" onclick="openChat()" style="cursor:pointer">
+      <div style="display:flex;align-items:center;gap:12px;padding:4px 0">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#FF6B2C,#F5A623);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0">CM</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600">Account Manager</div>
+          <div style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Lunar Agency</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to open chat</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <div style="font-size:11px;color:var(--muted)" id="chat-preview-time"></div>
+          <div id="chat-unread-badge"></div>
         </div>
       </div>
     </div>
@@ -606,7 +617,7 @@ textarea.field{resize:none;line-height:1.5}
       <button class="client-action-btn" onclick="openDetailModal('upload')">+ Upload</button>
       <button class="client-action-btn" onclick="openDetailModal('perf')">+ Stats</button>
       <button class="client-action-btn" onclick="openDetailModal('book')">+ Call</button>
-      <button class="client-action-btn" onclick="openAdminChat()">💬 Message</button>
+      <button class="client-action-btn" onclick="openAdminChat()">💬 Chat</button>
     </div>
   </div>
   <div class="detail-section">
@@ -619,19 +630,19 @@ textarea.field{resize:none;line-height:1.5}
     <div class="section-head"><div class="section-title">Performance Stats</div></div>
     <div class="bubble"><div id="detail-perf"></div></div>
     <div class="section-head"><div class="section-title">Messages</div></div>
-    <div class="bubble"><div id="detail-messages"></div><div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:12px"><input class="field" id="detail-msg-input" placeholder="Type a message…" style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendAdminMessage()"/><button onclick="sendAdminMessage()" style="padding:13px 18px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0">Send</button></div></div>
+    <div class="bubble"><div id="detail-messages"><div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div></div><div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:8px"><input class="field" id="detail-msg-input" placeholder="Message this client…" style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendAdminMessage()"/><button onclick="sendAdminMessage()" style="padding:13px 16px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0">Send</button></div></div>
     <div class="section-head"><div class="section-title">Upcoming Calls</div></div>
     <div class="bubble"><div id="detail-appts"></div></div>
   </div>
 </div>
 
-<!-- ══════════ CHAT SCREEN ══════════ -->
+<!-- CHAT SCREEN -->
 <div id="chat-screen">
   <div class="chat-topbar">
     <div class="chat-back" onclick="closeChat()">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </div>
-    <div class="chat-am-av" id="chat-am-av">J</div>
+    <div class="chat-am-av" id="chat-am-av">CM</div>
     <div class="chat-am-info">
       <div class="chat-am-name" id="chat-am-name">Account Manager</div>
       <div class="chat-am-role">Lunar Agency</div>
@@ -651,6 +662,23 @@ textarea.field{resize:none;line-height:1.5}
     <button class="chat-send" onclick="sendMessage()">
       <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
+  </div>
+</div>
+
+<!-- UNIFIED INBOX (admin) -->
+<div id="inbox-screen">
+  <div class="inbox-topbar">
+    <div class="back-btn" onclick="closeInbox()" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="inbox-title">Messages</div>
+    <div id="inbox-count" style="font-size:12px;color:var(--muted)"></div>
+  </div>
+  <div class="inbox-list" id="inbox-list">
+    <div class="inbox-empty">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div>No conversations yet</div>
+    </div>
   </div>
 </div>
 
@@ -680,6 +708,10 @@ textarea.field{resize:none;line-height:1.5}
       <div class="admin-item" onclick="openAccountsPage();closeAdmin()">
         <div class="ai-icon" style="background:#EEF2FF"><svg viewBox="0 0 24 24" style="stroke:#6366F1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="ai-label">Manage Clients</div><div class="ai-sub">View all accounts</div>
+      </div>
+      <div class="admin-item" onclick="openInbox();closeAdmin()">
+        <div class="ai-icon bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="ai-label">Messages</div><div class="ai-sub">All client chats</div>
       </div>
       <div class="admin-item" onclick="openModal('upload');closeAdmin()">
         <div class="ai-icon" style="background:var(--purple-l)"><svg viewBox="0 0 24 24" style="stroke:var(--purple)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
@@ -758,34 +790,29 @@ let _uploadContext = 'client';
 ══════════════════════════════════════════ */
 async function checkIsAdmin(){
   if(!currentUser) return false;
-  const { data, error } = await sb
-    .from('admins')
-    .select('id')
-    .eq('id', currentUser.id)
-    .single();
-  return !error && !!data;
+  try {
+    const p = sb.from('admins').select('id').eq('id',currentUser.id).single();
+    const t = new Promise(r=>setTimeout(()=>r({data:null,error:'timeout'}),4000));
+    const { data, error } = await Promise.race([p,t]);
+    return !error && !!data;
+  } catch(e){ return false; }
 }
 
 const DB_notifs = [];
 
 /* ══════════════════════════════════════════
-   BOOT — always hides loading screen
+   BOOT
 ══════════════════════════════════════════ */
 async function boot(){
   try {
-    // Hard timeout — if Supabase takes more than 5s, show auth anyway
-    const sessionPromise = sb.auth.getSession();
-    const timeout = new Promise(resolve => setTimeout(() => resolve({data:{session:null}}), 5000));
-    const { data:{ session } } = await Promise.race([sessionPromise, timeout]);
+    const p = sb.auth.getSession();
+    const t = new Promise(r=>setTimeout(()=>r({data:{session:null}}),6000));
+    const { data:{ session } } = await Promise.race([p,t]);
     hide('loading-screen');
-    if(session){
-      currentUser = session.user;
-      await enterApp();
-    } else {
-      show('auth-screen');
-    }
-  } catch(e) {
-    console.error('Boot error:', e);
+    if(session){ currentUser=session.user; await enterApp(); }
+    else { show('auth-screen'); }
+  } catch(e){
+    console.error('Boot error:',e);
     hide('loading-screen');
     show('auth-screen');
   }
@@ -810,30 +837,21 @@ async function enterApp(){
     show('app');
     hide('loading-screen');
     hide('auth-screen');
-    // Set avatar + greeting from Google/auth metadata
     const meta = currentUser.user_metadata || {};
-    const fullName = meta.full_name || meta.name || meta.email?.split('@')[0] || currentUser.email?.split('@')[0] || 'there';
+    const fullName = meta.full_name || meta.name || currentUser.email?.split('@')[0] || 'there';
     const firstName = fullName.split(' ')[0];
-    const avatarEl = document.getElementById('avatar-pill');
-    const greetEl  = document.getElementById('greeting-name');
-    const dateEl   = document.getElementById('greeting-date');
-    if(avatarEl) avatarEl.textContent = firstName.charAt(0).toUpperCase();
-    if(greetEl)  greetEl.textContent  = firstName + ' ☽';
-    if(dateEl)   dateEl.textContent   = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    // Find this user's client record
+    const ap = document.getElementById('avatar-pill');
+    const gn = document.getElementById('greeting-name');
+    const gd = document.getElementById('greeting-date');
+    if(ap) ap.textContent = firstName.charAt(0).toUpperCase();
+    if(gn) gn.textContent = firstName + ' ☽';
+    if(gd) gd.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
     const { data: clients } = await sb.from('clients').select('id').eq('email', currentUser.email).limit(1);
-    if(clients && clients.length){
-      currentClientId = clients[0].id;
-    }
+    if(clients && clients.length) currentClientId = clients[0].id;
     await loadClientPortal();
-    // Load chat preview
-    if(currentClientId){
-      const {data:msgs} = await sb.from('messages').select('*').eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(20);
-      if(msgs) updateChatPreview(msgs.reverse());
-    }
-  } catch(e) {
-    console.error('enterApp error:', e);
-    // Still show the app even if data loading fails
+    await loadChatPreview();
+  } catch(e){
+    console.error('enterApp error:',e);
     show('app');
     hide('loading-screen');
     hide('auth-screen');
@@ -1516,23 +1534,21 @@ async function confirmDeleteClient(){
 async function openAdmin(){
   if(adminUnlocked){ document.getElementById('admin-panel').classList.add('open'); return; }
   if(!currentUser){ toast('Please sign in first.'); return; }
-
-  // Show the verifying gate
   const gate = document.getElementById('admin-gate');
+  const msg  = document.getElementById('gate-msg');
+  const spin = gate ? gate.querySelector('.spinner') : null;
   gate.style.display = 'flex';
-  document.getElementById('gate-msg').textContent = 'Checking your account with Supabase…';
-
+  if(msg)  msg.textContent = 'Checking your account…';
+  if(spin) spin.style.display = 'block';
   const isAdmin = await checkIsAdmin();
-
   if(isAdmin){
     adminUnlocked = true;
     closeGate();
     document.getElementById('admin-panel').classList.add('open');
   } else {
-    document.getElementById('gate-msg').textContent = '⛔ Your account does not have admin access.';
-    // Hide spinner, show just the cancel button after a moment
-    gate.querySelector('.spinner').style.display = 'none';
-    setTimeout(closeGate, 2200);
+    if(msg)  msg.textContent = '⛔ No admin access for this account.';
+    if(spin) spin.style.display = 'none';
+    setTimeout(closeGate, 2500);
   }
 }
 
@@ -1641,104 +1657,103 @@ function show(id){
   const el=document.getElementById(id);
   if(!el) return;
   el.classList.remove('hidden');
-  const flexIds=['app','admin-gate','admin-panel','modal-overlay','video-modal','accounts-page','client-detail','chat-screen'];
+  const flexIds=['app','admin-gate','admin-panel','modal-overlay','video-modal','accounts-page','client-detail','chat-screen','inbox-screen'];
   el.style.display = flexIds.includes(id) ? 'flex' : '';
 }
 function hide(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; } }
 function toggle(id,on){ on?show(id):hide(id); }
 function lighten(hex){ try{ let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); r=Math.min(255,r+60);g=Math.min(255,g+40);b=Math.min(255,b+20); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; }catch(e){ return '#F5A623'; } }
 
+const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
+const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
 
-/* ══════════════════════════════════════════
-   SHOW / HIDE PASSWORD
-══════════════════════════════════════════ */
+/* ── SHOW/HIDE PASSWORD ── */
 function togglePw(fieldId, btn){
-  const field = document.getElementById(fieldId);
-  const isHidden = field.type === 'password';
-  field.type = isHidden ? 'text' : 'password';
-  btn.innerHTML = isHidden
-    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+  const f = document.getElementById(fieldId);
+  const hidden = f.type === 'password';
+  f.type = hidden ? 'text' : 'password';
+  btn.innerHTML = hidden
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 }
 
-/* ══════════════════════════════════════════
-   CHAT — CLIENT SIDE
-══════════════════════════════════════════ */
+/* ── CHAT ── */
 let chatSubscription = null;
-let chatMessages = [];
-let chatClientId = null;
 let chatIsAdmin = false;
+let chatClientId = null;
 
 async function openChat(){
-  const screen = document.getElementById('chat-screen');
-  screen.classList.add('open');
-  document.body.style.overflow = 'hidden';
   chatClientId = currentClientId;
   chatIsAdmin = false;
+  if(!chatClientId){
+    toast('Your account is not linked yet. Contact: ' + ADMIN_EMAIL);
+    return;
+  }
+  document.getElementById('chat-am-name').textContent = 'Account Manager';
+  document.getElementById('chat-am-av').textContent = 'CM';
+  document.getElementById('chat-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
   await loadMessages(chatClientId);
   subscribeToMessages(chatClientId);
-  document.getElementById('chat-input').focus();
+  setTimeout(()=>document.getElementById('chat-input')?.focus(), 300);
 }
 
 function closeChat(){
   document.getElementById('chat-screen').classList.remove('open');
-  document.body.style.overflow = '';
+  const inboxOpen = document.getElementById('inbox-screen').classList.contains('open');
+  if(!inboxOpen) document.body.style.overflow = '';
   if(chatSubscription){ chatSubscription.unsubscribe(); chatSubscription = null; }
+  if(inboxOpen) loadInbox();
 }
 
 async function loadMessages(clientId){
   if(!clientId) return;
-  const { data, error } = await sb
-    .from('messages')
-    .select('*')
-    .eq('client_id', clientId)
+  const { data, error } = await sb.from('messages')
+    .select('*').eq('client_id', clientId)
     .order('created_at', {ascending: true});
-  if(error){ console.error(error); return; }
-  chatMessages = data || [];
-  renderChatMessages(chatMessages, chatIsAdmin);
-  // Mark unread messages as read
-  if(chatMessages.length){
-    const sender = chatIsAdmin ? 'client' : 'admin';
-    await sb.from('messages')
-      .update({read: true})
-      .eq('client_id', clientId)
-      .eq('sender', sender)
-      .eq('read', false);
+  if(error){ console.error('loadMessages error:', error); return; }
+  renderChatMessages(data || []);
+  // Mark as read
+  const senderToMark = chatIsAdmin ? 'client' : 'admin';
+  if(data && data.length){
+    await sb.from('messages').update({read:true})
+      .eq('client_id', clientId).eq('sender', senderToMark).eq('read', false);
   }
-  updateChatPreview(chatMessages);
+  updateChatPreview(data || []);
 }
 
 function subscribeToMessages(clientId){
   if(chatSubscription) chatSubscription.unsubscribe();
-  chatSubscription = sb
-    .channel('messages-' + clientId)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: 'client_id=eq.' + clientId
-    }, payload => {
-      chatMessages.push(payload.new);
-      renderChatMessages(chatMessages, chatIsAdmin);
-      updateChatPreview(chatMessages);
-      // Mark read if open
-      if(payload.new.sender !== (chatIsAdmin ? 'admin' : 'client')){
-        sb.from('messages').update({read:true}).eq('id', payload.new.id);
+  chatSubscription = sb.channel('chat:' + clientId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'client_id=eq.'+clientId},
+      payload => {
+        const container = document.getElementById('chat-messages');
+        const empty = document.getElementById('chat-empty');
+        if(empty) empty.style.display = 'none';
+        const m = payload.new;
+        const mine = chatIsAdmin ? m.sender==='admin' : m.sender==='client';
+        const dt = new Date(m.created_at);
+        const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+        const div = document.createElement('div');
+        div.className = 'chat-bubble-wrap ' + (mine?'mine':'theirs');
+        div.innerHTML = '<div class="chat-bubble ' + (mine?'mine':'theirs') + '">' + esc(m.body) + '</div>'
+          + '<div class="chat-time">' + time + '</div>';
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+        updateChatPreview([m]);
+        // Mark read if open
+        if(m.sender !== (chatIsAdmin?'admin':'client')){
+          sb.from('messages').update({read:true}).eq('id',m.id);
+        }
       }
-    })
-    .subscribe();
+    ).subscribe();
 }
 
-function renderChatMessages(msgs, isAdmin){
+function renderChatMessages(msgs){
   const container = document.getElementById('chat-messages');
   const empty = document.getElementById('chat-empty');
-  if(!msgs.length){
-    if(empty) empty.style.display = 'flex';
-    return;
-  }
+  if(!msgs.length){ if(empty) empty.style.display='flex'; return; }
   if(empty) empty.style.display = 'none';
-
-  // Group by date
   let lastDate = '';
   let html = '';
   msgs.forEach(m => {
@@ -1748,12 +1763,11 @@ function renderChatMessages(msgs, isAdmin){
       html += '<div class="chat-date-divider">' + dateStr + '</div>';
       lastDate = dateStr;
     }
-    const mine = isAdmin ? m.sender === 'admin' : m.sender === 'client';
-    const timeStr = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const mine = chatIsAdmin ? m.sender==='admin' : m.sender==='client';
+    const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     html += '<div class="chat-bubble-wrap ' + (mine?'mine':'theirs') + '">'
       + '<div class="chat-bubble ' + (mine?'mine':'theirs') + '">' + esc(m.body) + '</div>'
-      + '<div class="chat-time">' + timeStr + '</div>'
-      + '</div>';
+      + '<div class="chat-time">' + time + '</div></div>';
   });
   container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
@@ -1762,55 +1776,57 @@ function renderChatMessages(msgs, isAdmin){
 async function sendMessage(){
   const input = document.getElementById('chat-input');
   const body = input.value.trim();
-  if(!body || !chatClientId) return;
+  if(!body) return;
+  const cid = chatIsAdmin ? chatClientId : currentClientId;
+  if(!cid){ toast('No client profile linked yet.'); return; }
   input.value = '';
   const meta = currentUser?.user_metadata || {};
-  const name = meta.full_name || meta.name || currentUser?.email || 'Client';
+  const name = chatIsAdmin ? 'Account Manager' : (meta.full_name || meta.name || currentUser?.email || 'Client');
   const { error } = await sb.from('messages').insert({
-    client_id: chatClientId,
+    client_id: cid,
     sender: chatIsAdmin ? 'admin' : 'client',
     sender_name: name,
-    body
+    body,
+    read: false
   });
-  if(error){ toast('Failed to send: ' + error.message); input.value = body; }
+  if(error){ console.error('Send error:', error); toast('Failed to send: ' + error.message); input.value = body; }
 }
 
 function updateChatPreview(msgs){
-  const last = msgs[msgs.length - 1];
-  if(!last) return;
+  if(!msgs.length) return;
+  const last = msgs[msgs.length-1];
   const preview = document.getElementById('chat-preview-text');
-  const time = document.getElementById('chat-preview-time');
-  const badge = document.getElementById('chat-unread-badge');
-  if(preview) preview.textContent = (last.sender === 'client' ? 'You: ' : '') + last.body;
+  const time    = document.getElementById('chat-preview-time');
+  const badge   = document.getElementById('chat-unread-badge');
+  if(preview) preview.textContent = (last.sender==='client'?'You: ':'')+last.body;
   if(time){
     const dt = new Date(last.created_at);
     const now = new Date();
-    const isToday = dt.toDateString() === now.toDateString();
-    time.textContent = isToday
+    time.textContent = dt.toDateString()===now.toDateString()
       ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
       : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
-  const unread = msgs.filter(m => m.sender === 'admin' && !m.read).length;
-  if(badge) badge.innerHTML = unread > 0
-    ? '<span class="msg-unread-badge">' + unread + '</span>' : '';
+  const unread = msgs.filter(m=>m.sender==='admin'&&!m.read).length;
+  if(badge) badge.innerHTML = unread>0 ? '<span class="msg-unread-badge">'+unread+'</span>' : '';
 }
 
-/* ── ADMIN CHAT (from client detail page) ── */
+/* ── ADMIN CHAT from detail page ── */
 async function openAdminChat(){
   if(!currentDetailClientId) return;
-  chatClientId = currentDetailClientId;
-  chatIsAdmin = true;
-  // Get client name for header
-  const { data } = await sb.from('clients').select('name').eq('id', currentDetailClientId).single();
-  const name = data?.name || 'Client';
-  document.getElementById('chat-am-name').textContent = name;
-  document.getElementById('chat-am-av').textContent = name.charAt(0).toUpperCase();
-  const screen = document.getElementById('chat-screen');
-  screen.classList.add('open');
+  chatClientId  = currentDetailClientId;
+  chatIsAdmin   = true;
+  const { data } = await sb.from('clients').select('name,color').eq('id',currentDetailClientId).single();
+  const name  = data?.name || 'Client';
+  const color = data?.color || '#FF6B2C';
+  const nameEl = document.getElementById('chat-am-name');
+  const avEl   = document.getElementById('chat-am-av');
+  if(nameEl) nameEl.textContent = name;
+  if(avEl){ avEl.textContent = name.charAt(0).toUpperCase(); avEl.style.background='linear-gradient(135deg,'+color+',#F5A623)'; }
+  document.getElementById('chat-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
   await loadMessages(currentDetailClientId);
   subscribeToMessages(currentDetailClientId);
-  document.getElementById('chat-input').focus();
+  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
 }
 
 async function sendAdminMessage(){
@@ -1819,47 +1835,118 @@ async function sendAdminMessage(){
   if(!body || !currentDetailClientId) return;
   input.value = '';
   const { error } = await sb.from('messages').insert({
-    client_id: currentDetailClientId,
-    sender: 'admin',
-    sender_name: 'Account Manager',
-    body
+    client_id: currentDetailClientId, sender:'admin',
+    sender_name:'Account Manager', body, read:false
   });
-  if(error){ toast('Failed to send: ' + error.message); input.value = body; return; }
+  if(error){ toast('Failed: '+error.message); input.value=body; return; }
   await loadDetailMessages(currentDetailClientId);
 }
 
 async function loadDetailMessages(clientId){
   const { data } = await sb.from('messages').select('*')
-    .eq('client_id', clientId).order('created_at',{ascending:false}).limit(5);
+    .eq('client_id',clientId).order('created_at',{ascending:false}).limit(5);
   const msgs = (data||[]).reverse();
   const el = document.getElementById('detail-messages');
   if(!el) return;
-  if(!msgs.length){
-    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div>';
-    return;
-  }
-  el.innerHTML = msgs.map(m => {
-    const mine = m.sender === 'admin';
-    const dt = new Date(m.created_at);
-    const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    return '<div style="margin-bottom:8px;text-align:' + (mine?'right':'left') + '">'
-      + '<div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:14px;font-size:13px;'
-      + (mine ? 'background:var(--orange);color:white' : 'background:var(--off);color:var(--ink)') + '">'
-      + esc(m.body) + '</div>'
-      + '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + (mine?'You':'Client') + ' · ' + time + '</div>'
-      + '</div>';
+  if(!msgs.length){ el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div>'; return; }
+  el.innerHTML = msgs.map(m=>{
+    const mine = m.sender==='admin';
+    const time = new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    return '<div style="margin-bottom:8px;text-align:'+(mine?'right':'left')+'">'
+      +'<div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:14px;font-size:13px;'+(mine?'background:var(--orange);color:white':'background:var(--off);color:var(--ink)')+'">'+esc(m.body)+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(mine?'You':'Client')+' · '+time+'</div></div>';
   }).join('');
 }
 
-/* START */
-// Absolute fallback — if boot() fails silently, force loading screen off after 7s
-setTimeout(()=>{
-  const ls = document.getElementById('loading-screen');
-  if(ls && ls.style.display !== 'none'){
-    ls.style.display = 'none';
-    show('auth-screen');
+/* ── UNIFIED INBOX ── */
+async function openInbox(){
+  document.getElementById('inbox-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  await loadInbox();
+}
+function closeInbox(){
+  document.getElementById('inbox-screen').classList.remove('open');
+  document.body.style.overflow = '';
+}
+async function loadInbox(){
+  const list = document.getElementById('inbox-list');
+  list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading…</div>';
+  const { data: clients, error } = await sb.from('clients').select('*').order('name');
+  if(error || !clients?.length){
+    list.innerHTML = '<div class="inbox-empty"><div>No clients yet</div></div>';
+    return;
   }
-}, 7000);
+  const { data: msgs } = await sb.from('messages')
+    .select('*').in('client_id', clients.map(c=>c.id))
+    .order('created_at',{ascending:false});
+  const msgMap = {};
+  (msgs||[]).forEach(m=>{
+    if(!msgMap[m.client_id]) msgMap[m.client_id]={latest:m,unread:0};
+    if(m.sender==='client'&&!m.read) msgMap[m.client_id].unread++;
+  });
+  const sorted = [...clients].sort((a,b)=>{
+    const ta = msgMap[a.id]?.latest?.created_at || '0';
+    const tb = msgMap[b.id]?.latest?.created_at || '0';
+    return tb.localeCompare(ta);
+  });
+  const totalUnread = Object.values(msgMap).reduce((s,v)=>s+v.unread,0);
+  const countEl = document.getElementById('inbox-count');
+  if(countEl) countEl.textContent = totalUnread>0 ? totalUnread+' unread' : clients.length+' clients';
+  list.innerHTML = sorted.map((c,i)=>{
+    const info  = msgMap[c.id];
+    const color = c.color || CLIENT_COLORS[i%CLIENT_COLORS.length];
+    const init  = (c.name||'?').charAt(0).toUpperCase();
+    let preview = 'No messages yet', timeStr = '', unread = 0;
+    if(info){
+      const m = info.latest;
+      preview = (m.sender==='admin'?'You: ':'')+m.body;
+      unread  = info.unread;
+      const dt = new Date(m.created_at), now = new Date();
+      timeStr = dt.toDateString()===now.toDateString()
+        ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+        : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    }
+    return '<div class="inbox-item" onclick="openInboxChat(''+c.id+'',''+esc(c.name)+'',''+color+'')">'
+      +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
+      +'<div class="inbox-info">'
+        +'<div class="inbox-name">'+esc(c.name)+(c.company?' <span style="font-size:11px;color:var(--muted);font-weight:400">· '+esc(c.company)+'</span>':'')+'</div>'
+        +'<div class="inbox-preview">'+esc(preview)+'</div>'
+      +'</div>'
+      +'<div class="inbox-meta">'
+        +'<div class="inbox-time">'+timeStr+'</div>'
+        +(unread>0?'<div class="inbox-unread-dot"></div>':'')
+      +'</div></div>';
+  }).join('');
+}
+async function openInboxChat(clientId, clientName, color){
+  chatClientId = clientId;
+  chatIsAdmin  = true;
+  const nameEl = document.getElementById('chat-am-name');
+  const avEl   = document.getElementById('chat-am-av');
+  if(nameEl) nameEl.textContent = clientName;
+  if(avEl){ avEl.textContent=clientName.charAt(0).toUpperCase(); avEl.style.background='linear-gradient(135deg,'+color+',#F5A623)'; }
+  document.getElementById('chat-screen').classList.add('open');
+  await loadMessages(clientId);
+  subscribeToMessages(clientId);
+  setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
+  await sb.from('messages').update({read:true}).eq('client_id',clientId).eq('sender','client').eq('read',false);
+  loadInbox();
+}
+
+/* ── LOAD CHAT PREVIEW ON APP LOAD ── */
+async function loadChatPreview(){
+  if(!currentClientId) return;
+  const {data} = await sb.from('messages').select('*')
+    .eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(10);
+  if(data) updateChatPreview(data.reverse());
+}
+
+/* START */
+// Nuclear fallback — if boot stalls, show auth after 7s
+setTimeout(()=>{
+  const ls=document.getElementById('loading-screen');
+  if(ls && ls.style.display!=='none'){ ls.style.display='none'; show('auth-screen'); }
+},7000);
 boot();
 </script>
 </body>
