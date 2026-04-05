@@ -322,6 +322,42 @@ textarea.field{resize:none;line-height:1.5}
 
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CHAT ── */
+#chat-screen{display:none;position:fixed;inset:0;z-index:250;background:var(--off);flex-direction:column}
+#chat-screen.open{display:flex}
+.chat-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-back{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.chat-back svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2}
+.chat-am-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--amber));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+.chat-am-info{flex:1}
+.chat-am-name{font-size:14px;font-weight:600}
+.chat-am-role{font-size:11px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.chat-online{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.chat-bubble-wrap{display:flex;flex-direction:column;gap:3px}
+.chat-bubble-wrap.mine{align-items:flex-end}
+.chat-bubble-wrap.theirs{align-items:flex-start}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word}
+.chat-bubble.mine{background:var(--orange);color:white;border-bottom-right-radius:4px}
+.chat-bubble.theirs{background:var(--white);color:var(--ink);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.chat-time{font-size:10px;color:var(--muted);padding:0 4px}
+.chat-date-divider{text-align:center;font-size:11px;color:var(--muted);margin:8px 0;display:flex;align-items:center;gap:8px}
+.chat-date-divider::before,.chat-date-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.chat-input-bar{display:flex;gap:8px;padding:12px 16px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.chat-input{flex:1;padding:11px 16px;border:1.5px solid var(--border);border-radius:40px;font-family:var(--font-body);font-size:14px;color:var(--ink);background:var(--off);outline:none;transition:border .2s}
+.chat-input:focus{border-color:var(--orange);background:var(--white)}
+.chat-send{width:42px;height:42px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.chat-send:active{background:#d95620;transform:scale(.95)}
+.chat-send svg{width:18px;height:18px;fill:none;stroke:white;stroke-width:2.5}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:8px;text-align:center;padding:32px}
+.chat-empty svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
+.msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px;margin-left:6px}
+/* Show pw button */
+.pw-wrap{position:relative;margin-bottom:12px}
+.pw-wrap .field{margin-bottom:0;padding-right:48px}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)}
+
 </style>
 </head>
 <body>
@@ -339,31 +375,23 @@ textarea.field{resize:none;line-height:1.5}
     <div class="brand-name">Lunar</div>
   </div>
   <div class="auth-card">
-    <h2>Your creative hub<br><em>awaits ☽</em></h2>
+    <h2>Welcome back<br><em>☽</em></h2>
     <p>Sign in to access your portal</p>
-    <div class="tab-row">
-      <button class="tab-btn on" onclick="authTab('in',this)">Sign In</button>
-      <button class="tab-btn" onclick="authTab('up',this)">Create Account</button>
-    </div>
     <div id="form-in">
       <input class="field" id="si-email" type="email" placeholder="Email address" autocomplete="email"/>
-      <input class="field" id="si-pass" type="password" placeholder="Password" autocomplete="current-password"/>
+      <div style="position:relative">
+        <input class="field" id="si-pass" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:48px;margin-bottom:0"/>
+        <button type="button" onclick="togglePw('si-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)">
+          <svg id="si-pass-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
       <div class="auth-err" id="si-err"></div>
-      <button class="btn-primary" onclick="signIn()">Sign In →</button>
+      <button class="btn-primary" onclick="signIn()" style="margin-top:14px">Sign In →</button>
     </div>
-    <div id="form-up" class="hidden">
-      <input class="field" id="su-name" type="text" placeholder="Your full name"/>
-      <input class="field" id="su-company" type="text" placeholder="Company name"/>
-      <input class="field" id="su-email" type="email" placeholder="Email address" autocomplete="email"/>
-      <input class="field" id="su-pass" type="password" placeholder="Create password" autocomplete="new-password"/>
-      <div class="auth-err" id="su-err"></div>
-      <button class="btn-primary" onclick="signUp()">Create Account →</button>
+    <div style="margin-top:20px;padding:16px;background:var(--off);border-radius:var(--radius-sm);text-align:center">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">Need access?</div>
+      <div style="font-size:12px;color:var(--muted)">Contact your account manager to get your login details</div>
     </div>
-    <div class="divider">or</div>
-    <button class="btn-google" onclick="signInGoogle()">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"/>
-      Continue with Google
-    </button>
   </div>
 </div>
 
@@ -493,18 +521,26 @@ textarea.field{resize:none;line-height:1.5}
     <div class="bubble"><div id="files-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 16px">No files here yet</div></div></div>
 
     <!-- MESSAGES -->
-    <div class="section-head"><div class="section-title">Messages</div></div>
-    <div class="bubble"><div id="messages-list">
-      <div class="msg-item" onclick="toast('Chat coming soon!')">
-        <div class="msg-av" style="background:linear-gradient(135deg,#FF6B2C,#F5A623)">J</div>
-        <div class="msg-body">
-          <div class="msg-name">Jordan Kim</div>
-          <div class="msg-role">Account Manager</div>
-          <div class="msg-preview">Your creatives are live — great results this week!</div>
+    <div class="section-head">
+      <div class="section-title">Messages</div>
+      <button class="section-action" onclick="openChat()">Open chat</button>
+    </div>
+    <div class="bubble" onclick="openChat()" style="cursor:pointer" id="messages-preview">
+      <div id="messages-list">
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+          <div class="msg-av" style="background:linear-gradient(135deg,#FF6B2C,#F5A623);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0">J</div>
+          <div style="flex:1">
+            <div class="msg-name">Your Account Manager</div>
+            <div class="msg-role" style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Lunar Agency</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to open chat</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <div style="font-size:11px;color:var(--muted)" id="chat-preview-time"></div>
+            <div id="chat-unread-badge"></div>
+          </div>
         </div>
-        <div class="msg-right"><div class="msg-time">Today</div><div class="unread-dot"></div></div>
       </div>
-    </div></div>
+    </div>
 
     <!-- APPOINTMENTS -->
     <div class="section-head">
@@ -570,6 +606,7 @@ textarea.field{resize:none;line-height:1.5}
       <button class="client-action-btn" onclick="openDetailModal('upload')">+ Upload</button>
       <button class="client-action-btn" onclick="openDetailModal('perf')">+ Stats</button>
       <button class="client-action-btn" onclick="openDetailModal('book')">+ Call</button>
+      <button class="client-action-btn" onclick="openAdminChat()">💬 Message</button>
     </div>
   </div>
   <div class="detail-section">
@@ -581,8 +618,39 @@ textarea.field{resize:none;line-height:1.5}
     <div class="bubble"><div id="detail-files"></div></div>
     <div class="section-head"><div class="section-title">Performance Stats</div></div>
     <div class="bubble"><div id="detail-perf"></div></div>
+    <div class="section-head"><div class="section-title">Messages</div></div>
+    <div class="bubble"><div id="detail-messages"></div><div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:12px"><input class="field" id="detail-msg-input" placeholder="Type a message…" style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendAdminMessage()"/><button onclick="sendAdminMessage()" style="padding:13px 18px;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0">Send</button></div></div>
     <div class="section-head"><div class="section-title">Upcoming Calls</div></div>
     <div class="bubble"><div id="detail-appts"></div></div>
+  </div>
+</div>
+
+<!-- ══════════ CHAT SCREEN ══════════ -->
+<div id="chat-screen">
+  <div class="chat-topbar">
+    <div class="chat-back" onclick="closeChat()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="chat-am-av" id="chat-am-av">J</div>
+    <div class="chat-am-info">
+      <div class="chat-am-name" id="chat-am-name">Account Manager</div>
+      <div class="chat-am-role">Lunar Agency</div>
+    </div>
+    <div class="chat-online"></div>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-empty" id="chat-empty">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div>No messages yet</div>
+      <div style="font-size:12px">Send a message to your account manager</div>
+    </div>
+  </div>
+  <div class="chat-input-bar">
+    <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" autocomplete="off"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"/>
+    <button class="chat-send" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
   </div>
 </div>
 
@@ -690,22 +758,12 @@ let _uploadContext = 'client';
 ══════════════════════════════════════════ */
 async function checkIsAdmin(){
   if(!currentUser) return false;
-  try {
-    // Race the Supabase query against a 4 second timeout
-    const queryPromise = sb
-      .from('admins')
-      .select('id')
-      .eq('id', currentUser.id)
-      .single();
-    const timeoutPromise = new Promise((_,reject) =>
-      setTimeout(()=>reject(new Error('timeout')), 4000)
-    );
-    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-    return !error && !!data;
-  } catch(e) {
-    console.warn('Admin check failed:', e.message);
-    return false;
-  }
+  const { data, error } = await sb
+    .from('admins')
+    .select('id')
+    .eq('id', currentUser.id)
+    .single();
+  return !error && !!data;
 }
 
 const DB_notifs = [];
@@ -725,17 +783,16 @@ async function boot(){
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  if((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session){
+  if(event === 'SIGNED_IN' && session){
     currentUser = session.user;
-    hide('loading-screen');
     hide('auth-screen');
     await enterApp();
   }
   if(event === 'SIGNED_OUT'){
     currentUser = null;
     currentClientId = null;
-    hide('app');
     show('auth-screen');
+    hide('app');
   }
 });
 
@@ -758,6 +815,11 @@ async function enterApp(){
     currentClientId = clients[0].id;
   }
   await loadClientPortal();
+  // Load chat preview
+  if(currentClientId){
+    const {data:msgs} = await sb.from('messages').select('*').eq('client_id',currentClientId).order('created_at',{ascending:false}).limit(20);
+    if(msgs) updateChatPreview(msgs.reverse());
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -789,13 +851,8 @@ async function signUp(){
 }
 
 async function signInGoogle(){
-  // Use the current page URL as the redirect so it works on any domain
-  const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await sb.auth.signInWithOAuth({ provider: 'google',
-    options: {
-      redirectTo,
-      scopes: 'https://www.googleapis.com/auth/drive.file'
-    }
+    options: { scopes: 'https://www.googleapis.com/auth/drive.file' }
   });
   if(error) toast('Google sign-in failed: ' + error.message);
 }
@@ -1404,6 +1461,7 @@ async function loadDetailData(cid){
   renderFiles(files.data||[],'detail-files');
   renderAppts(appts.data||[],'detail-appts');
   renderDetailPerf(perf.data||[]);
+  await loadDetailMessages(cid);
 }
 
 function renderDetailPerf(data){
@@ -1440,19 +1498,23 @@ async function confirmDeleteClient(){
 async function openAdmin(){
   if(adminUnlocked){ document.getElementById('admin-panel').classList.add('open'); return; }
   if(!currentUser){ toast('Please sign in first.'); return; }
+
+  // Show the verifying gate
   const gate = document.getElementById('admin-gate');
   gate.style.display = 'flex';
-  document.getElementById('gate-msg').textContent = 'Checking your account…';
+  document.getElementById('gate-msg').textContent = 'Checking your account with Supabase…';
+
   const isAdmin = await checkIsAdmin();
+
   if(isAdmin){
     adminUnlocked = true;
     closeGate();
     document.getElementById('admin-panel').classList.add('open');
   } else {
     document.getElementById('gate-msg').textContent = '⛔ Your account does not have admin access.';
-    const spinner = gate.querySelector('.spinner');
-    if(spinner) spinner.style.display = 'none';
-    setTimeout(closeGate, 2500);
+    // Hide spinner, show just the cancel button after a moment
+    gate.querySelector('.spinner').style.display = 'none';
+    setTimeout(closeGate, 2200);
   }
 }
 
@@ -1508,7 +1570,7 @@ function navTo(id,btn){
     home:()=>window.scrollTo({top:0,behavior:'smooth'}),
     projects:()=>document.getElementById('projects-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
     files:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
-    messages:()=>document.getElementById('messages-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
+    messages:()=>openChat(),
   };
   if(targets[id]) targets[id]();
   setTimeout(()=>btn.classList.add('on'),300);
@@ -1557,17 +1619,213 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 ══════════════════════════════════════════ */
 function v(id){ return (document.getElementById(id)?.value||'').trim(); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;'); }
-function show(id){
-  const el=document.getElementById(id);
-  if(!el) return;
-  el.classList.remove('hidden');
-  // Elements that need display:flex
-  const flexIds=['app','admin-gate','admin-panel','modal-overlay','video-modal','accounts-page','client-detail'];
-  el.style.display = flexIds.includes(id) ? 'flex' : '';
-}
+function show(id){ const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); } }
 function hide(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; } }
 function toggle(id,on){ on?show(id):hide(id); }
 function lighten(hex){ try{ let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); r=Math.min(255,r+60);g=Math.min(255,g+40);b=Math.min(255,b+20); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; }catch(e){ return '#F5A623'; } }
+
+
+/* ══════════════════════════════════════════
+   SHOW / HIDE PASSWORD
+══════════════════════════════════════════ */
+function togglePw(fieldId, btn){
+  const field = document.getElementById(fieldId);
+  const isHidden = field.type === 'password';
+  field.type = isHidden ? 'text' : 'password';
+  btn.innerHTML = isHidden
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+/* ══════════════════════════════════════════
+   CHAT — CLIENT SIDE
+══════════════════════════════════════════ */
+let chatSubscription = null;
+let chatMessages = [];
+let chatClientId = null;
+let chatIsAdmin = false;
+
+async function openChat(){
+  const screen = document.getElementById('chat-screen');
+  screen.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  chatClientId = currentClientId;
+  chatIsAdmin = false;
+  await loadMessages(chatClientId);
+  subscribeToMessages(chatClientId);
+  document.getElementById('chat-input').focus();
+}
+
+function closeChat(){
+  document.getElementById('chat-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  if(chatSubscription){ chatSubscription.unsubscribe(); chatSubscription = null; }
+}
+
+async function loadMessages(clientId){
+  if(!clientId) return;
+  const { data, error } = await sb
+    .from('messages')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('created_at', {ascending: true});
+  if(error){ console.error(error); return; }
+  chatMessages = data || [];
+  renderChatMessages(chatMessages, chatIsAdmin);
+  // Mark unread messages as read
+  if(chatMessages.length){
+    const sender = chatIsAdmin ? 'client' : 'admin';
+    await sb.from('messages')
+      .update({read: true})
+      .eq('client_id', clientId)
+      .eq('sender', sender)
+      .eq('read', false);
+  }
+  updateChatPreview(chatMessages);
+}
+
+function subscribeToMessages(clientId){
+  if(chatSubscription) chatSubscription.unsubscribe();
+  chatSubscription = sb
+    .channel('messages-' + clientId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: 'client_id=eq.' + clientId
+    }, payload => {
+      chatMessages.push(payload.new);
+      renderChatMessages(chatMessages, chatIsAdmin);
+      updateChatPreview(chatMessages);
+      // Mark read if open
+      if(payload.new.sender !== (chatIsAdmin ? 'admin' : 'client')){
+        sb.from('messages').update({read:true}).eq('id', payload.new.id);
+      }
+    })
+    .subscribe();
+}
+
+function renderChatMessages(msgs, isAdmin){
+  const container = document.getElementById('chat-messages');
+  const empty = document.getElementById('chat-empty');
+  if(!msgs.length){
+    if(empty) empty.style.display = 'flex';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+
+  // Group by date
+  let lastDate = '';
+  let html = '';
+  msgs.forEach(m => {
+    const dt = new Date(m.created_at);
+    const dateStr = dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    if(dateStr !== lastDate){
+      html += '<div class="chat-date-divider">' + dateStr + '</div>';
+      lastDate = dateStr;
+    }
+    const mine = isAdmin ? m.sender === 'admin' : m.sender === 'client';
+    const timeStr = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    html += '<div class="chat-bubble-wrap ' + (mine?'mine':'theirs') + '">'
+      + '<div class="chat-bubble ' + (mine?'mine':'theirs') + '">' + esc(m.body) + '</div>'
+      + '<div class="chat-time">' + timeStr + '</div>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const body = input.value.trim();
+  if(!body || !chatClientId) return;
+  input.value = '';
+  const meta = currentUser?.user_metadata || {};
+  const name = meta.full_name || meta.name || currentUser?.email || 'Client';
+  const { error } = await sb.from('messages').insert({
+    client_id: chatClientId,
+    sender: chatIsAdmin ? 'admin' : 'client',
+    sender_name: name,
+    body
+  });
+  if(error){ toast('Failed to send: ' + error.message); input.value = body; }
+}
+
+function updateChatPreview(msgs){
+  const last = msgs[msgs.length - 1];
+  if(!last) return;
+  const preview = document.getElementById('chat-preview-text');
+  const time = document.getElementById('chat-preview-time');
+  const badge = document.getElementById('chat-unread-badge');
+  if(preview) preview.textContent = (last.sender === 'client' ? 'You: ' : '') + last.body;
+  if(time){
+    const dt = new Date(last.created_at);
+    const now = new Date();
+    const isToday = dt.toDateString() === now.toDateString();
+    time.textContent = isToday
+      ? dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+      : dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+  const unread = msgs.filter(m => m.sender === 'admin' && !m.read).length;
+  if(badge) badge.innerHTML = unread > 0
+    ? '<span class="msg-unread-badge">' + unread + '</span>' : '';
+}
+
+/* ── ADMIN CHAT (from client detail page) ── */
+async function openAdminChat(){
+  if(!currentDetailClientId) return;
+  chatClientId = currentDetailClientId;
+  chatIsAdmin = true;
+  // Get client name for header
+  const { data } = await sb.from('clients').select('name').eq('id', currentDetailClientId).single();
+  const name = data?.name || 'Client';
+  document.getElementById('chat-am-name').textContent = name;
+  document.getElementById('chat-am-av').textContent = name.charAt(0).toUpperCase();
+  const screen = document.getElementById('chat-screen');
+  screen.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  await loadMessages(currentDetailClientId);
+  subscribeToMessages(currentDetailClientId);
+  document.getElementById('chat-input').focus();
+}
+
+async function sendAdminMessage(){
+  const input = document.getElementById('detail-msg-input');
+  const body = input.value.trim();
+  if(!body || !currentDetailClientId) return;
+  input.value = '';
+  const { error } = await sb.from('messages').insert({
+    client_id: currentDetailClientId,
+    sender: 'admin',
+    sender_name: 'Account Manager',
+    body
+  });
+  if(error){ toast('Failed to send: ' + error.message); input.value = body; return; }
+  await loadDetailMessages(currentDetailClientId);
+}
+
+async function loadDetailMessages(clientId){
+  const { data } = await sb.from('messages').select('*')
+    .eq('client_id', clientId).order('created_at',{ascending:false}).limit(5);
+  const msgs = (data||[]).reverse();
+  const el = document.getElementById('detail-messages');
+  if(!el) return;
+  if(!msgs.length){
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">No messages yet</div>';
+    return;
+  }
+  el.innerHTML = msgs.map(m => {
+    const mine = m.sender === 'admin';
+    const dt = new Date(m.created_at);
+    const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    return '<div style="margin-bottom:8px;text-align:' + (mine?'right':'left') + '">'
+      + '<div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:14px;font-size:13px;'
+      + (mine ? 'background:var(--orange);color:white' : 'background:var(--off);color:var(--ink)') + '">'
+      + esc(m.body) + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + (mine?'You':'Client') + ' · ' + time + '</div>'
+      + '</div>';
+  }).join('');
+}
 
 /* START */
 boot();
