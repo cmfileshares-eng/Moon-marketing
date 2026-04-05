@@ -1619,7 +1619,13 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 ══════════════════════════════════════════ */
 function v(id){ return (document.getElementById(id)?.value||'').trim(); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;'); }
-function show(id){ const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); } }
+function show(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('hidden');
+  const flexIds=['app','admin-gate','admin-panel','modal-overlay','video-modal','accounts-page','client-detail','chat-screen'];
+  el.style.display = flexIds.includes(id) ? 'flex' : '';
+}
 function hide(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; } }
 function toggle(id,on){ on?show(id):hide(id); }
 function lighten(hex){ try{ let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); r=Math.min(255,r+60);g=Math.min(255,g+40);b=Math.min(255,b+20); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; }catch(e){ return '#F5A623'; } }
