@@ -978,10 +978,16 @@ async function getClients(forceRefresh=false){
 function invalidateClientCache(){_clientCache=null;}
 
 /* ══════════════════════════════════════════
-   BOOT
+   BOOT & AUTH
 ══════════════════════════════════════════ */
-let _routeInProgress = false;
-let _bootHandled = false; // true once boot() has routed the user
+
+// Debounce: only one route call can run at a time; a new call cancels the
+// previous one so rapid SIGNED_IN / SIGNED_OUT pairs don't stack up.
+let _routeTimer = null;
+function scheduleRoute(fn){
+  clearTimeout(_routeTimer);
+  _routeTimer = setTimeout(fn, 50);
+}
 
 async function boot(){
   // Pre-fill remembered email
@@ -996,9 +1002,8 @@ async function boot(){
     const {data:{session}} = await sb.auth.getSession();
     hide('loading-screen');
     if(session){
-      currentUser  = session.user;
-      _bootHandled = true;
-      await routeUser();
+      currentUser = session.user;
+      await doRoute();
     } else {
       show('auth-screen');
     }
@@ -1009,23 +1014,23 @@ async function boot(){
   }
 }
 
-sb.auth.onAuthStateChange(async(event, session)=>{
+// onAuthStateChange fires once on boot (when session exists) and again on
+// explicit sign-in/out. We ignore the boot fire because boot() already routed.
+let _ignoreNextSignIn = false;
+sb.auth.onAuthStateChange((event, session)=>{
   if(event === 'SIGNED_IN' && session){
     currentUser = session.user;
-    // Reset any stuck button states
+    // Reset button states
     const btn = document.querySelector('#client-auth-card .btn-primary');
     if(btn){btn.textContent = 'Sign In →'; btn.disabled = false;}
     const adminBtn = document.querySelector('#admin-auth-card .btn-primary');
     if(adminBtn){adminBtn.textContent = 'Sign In as Admin →'; adminBtn.disabled = false;}
-    // boot() already routed on page load — don't double-route
-    if(_bootHandled){ _bootHandled = false; return; }
-    // Fresh sign-in (or account switch) — route now
-    hide('auth-screen');
-    await routeUser();
+    if(_ignoreNextSignIn){ _ignoreNextSignIn = false; return; }
+    // Explicit sign-in — route after tiny debounce
+    scheduleRoute(()=>{ hide('auth-screen'); doRoute(); });
   }
   if(event === 'SIGNED_OUT'){
-    _routeInProgress = false;
-    _bootHandled     = false;
+    clearTimeout(_routeTimer);
     currentUser = null; currentClientId = null; isAdminUser = false;
     invalidateClientCache();
     hide('app');
@@ -1044,22 +1049,22 @@ sb.auth.onAuthStateChange(async(event, session)=>{
   }
 });
 
-async function routeUser(){
-  if(_routeInProgress) return;
-  _routeInProgress = true;
-  hide('app');
-  hide('admin-app');
-  document.getElementById('admin-app')?.classList.remove('open');
+async function doRoute(){
   try{
     const isAdmin = await checkIsAdmin();
+    hide('app'); hide('admin-app');
+    document.getElementById('admin-app')?.classList.remove('open');
     if(isAdmin){ isAdminUser = true;  await enterAdminApp(); }
     else        { isAdminUser = false; await enterApp();      }
   }catch(e){
-    console.error('routeUser:', e);
-    try{ await enterApp(); }catch(_){}
+    console.error('doRoute:', e);
+    try{ await enterApp(); }catch(_){ show('auth-screen'); }
   }
-  _routeInProgress = false;
 }
+
+// boot() calls getSession which causes onAuthStateChange to fire SIGNED_IN —
+// we want to ignore that one since boot() handles routing itself.
+_ignoreNextSignIn = true;
 
 async function checkIsAdmin(){
   if(!currentUser)return false;
@@ -1099,12 +1104,12 @@ async function signIn(){
   localStorage.setItem('lunar_remember_pref',remember?'true':'false');
   if(remember)localStorage.setItem('lunar_remember_email',email);
   else localStorage.removeItem('lunar_remember_email');
+  _ignoreNextSignIn=false; // ensure the SIGNED_IN event routes
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
     err.textContent=error.message;
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
   }
-  // On success onAuthStateChange fires and handles routing
 }
 
 async function adminSignIn(){
@@ -1114,6 +1119,7 @@ async function adminSignIn(){
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
   if(btn){btn.textContent='Signing in…';btn.disabled=true;}
+  _ignoreNextSignIn=false; // ensure the SIGNED_IN event routes
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
     err.textContent=error.message;
