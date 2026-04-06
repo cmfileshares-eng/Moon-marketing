@@ -1471,16 +1471,6 @@ function renderApprovals(data){
   }).join('');
 }
 
-function updateStats(projects,invoices){
-  const active=projects.filter(p=>p.status==='active').length;
-  const outstanding=invoices.filter(i=>i.status==='upcoming'||i.status==='due').reduce((s,i)=>s+Number(i.amount||0),0);
-  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  set('s-campaigns',active||'—');
-  set('s-outstanding',outstanding>0?'$'+(outstanding/1000).toFixed(1)+'k':'—');
-  const bc=document.getElementById('badge-campaigns');
-  if(bc)bc.textContent=active>0?`🚀 ${active} Active Campaigns`:'🚀 No active campaigns';
-}
-
 async function approveAsset(id){
   await sb.from('files').update({approved:true}).eq('id',id);
   addNotif('green','Creative approved ✓','Your approval has been sent.');
