@@ -2293,69 +2293,84 @@ async function saveAdminUpload(fileIdToReplace){
   const ext=file.name.split('.').pop().toUpperCase();
   const size=file.size>1024*1024?(file.size/1024/1024).toFixed(1)+' MB':(file.size/1024).toFixed(0)+' KB';
   const saveBtn=document.querySelector('#admin-modal-content .btn-save');
-  if(saveBtn){saveBtn.innerHTML='<span class="spinner"></span> Uploading…';saveBtn.disabled=true;}
   const prog=document.getElementById('upload-progress');
   const fill=document.getElementById('upload-fill');
+
+  const resetBtn=()=>{if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}};
+
+  if(saveBtn){saveBtn.innerHTML='<span class="spinner"></span> Uploading…';saveBtn.disabled=true;}
   if(prog)prog.style.display='block';
   if(fill)fill.style.width='10%';
+
   try{
     let driveViewUrl='',driveEmbedUrl='',driveFileId='';
-    // Always try Drive — prompt auth if needed
+
+    // Auth first — only if we don't already have a token
     try{
-      if(!googleAccessToken)await initGoogleDrive();
-      if(fill)fill.style.width='30%';
-      // Get client name for folder
+      await initGoogleDrive();
+      if(fill)fill.style.width='25%';
+
+      // Get client name for folder organisation
       let clientName='General';
       if(fileIdToReplace){
-        const {data:fd}=await sb.from('files').select('client_id,clients(name)').eq('id',fileIdToReplace).maybeSingle();
-        // Try cache first
-        const cached=_clientCache?.find(c=>c.id===fd?.client_id);
-        clientName=cached?.name||fd?.clients?.name||'General';
+        const cached=_clientCache?.find(c=>{
+          // we don't have client_id here so just use General
+        });
+        clientName='General'; // will use General folder for re-uploads
       } else {
         const cached=_clientCache?.find(c=>c.id===cid);
         clientName=cached?.name||'General';
       }
-      const result=await uploadToDrive(file,clientName);
+
+      if(fill)fill.style.width='40%';
+      // Upload to Drive — pass token directly to avoid re-auth inside uploadToDrive
+      const result=await uploadToDriveWithToken(file,clientName,googleAccessToken);
       driveViewUrl=result.driveViewUrl;
       driveEmbedUrl=result.driveEmbedUrl;
       driveFileId=result.driveFileId;
+      if(fill)fill.style.width='75%';
     }catch(driveErr){
       console.warn('Drive upload failed:',driveErr.message);
-      toast('⚠️ Drive upload failed — saving record only');
+      toast('⚠️ Drive upload failed — saving record without preview link');
+      // Don't return — still save the DB record
     }
-    if(fill)fill.style.width='80%';
 
+    // Save to database
     if(fileIdToReplace){
-      // Update existing file record
-      const {error}=await sb.from('files').update({
-        name,file_type:ext,size,
-        drive_file_id:driveFileId||undefined,
-        drive_view_url:driveViewUrl||undefined,
-        drive_embed_url:driveEmbedUrl||undefined,
-        needs_approval:true,approved:false,revision_note:null
-      }).eq('id',fileIdToReplace);
-      if(error){toast('DB error: '+error.message);return;}
-      if(fill)fill.style.width='100%';
-      _pendingUploadFile=null;
-      closeAdminModal();
-      toast('✓ Re-uploaded and sent for client approval!');
-      loadAdminVideos(_currentVideoTab);
+      const updates={name,file_type:ext,size,needs_approval:true,approved:false,revision_note:null};
+      if(driveFileId){updates.drive_file_id=driveFileId;updates.drive_view_url=driveViewUrl;updates.drive_embed_url=driveEmbedUrl;}
+      const {error}=await sb.from('files').update(updates).eq('id',fileIdToReplace);
+      if(error){toast('DB error: '+error.message);resetBtn();return;}
     } else {
       const approved=autoApproveOn||!needsApproval;
       const {error}=await sb.from('files').insert({
         client_id:cid,name,file_type:ext,size,
-        drive_file_id:driveFileId,drive_view_url:driveViewUrl,drive_embed_url:driveEmbedUrl,
+        drive_file_id:driveFileId||null,
+        drive_view_url:driveViewUrl||null,
+        drive_embed_url:driveEmbedUrl||null,
         needs_approval:needsApproval,approved,auto_approved:autoApproveOn
       });
-      if(error){toast('DB error: '+error.message);return;}
-      if(fill)fill.style.width='100%';
-      _pendingUploadFile=null;
-      closeAdminModal();
-      toast(needsApproval&&!autoApproveOn?'✓ Uploaded — sent for approval!':'✓ Uploaded!');
+      if(error){toast('DB error: '+error.message);resetBtn();return;}
     }
+
+    if(fill)fill.style.width='100%';
+    _pendingUploadFile=null;
+
+    // Small delay so user sees 100% before modal closes
+    setTimeout(()=>{
+      closeAdminModal();
+      if(fileIdToReplace){
+        toast('✓ Re-uploaded and sent for approval!');
+        loadAdminVideos(_currentVideoTab);
+      } else {
+        toast(needsApproval&&!autoApproveOn?'✓ Uploaded — sent for approval!':'✓ Uploaded!');
+      }
+    },400);
+
   }catch(err){
+    console.error('saveAdminUpload error:',err);
     toast('Upload failed: '+err.message);
-    if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}
+    resetBtn();
   }
 }
 
@@ -2430,40 +2445,54 @@ function initGoogleDrive(){
   });
 }
 
-async function uploadToDrive(file,clientName){
-  toast('Connecting to Google Drive...');
-  await initGoogleDrive();
-  toast('Uploading...');
+async function uploadToDriveWithToken(file,clientName,token){
+  if(!token)throw new Error('No Google access token');
   let folderId=DRIVE_ROOT_FOLDER;
   try{
-    const sr=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(clientName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      {headers:{Authorization:`Bearer ${googleAccessToken}`}});
+    const sr=await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(clientName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      {headers:{Authorization:'Bearer '+token}}
+    );
     const sd=await sr.json();
-    if(sd.files?.length){folderId=sd.files[0].id;}
-    else{
+    if(sd.files?.length){
+      folderId=sd.files[0].id;
+    } else {
       const mr=await fetch('https://www.googleapis.com/drive/v3/files',{
-        method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`,'Content-Type':'application/json'},
+        method:'POST',
+        headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
         body:JSON.stringify({name:clientName,mimeType:'application/vnd.google-apps.folder',parents:[DRIVE_ROOT_FOLDER]})
       });
-      const md=await mr.json();folderId=md.id||DRIVE_ROOT_FOLDER;
+      const md=await mr.json();
+      folderId=md.id||DRIVE_ROOT_FOLDER;
     }
-  }catch(e){}
+  }catch(e){console.warn('Folder lookup failed, using root:',e.message);}
+
   const form=new FormData();
   form.append('metadata',new Blob([JSON.stringify({name:file.name,parents:[folderId]})],{type:'application/json'}));
   form.append('file',file);
   const ur=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
-    {method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`},body:form});
+    {method:'POST',headers:{Authorization:'Bearer '+token},body:form});
   const ud=await ur.json();
-  if(!ud.id)throw new Error('Upload failed');
+  if(!ud.id)throw new Error('Drive upload returned no file ID — check Drive quota or permissions');
+
+  // Make file publicly readable so clients can preview it
   await fetch(`https://www.googleapis.com/drive/v3/files/${ud.id}/permissions`,{
-    method:'POST',headers:{Authorization:`Bearer ${googleAccessToken}`,'Content-Type':'application/json'},
+    method:'POST',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
     body:JSON.stringify({role:'reader',type:'anyone'})
   });
+
   return{
     driveFileId:ud.id,
     driveViewUrl:`https://drive.google.com/file/d/${ud.id}/view`,
     driveEmbedUrl:`https://drive.google.com/file/d/${ud.id}/preview`
   };
+}
+
+// Keep old name as alias for any other callers
+async function uploadToDrive(file,clientName){
+  await initGoogleDrive();
+  return uploadToDriveWithToken(file,clientName,googleAccessToken);
 }
 
 function playDriveVideo(embedUrl,name){
