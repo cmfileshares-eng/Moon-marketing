@@ -981,16 +981,12 @@ function invalidateClientCache(){_clientCache=null;}
    BOOT & AUTH
 ══════════════════════════════════════════ */
 
-// Debounce: only one route call can run at a time; a new call cancels the
-// previous one so rapid SIGNED_IN / SIGNED_OUT pairs don't stack up.
-let _routeTimer = null;
-function scheduleRoute(fn){
-  clearTimeout(_routeTimer);
-  _routeTimer = setTimeout(fn, 50);
-}
+// Set this TRUE immediately so the very first SIGNED_IN event (fired
+// synchronously-ish when getSession finds a session) is ignored.
+// signIn() and adminSignIn() set it back to false before signing in.
+let _ignoreNextSignIn = true;
 
 async function boot(){
-  // Pre-fill remembered email
   const remEmail = localStorage.getItem('lunar_remember_email');
   const remPref  = localStorage.getItem('lunar_remember_pref');
   const emailEl  = document.getElementById('si-email');
@@ -1003,39 +999,41 @@ async function boot(){
     hide('loading-screen');
     if(session){
       currentUser = session.user;
+      _ignoreNextSignIn = true; // boot handles routing, ignore the event
       await doRoute();
     } else {
+      _ignoreNextSignIn = false; // no session — next sign-in must be processed
       show('auth-screen');
     }
   }catch(e){
     console.error('Boot:', e);
+    _ignoreNextSignIn = false;
     hide('loading-screen');
     show('auth-screen');
   }
 }
 
-// onAuthStateChange fires once on boot (when session exists) and again on
-// explicit sign-in/out. We ignore the boot fire because boot() already routed.
-let _ignoreNextSignIn = false;
-sb.auth.onAuthStateChange((event, session)=>{
+sb.auth.onAuthStateChange(async(event, session)=>{
   if(event === 'SIGNED_IN' && session){
     currentUser = session.user;
-    // Reset button states
     const btn = document.querySelector('#client-auth-card .btn-primary');
     if(btn){btn.textContent = 'Sign In →'; btn.disabled = false;}
     const adminBtn = document.querySelector('#admin-auth-card .btn-primary');
     if(adminBtn){adminBtn.textContent = 'Sign In as Admin →'; adminBtn.disabled = false;}
     if(_ignoreNextSignIn){ _ignoreNextSignIn = false; return; }
-    // Explicit sign-in — route after tiny debounce
-    scheduleRoute(()=>{ hide('auth-screen'); doRoute(); });
+    hide('auth-screen');
+    await doRoute();
   }
   if(event === 'SIGNED_OUT'){
-    clearTimeout(_routeTimer);
+    _ignoreNextSignIn = false;
     currentUser = null; currentClientId = null; isAdminUser = false;
     invalidateClientCache();
+    // Hide client portal
     hide('app');
-    hide('admin-app');
-    document.getElementById('admin-app')?.classList.remove('open');
+    // Hide admin portal (class-based)
+    const adminApp = document.getElementById('admin-app');
+    if(adminApp) adminApp.classList.remove('open');
+    // Close all overlays
     document.getElementById('chat-screen')?.classList.remove('open');
     document.getElementById('account-menu')?.classList.remove('open');
     document.getElementById('signout-confirm')?.classList.remove('open');
@@ -1052,8 +1050,10 @@ sb.auth.onAuthStateChange((event, session)=>{
 async function doRoute(){
   try{
     const isAdmin = await checkIsAdmin();
-    hide('app'); hide('admin-app');
-    document.getElementById('admin-app')?.classList.remove('open');
+    // Hide both before showing one
+    hide('app');
+    const adminApp = document.getElementById('admin-app');
+    if(adminApp) adminApp.classList.remove('open');
     if(isAdmin){ isAdminUser = true;  await enterAdminApp(); }
     else        { isAdminUser = false; await enterApp();      }
   }catch(e){
@@ -1061,10 +1061,6 @@ async function doRoute(){
     try{ await enterApp(); }catch(_){ show('auth-screen'); }
   }
 }
-
-// boot() calls getSession which causes onAuthStateChange to fire SIGNED_IN —
-// we want to ignore that one since boot() handles routing itself.
-_ignoreNextSignIn = true;
 
 async function checkIsAdmin(){
   if(!currentUser)return false;
@@ -1566,8 +1562,8 @@ async function loadChatPreview(){
 ══════════════════════════════════════════ */
 async function enterAdminApp(){
   try{
-    hide('loading-screen');hide('auth-screen');
-    document.getElementById('admin-app').classList.add('open');
+    hide('loading-screen');hide('auth-screen');hide('app');
+    show('admin-app');
     const meta=currentUser.user_metadata||{};
     const name=meta.full_name||meta.name||currentUser.email?.split('@')[0]||'Admin';
     const av=document.getElementById('admin-avatar');
@@ -2132,6 +2128,7 @@ function renderNotifs(){
       <div><div class="n-text"><strong>${esc(n.title)}</strong></div><div class="n-text" style="color:var(--muted)">${esc(n.body)}</div><div class="n-time">${n.time}</div></div>
     </div>`).join(''):'<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No notifications</div>';
 }
+function clearNotifs(){DB_notifs.length=0;renderNotifs();}
 let notifOpen=false;
 function toggleNotif(){notifOpen=!notifOpen;document.getElementById('notif-tray').classList.toggle('open',notifOpen);if(notifOpen)renderNotifs();}
 function closeNotif(){notifOpen=false;document.getElementById('notif-tray').classList.remove('open');}
@@ -2186,10 +2183,16 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function show(id){
   const el=document.getElementById(id);if(!el)return;
   el.classList.remove('hidden');
-  const flexIds=['app','admin-app','modal-overlay','video-modal','chat-screen'];
-  el.style.display=flexIds.includes(id)?'flex':'';
+  // admin-app uses .open class not style.display — don't touch it here
+  if(id==='admin-app'){el.classList.add('open');return;}
+  const flexIds=['app','modal-overlay','video-modal','chat-screen','auth-screen'];
+  el.style.display=flexIds.includes(id)?'flex':'block';
 }
-function hide(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function hide(id){
+  const el=document.getElementById(id);if(!el)return;
+  if(id==='admin-app'){el.classList.remove('open');return;}
+  el.style.display='none';
+}
 function toggle(id,on){on?show(id):hide(id);}
 let _tt;
 function toast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
