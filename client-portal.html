@@ -336,7 +336,7 @@ textarea.field{resize:none;line-height:1.5}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── ACCOUNT MENU ── */
-#account-menu{position:fixed;top:60px;right:12px;z-index:500;background:var(--white);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);border:1px solid var(--border);min-width:210px;overflow:hidden;display:none;animation:fadeIn .15s ease}
+#account-menu{position:fixed;top:60px;right:12px;z-index:800;background:var(--white);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);border:1px solid var(--border);min-width:210px;overflow:hidden;display:none;animation:fadeIn .15s ease}
 #account-menu.open{display:block}
 .acct-header{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
 .acct-name{font-size:14px;font-weight:600}
@@ -407,6 +407,7 @@ textarea.field{resize:none;line-height:1.5}
 .inbox-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 .inbox-time{font-size:11px;color:var(--muted)}
 .inbox-unread-dot{width:9px;height:9px;border-radius:50%;background:var(--orange)}
+.inbox-item.no-chat{opacity:.5;cursor:default}
 /* ── VIDEO REVIEW CARDS ── */
 .review-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;margin-top:4px}
 .review-tab-row{display:flex;gap:8px;margin-bottom:16px}
@@ -695,7 +696,7 @@ textarea.field{resize:none;line-height:1.5}
       <div class="admin-topbar-badge">ADMIN</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="avatar-pill" id="admin-avatar" onclick="showSignOutConfirm()" title="Sign out">A</div>
+      <div class="avatar-pill" id="admin-avatar" onclick="toggleAccountMenu(event)" title="Account">A</div>
     </div>
   </div>
   <div class="admin-page">
@@ -1208,7 +1209,7 @@ function closeAccountMenu(){
   document.getElementById('account-menu').classList.remove('open');
 }
 document.addEventListener('click',e=>{
-  if(_acctMenuOpen&&!e.target.closest('#account-menu')&&!e.target.closest('#avatar-pill'))closeAccountMenu();
+  if(_acctMenuOpen&&!e.target.closest('#account-menu')&&!e.target.closest('#avatar-pill')&&!e.target.closest('#admin-avatar'))closeAccountMenu();
 });
 
 function openChangePassword(){
@@ -1578,11 +1579,14 @@ async function sendMessage(){
   if(error){
     console.error('sendMessage:',error);
     toast('Failed to send: '+error.message);
-    // Remove the optimistic message on failure
     div.remove();
     input.value=body;
   } else {
     updateChatPreview([{sender:chatIsAdmin?'admin':'client',body,created_at:now.toISOString(),read:false}]);
+    // Store the auth uid on the clients row so admin inbox can match rooms exactly
+    if(!chatIsAdmin&&currentClientId){
+      sb.from('clients').update({auth_user_id:currentUser.id}).eq('id',currentClientId).then(()=>{});
+    }
   }
 }
 
@@ -1670,9 +1674,8 @@ async function loadAdminInbox(){
   if(!list)return;
   list.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading...</div>';
 
-  // Load clients and messages in parallel
   const [{data:clients},{data:msgs}]=await Promise.all([
-    sb.from('clients').select('id,name,email,color,created_at').order('created_at',{ascending:false}),
+    sb.from('clients').select('id,name,email,color,created_at,auth_user_id').order('created_at',{ascending:false}),
     sb.from('messages').select('*').order('created_at',{ascending:false})
   ]);
 
@@ -1681,30 +1684,54 @@ async function loadAdminInbox(){
     return;
   }
 
-  // Build a map of room_id → latest message + unread count
+  // Build room map: room_id → {latest, unread, senderName}
   const rooms={};
   (msgs||[]).forEach(m=>{
-    if(!rooms[m.room_id]){rooms[m.room_id]={latest:m,unread:0};}
+    if(!rooms[m.room_id]){rooms[m.room_id]={latest:m,unread:0,senderName:m.sender_name||''};}
+    else if(new Date(m.created_at)>new Date(rooms[m.room_id].latest.created_at)){
+      rooms[m.room_id].latest=m;
+    }
     if(m.sender==='client'&&!m.read)rooms[m.room_id].unread++;
+    if(m.sender==='client'&&m.sender_name)rooms[m.room_id].senderName=m.sender_name;
   });
 
-  // Merge clients with their message data, sort by latest activity (clients with messages first, then by created_at)
-  const rows=clients.map(c=>{
-    // room_id is the client's auth uid — we stored it as currentUser.id when they chatted
-    // Try to find a room that matches this client's email via sender_name or just any room
-    // Best available key: messages store room_id = auth uid, clients table has email
-    // We join by checking if any message's room_id matches a room we know about
-    const room=rooms[c.id]||null; // client.id may equal auth uid if linked
-    return {client:c,room};
+  // Match clients to rooms. Priority: auth_user_id match > id match > name match
+  const clientMap={}; // roomId → client
+  const usedRooms=new Set();
+  clients.forEach(c=>{
+    // Best: exact auth_user_id match
+    const authKey=c.auth_user_id;
+    if(authKey&&rooms[authKey]){clientMap[authKey]=c;usedRooms.add(authKey);return;}
+    // Second: direct id match (legacy)
+    if(rooms[c.id]){clientMap[c.id]=c;usedRooms.add(c.id);return;}
+    // Fallback: name match via senderName
+    const matchedRoom=Object.entries(rooms).find(([rid,r])=>
+      !usedRooms.has(rid)&&r.senderName&&c.name&&
+      r.senderName.toLowerCase().includes(c.name.split(' ')[0].toLowerCase())
+    );
+    if(matchedRoom){clientMap[matchedRoom[0]]=c;usedRooms.add(matchedRoom[0]);}
   });
 
-  // Sort: clients with messages first (by latest msg time), then no-message clients by created_at
+  // Build rows: matched clients + any unmatched rooms with messages
+  const rows=[];
+  // Clients with a matched room
+  clients.forEach(c=>{
+    const roomId=Object.keys(clientMap).find(rid=>clientMap[rid].id===c.id);
+    rows.push({client:c,room:roomId?rooms[roomId]:null,roomId:roomId||c.id});
+  });
+  // Unmatched rooms (messages from users not yet in clients table)
+  Object.entries(rooms).forEach(([rid,room])=>{
+    if(!usedRooms.has(rid)){
+      rows.push({client:null,room,roomId:rid});
+    }
+  });
+
+  // Sort: rooms with messages first by latest time, then clients without by created_at
   rows.sort((a,b)=>{
-    const ta=a.room?new Date(a.room.latest.created_at):new Date(a.client.created_at);
-    const tb=b.room?new Date(b.room.latest.created_at):new Date(b.client.created_at);
-    const hasMsgA=!!a.room, hasMsgB=!!b.room;
-    if(hasMsgA&&!hasMsgB)return -1;
-    if(!hasMsgA&&hasMsgB)return 1;
+    if(a.room&&!b.room)return -1;
+    if(!a.room&&b.room)return 1;
+    const ta=a.room?new Date(a.room.latest.created_at):new Date(a.client?.created_at||0);
+    const tb=b.room?new Date(b.room.latest.created_at):new Date(b.client?.created_at||0);
     return tb-ta;
   });
 
@@ -1712,8 +1739,9 @@ async function loadAdminInbox(){
   list.innerHTML=rows.map((row,i)=>{
     const c=row.client;
     const room=row.room;
-    const color=c.color||CLIENT_COLORS[i%CLIENT_COLORS.length];
-    const init=(c.name||'?').charAt(0).toUpperCase();
+    const name=c?.name||room?.senderName||'Unknown';
+    const color=c?.color||CLIENT_COLORS[i%CLIENT_COLORS.length];
+    const init=name.charAt(0).toUpperCase();
     let preview='No messages yet';
     let timeStr='';
     let unreadDot='';
@@ -1725,18 +1753,19 @@ async function loadAdminInbox(){
         :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
       if(room.unread>0)unreadDot='<div class="inbox-unread-dot"></div>';
     }
-    // Use client.id as roomId fallback (works when auth uid = client id), else use room's room_id
-    const roomId=room?room.latest.room_id:c.id;
-    return '<div class="inbox-item" data-room="'+roomId+'" data-name="'+esc(c.name)+'" data-color="'+color+'" onclick="handleInboxClick(this)">'
-      +'<div class="inbox-av" style="background:'+color+'">'+init+'</div>'
-      +'<div class="inbox-info">'
-        +'<div class="inbox-name">'+esc(c.name)+'</div>'
-        +'<div class="inbox-preview" style="color:'+(room?'var(--muted)':'var(--border)')+'">'+esc(preview)+'</div>'
-      +'</div>'
-      +'<div class="inbox-meta">'
-        +'<div class="inbox-time">'+timeStr+'</div>'
-        +unreadDot
-      +'</div></div>';
+    const clickable=!!room; // only tappable if there are messages
+    return `<div class="inbox-item${clickable?'':' no-chat'}"
+        ${clickable?`data-room="${row.roomId}" data-name="${esc(name)}" data-color="${color}" onclick="handleInboxClick(this)"`:''}>
+      <div class="inbox-av" style="background:${color}">${init}</div>
+      <div class="inbox-info">
+        <div class="inbox-name">${esc(name)}</div>
+        <div class="inbox-preview" style="color:${room?'var(--muted)':'var(--border)'}">${esc(preview)}</div>
+      </div>
+      <div class="inbox-meta">
+        <div class="inbox-time">${timeStr}</div>
+        ${unreadDot}
+      </div>
+    </div>`;
   }).join('');
 }
 
