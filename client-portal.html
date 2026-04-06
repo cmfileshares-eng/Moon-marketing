@@ -942,21 +942,11 @@ const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534
   ══════════════════════════════════════════════════════
 */
 
-// Remember Me: use sessionStorage (tab-only) when not remembered, localStorage (persistent) when remembered.
-// We rebuild the Supabase client depending on the choice.
-function buildSbClient(persist){
-  return supabase.createClient(SUPABASE_URL, SUPABASE_ANON,{
-    auth:{
-      storage: persist ? window.localStorage : window.sessionStorage,
-      persistSession: true,
-      autoRefreshToken: true,
-    }
-  });
-}
+// Single permanent Supabase client
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
 
-// Default: check localStorage for remembered preference, default to persistent
-const _rememberDefault = localStorage.getItem('lunar_remember_pref') !== 'false';
-let sb = buildSbClient(_rememberDefault);
 let currentUser = null;
 let currentClientId = null;
 let isAdminUser = false;
@@ -969,7 +959,7 @@ let googleAccessToken = null;
 let _pendingUploadFile = null;
 const DB_notifs = [];
 
-// Client cache — loaded once on admin login, refreshed after add/delete
+// Client cache
 let _clientCache = null;
 let _clientCacheLoading = null;
 
@@ -985,80 +975,81 @@ async function getClients(forceRefresh=false){
   })();
   return _clientCacheLoading;
 }
-
 function invalidateClientCache(){_clientCache=null;}
 
 /* ══════════════════════════════════════════
-   BOOT — fast path first, no long waits
+   BOOT
 ══════════════════════════════════════════ */
+let _routeInProgress=false;
+let _lastRoutedUid=null;
+
 async function boot(){
-  // Pre-fill remembered email and set checkbox
+  // Pre-fill remembered email
   const remEmail=localStorage.getItem('lunar_remember_email');
   const remPref=localStorage.getItem('lunar_remember_pref');
-  const willRemember=remPref!=='false'; // default true
   const emailEl=document.getElementById('si-email');
   const cb=document.getElementById('si-remember');
   if(remEmail&&emailEl)emailEl.value=remEmail;
-  if(cb)cb.checked=willRemember;
+  if(cb)cb.checked=remPref!=='false';
+
   try{
-    // Short 2s timeout — Supabase session check is local storage, should be instant
-    const p=sb.auth.getSession();
-    const t=new Promise(r=>setTimeout(()=>r({data:{session:null}}),2000));
-    const {data:{session}}=await Promise.race([p,t]);
+    const {data:{session}}=await sb.auth.getSession();
     hide('loading-screen');
     if(session){
       currentUser=session.user;
-      _routing=true; // prevent onAuthStateChange from double-routing
-      await routeUser();
+      await routeUser(currentUser.id);
+    } else {
+      show('auth-screen');
     }
-    else{show('auth-screen');}
-  }catch(e){console.error('Boot:',e);hide('loading-screen');show('auth-screen');}
+  }catch(e){
+    console.error('Boot:',e);
+    hide('loading-screen');
+    show('auth-screen');
+  }
 }
 
-let _routing=false;
+// Auth state listener — single source of truth after boot
 sb.auth.onAuthStateChange(async(event,session)=>{
   if(event==='SIGNED_IN'&&session){
     currentUser=session.user;
-    // Reset any stuck button states
+    // Reset button states
     const btn=document.querySelector('#client-auth-card .btn-primary');
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
     const adminBtn=document.querySelector('#admin-auth-card .btn-primary');
     if(adminBtn){adminBtn.textContent='Sign In as Admin →';adminBtn.disabled=false;}
-    // Only route if boot() hasn't already handled it
-    if(!_routing){
-      hide('auth-screen');
-      await routeUser();
-    }
+    // Skip if already routed for this exact user
+    if(_lastRoutedUid===session.user.id)return;
+    hide('auth-screen');
+    await routeUser(session.user.id);
   }
   if(event==='SIGNED_OUT'){
-    // Full reset — clear all state so a fresh sign-in starts clean
-    _routing=false;
+    _routeInProgress=false;
+    _lastRoutedUid=null;
     currentUser=null;currentClientId=null;isAdminUser=false;
     invalidateClientCache();
-    // Hide all app screens
+    // Hide all screens and overlays
     hide('app');
     hide('admin-app');
-    const adminApp=document.getElementById('admin-app');
-    if(adminApp)adminApp.classList.remove('open');
-    // Close any open overlays
+    document.getElementById('admin-app')?.classList.remove('open');
     document.getElementById('chat-screen')?.classList.remove('open');
     document.getElementById('account-menu')?.classList.remove('open');
     document.getElementById('signout-confirm')?.classList.remove('open');
     document.getElementById('chpw-modal')?.classList.remove('open');
-    document.getElementById('chemail-modal') && (document.getElementById('chemail-modal').style.display='none');
-    document.getElementById('resetpw-modal') && (document.getElementById('resetpw-modal').style.display='none');
-    document.getElementById('admin-modal-overlay') && (document.getElementById('admin-modal-overlay').style.display='none');
+    if(document.getElementById('chemail-modal'))document.getElementById('chemail-modal').style.display='none';
+    if(document.getElementById('resetpw-modal'))document.getElementById('resetpw-modal').style.display='none';
+    if(document.getElementById('admin-modal-overlay'))document.getElementById('admin-modal-overlay').style.display='none';
     document.getElementById('notif-tray')?.classList.remove('open');
-    // Show auth screen
     show('auth-screen');
     showClientAuth();
   }
 });
 
-async function routeUser(){
-  if(_routing)return;
-  _routing=true;
-  // Always hide both portals before deciding which to show
+async function routeUser(uid){
+  // Prevent concurrent routing; prevent re-routing same user twice
+  if(_routeInProgress)return;
+  if(_lastRoutedUid===uid)return;
+  _routeInProgress=true;
+  _lastRoutedUid=uid;
   hide('app');
   hide('admin-app');
   document.getElementById('admin-app')?.classList.remove('open');
@@ -1066,8 +1057,11 @@ async function routeUser(){
     const isAdmin=await checkIsAdmin();
     if(isAdmin){isAdminUser=true;await enterAdminApp();}
     else{isAdminUser=false;await enterApp();}
-  }catch(e){console.error('routeUser:',e);await enterApp();}
-  _routing=false;
+  }catch(e){
+    console.error('routeUser error:',e);
+    try{await enterApp();}catch(_){}
+  }
+  _routeInProgress=false;
 }
 
 async function checkIsAdmin(){
@@ -1104,21 +1098,16 @@ async function signIn(){
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
   if(btn){btn.textContent='Signing in…';btn.disabled=true;}
-
   const remember=document.getElementById('si-remember')?.checked!==false;
-  // Save preference so the right client is built on next page load
-  localStorage.setItem('lunar_remember_pref', remember?'true':'false');
-  // Save email for pre-fill
-  if(remember){localStorage.setItem('lunar_remember_email',email);}
-  else{localStorage.removeItem('lunar_remember_email');}
-  // Rebuild the sb client with the right storage
-  sb=buildSbClient(remember);
-
+  localStorage.setItem('lunar_remember_pref',remember?'true':'false');
+  if(remember)localStorage.setItem('lunar_remember_email',email);
+  else localStorage.removeItem('lunar_remember_email');
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
     err.textContent=error.message;
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
   }
+  // On success onAuthStateChange fires and handles routing
 }
 
 async function adminSignIn(){
