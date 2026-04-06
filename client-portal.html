@@ -980,54 +980,54 @@ function invalidateClientCache(){_clientCache=null;}
 /* ══════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════ */
-let _routeInProgress=false;
-let _lastRoutedUid=null;
+let _routeInProgress = false;
+let _bootHandled = false; // true once boot() has routed the user
 
 async function boot(){
   // Pre-fill remembered email
-  const remEmail=localStorage.getItem('lunar_remember_email');
-  const remPref=localStorage.getItem('lunar_remember_pref');
-  const emailEl=document.getElementById('si-email');
-  const cb=document.getElementById('si-remember');
-  if(remEmail&&emailEl)emailEl.value=remEmail;
-  if(cb)cb.checked=remPref!=='false';
+  const remEmail = localStorage.getItem('lunar_remember_email');
+  const remPref  = localStorage.getItem('lunar_remember_pref');
+  const emailEl  = document.getElementById('si-email');
+  const cb       = document.getElementById('si-remember');
+  if(remEmail && emailEl) emailEl.value = remEmail;
+  if(cb) cb.checked = remPref !== 'false';
 
   try{
-    const {data:{session}}=await sb.auth.getSession();
+    const {data:{session}} = await sb.auth.getSession();
     hide('loading-screen');
     if(session){
-      currentUser=session.user;
-      await routeUser(currentUser.id);
+      currentUser  = session.user;
+      _bootHandled = true;
+      await routeUser();
     } else {
       show('auth-screen');
     }
   }catch(e){
-    console.error('Boot:',e);
+    console.error('Boot:', e);
     hide('loading-screen');
     show('auth-screen');
   }
 }
 
-// Auth state listener — single source of truth after boot
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_IN'&&session){
-    currentUser=session.user;
-    // Reset button states
-    const btn=document.querySelector('#client-auth-card .btn-primary');
-    if(btn){btn.textContent='Sign In →';btn.disabled=false;}
-    const adminBtn=document.querySelector('#admin-auth-card .btn-primary');
-    if(adminBtn){adminBtn.textContent='Sign In as Admin →';adminBtn.disabled=false;}
-    // Skip if already routed for this exact user
-    if(_lastRoutedUid===session.user.id)return;
+sb.auth.onAuthStateChange(async(event, session)=>{
+  if(event === 'SIGNED_IN' && session){
+    currentUser = session.user;
+    // Reset any stuck button states
+    const btn = document.querySelector('#client-auth-card .btn-primary');
+    if(btn){btn.textContent = 'Sign In →'; btn.disabled = false;}
+    const adminBtn = document.querySelector('#admin-auth-card .btn-primary');
+    if(adminBtn){adminBtn.textContent = 'Sign In as Admin →'; adminBtn.disabled = false;}
+    // boot() already routed on page load — don't double-route
+    if(_bootHandled){ _bootHandled = false; return; }
+    // Fresh sign-in (or account switch) — route now
     hide('auth-screen');
-    await routeUser(session.user.id);
+    await routeUser();
   }
-  if(event==='SIGNED_OUT'){
-    _routeInProgress=false;
-    _lastRoutedUid=null;
-    currentUser=null;currentClientId=null;isAdminUser=false;
+  if(event === 'SIGNED_OUT'){
+    _routeInProgress = false;
+    _bootHandled     = false;
+    currentUser = null; currentClientId = null; isAdminUser = false;
     invalidateClientCache();
-    // Hide all screens and overlays
     hide('app');
     hide('admin-app');
     document.getElementById('admin-app')?.classList.remove('open');
@@ -1035,33 +1035,30 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     document.getElementById('account-menu')?.classList.remove('open');
     document.getElementById('signout-confirm')?.classList.remove('open');
     document.getElementById('chpw-modal')?.classList.remove('open');
-    if(document.getElementById('chemail-modal'))document.getElementById('chemail-modal').style.display='none';
-    if(document.getElementById('resetpw-modal'))document.getElementById('resetpw-modal').style.display='none';
-    if(document.getElementById('admin-modal-overlay'))document.getElementById('admin-modal-overlay').style.display='none';
+    if(document.getElementById('chemail-modal'))   document.getElementById('chemail-modal').style.display   = 'none';
+    if(document.getElementById('resetpw-modal'))   document.getElementById('resetpw-modal').style.display   = 'none';
+    if(document.getElementById('admin-modal-overlay')) document.getElementById('admin-modal-overlay').style.display = 'none';
     document.getElementById('notif-tray')?.classList.remove('open');
     show('auth-screen');
     showClientAuth();
   }
 });
 
-async function routeUser(uid){
-  // Prevent concurrent routing; prevent re-routing same user twice
-  if(_routeInProgress)return;
-  if(_lastRoutedUid===uid)return;
-  _routeInProgress=true;
-  _lastRoutedUid=uid;
+async function routeUser(){
+  if(_routeInProgress) return;
+  _routeInProgress = true;
   hide('app');
   hide('admin-app');
   document.getElementById('admin-app')?.classList.remove('open');
   try{
-    const isAdmin=await checkIsAdmin();
-    if(isAdmin){isAdminUser=true;await enterAdminApp();}
-    else{isAdminUser=false;await enterApp();}
+    const isAdmin = await checkIsAdmin();
+    if(isAdmin){ isAdminUser = true;  await enterAdminApp(); }
+    else        { isAdminUser = false; await enterApp();      }
   }catch(e){
-    console.error('routeUser error:',e);
-    try{await enterApp();}catch(_){}
+    console.error('routeUser:', e);
+    try{ await enterApp(); }catch(_){}
   }
-  _routeInProgress=false;
+  _routeInProgress = false;
 }
 
 async function checkIsAdmin(){
