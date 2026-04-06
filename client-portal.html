@@ -121,12 +121,10 @@ textarea.field{resize:none;line-height:1.5}
 .greeting-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:white;backdrop-filter:blur(4px)}
 
 /* ── STAT SCROLL ── */
-.stat-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
-.stat-scroll::-webkit-scrollbar{display:none}
-.stat-card{background:var(--white);border-radius:var(--radius);padding:18px 16px;min-width:140px;flex-shrink:0;box-shadow:var(--shadow)}
-.stat-ic{width:36px;height:36px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.stat-ic svg{width:18px;height:18px;fill:none;stroke-width:2}
-.stat-val{font-family:var(--font-display);font-size:26px;font-weight:600;line-height:1}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.stat-ic{width:34px;height:34px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;margin-bottom:10px;flex-shrink:0}
+.stat-ic svg{width:16px;height:16px;fill:none;stroke-width:2}
+.stat-val{font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1}
 .stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500}
 .stat-pill{display:inline-flex;align-items:center;margin-top:8px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
 
@@ -204,17 +202,6 @@ textarea.field{resize:none;line-height:1.5}
 .msg-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .msg-time{font-size:11px;color:var(--muted)}
 .unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
-
-/* ── ANALYTICS ── */
-.metric-row{display:flex;gap:10px;margin-bottom:14px}
-.metric-card{flex:1;background:var(--off);border-radius:var(--radius-sm);padding:14px 12px;text-align:center}
-.metric-val{font-family:var(--font-display);font-size:22px;font-weight:600}
-.metric-lbl{font-size:10px;color:var(--muted);margin-top:2px;font-weight:500}
-.bar-chart{display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:8px}
-.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.bar{width:100%;border-radius:5px 5px 0 0;background:var(--orange-m);min-height:4px;transition:height .8s cubic-bezier(.22,1,.36,1)}
-.bar.hi{background:var(--orange)}
-.bar-lbl{font-size:9px;color:var(--muted)}
 
 /* ── APPOINTMENTS ── */
 .appt-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -567,24 +554,30 @@ textarea.field{resize:none;line-height:1.5}
     </div>
 
     <!-- STATS -->
-    <div class="stat-scroll" id="stat-scroll">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px" id="stat-grid">
       <div class="stat-card">
-        <div class="stat-ic bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-        <div class="stat-val c-orange" id="s-campaigns">—</div>
-        <div class="stat-lbl">Live Campaigns</div>
-        <div class="stat-pill up">Active</div>
+        <div class="stat-ic bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange);fill:none;stroke-width:2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div class="stat-val c-orange" id="sc-adspend">—</div>
+        <div class="stat-lbl">Ad Spend</div>
+        <div class="stat-pill up">This month</div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green)"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <div class="stat-val c-green" id="s-roas">—</div>
+        <div class="stat-ic bg-green"><svg viewBox="0 0 24 24" style="stroke:var(--green);fill:none;stroke-width:2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="stat-val c-green" id="sc-roas">—</div>
         <div class="stat-lbl">ROAS</div>
-        <div class="stat-pill up" id="s-roas-pill">Latest</div>
+        <div class="stat-pill up">Return</div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--blue)"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-        <div class="stat-val c-blue" id="s-outstanding">—</div>
+        <div class="stat-ic bg-blue"><svg viewBox="0 0 24 24" style="stroke:var(--blue);fill:none;stroke-width:2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="stat-val c-blue" id="sc-outstanding">—</div>
         <div class="stat-lbl">Outstanding</div>
-        <div class="stat-pill down" id="s-inv-pill">Invoices</div>
+        <div class="stat-pill down">Invoices</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic bg-amber"><svg viewBox="0 0 24 24" style="stroke:var(--amber);fill:none;stroke-width:2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="stat-val c-amber" id="sc-conv">—</div>
+        <div class="stat-lbl">Conv. Rate</div>
+        <div class="stat-pill up">Latest</div>
       </div>
     </div>
 
@@ -602,20 +595,6 @@ textarea.field{resize:none;line-height:1.5}
         <input type="checkbox" id="auto-approve-toggle" onchange="onAutoApprove(this)"/>
         <span class="toggle-slider"></span>
       </label>
-    </div>
-
-    <!-- PERFORMANCE -->
-    <div class="section-head">
-      <div class="section-title">Performance</div>
-    </div>
-    <div class="bubble">
-      <div class="metric-row">
-        <div class="metric-card"><div class="metric-val c-orange" id="m-roas">—</div><div class="metric-lbl">ROAS</div></div>
-        <div class="metric-card"><div class="metric-val c-green" id="m-ctr">—</div><div class="metric-lbl">CTR</div></div>
-        <div class="metric-card"><div class="metric-val c-amber" id="m-conv">—</div><div class="metric-lbl">Conv. Rate</div></div>
-      </div>
-      <div class="bar-chart" id="bar-chart"></div>
-      <div style="display:flex;gap:5px" id="bar-labels"></div>
     </div>
 
     <!-- INVOICES -->
@@ -640,8 +619,8 @@ textarea.field{resize:none;line-height:1.5}
       <div style="display:flex;align-items:center;gap:12px;padding:4px 0">
         <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#FF6B2C,#F5A623);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0">CM</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:600">Account Manager</div>
-          <div style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Lunar Agency</div>
+          <div style="font-size:14px;font-weight:600">Curtis Moon</div>
+          <div style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-top:1px">Account Manager</div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px" id="chat-preview-text">Tap to chat with your account manager</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
@@ -754,14 +733,14 @@ textarea.field{resize:none;line-height:1.5}
       </div>
       <div class="admin-card">
         <div class="admin-card-title">Performance Data</div>
-        <div style="margin-bottom:12px"><label class="form-label">Month</label><input class="field" id="s-month" placeholder="e.g. April 2026" style="margin-bottom:0"/></div>
+        <div style="margin-bottom:12px"><label class="form-label">Month</label><input class="field" id="stat-month" placeholder="e.g. April 2026" style="margin-bottom:0"/></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div><label class="form-label">ROAS</label><input class="field" id="s-roas" placeholder="3.8" style="margin-bottom:0"/></div>
-          <div><label class="form-label">CTR (%)</label><input class="field" id="s-ctr" placeholder="4.2" style="margin-bottom:0"/></div>
+          <div><label class="form-label">Ad Spend ($)</label><input class="field" type="number" id="stat-adspend" placeholder="12400" style="margin-bottom:0"/></div>
+          <div><label class="form-label">ROAS</label><input class="field" type="number" id="stat-roas" placeholder="3.8" style="margin-bottom:0"/></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-          <div><label class="form-label">Conv Rate (%)</label><input class="field" id="s-conv" placeholder="12" style="margin-bottom:0"/></div>
-          <div><label class="form-label">Ad Spend ($)</label><input class="field" id="s-spend" placeholder="12400" style="margin-bottom:0"/></div>
+          <div><label class="form-label">Conv. Rate (%)</label><input class="field" type="number" id="stat-conv" placeholder="4.2" style="margin-bottom:0"/></div>
+          <div style="display:flex;align-items:flex-end"><div style="font-size:12px;color:var(--muted);padding-bottom:8px;line-height:1.4">These 4 values show on the client dashboard.</div></div>
         </div>
         <button class="btn-primary" style="margin-bottom:0" onclick="saveAdminStats()">Update Stats →</button>
       </div>
@@ -803,7 +782,7 @@ textarea.field{resize:none;line-height:1.5}
     <div class="chat-am-av" id="chat-am-av">CM</div>
     <div class="chat-am-info">
       <div class="chat-am-name" id="chat-am-name">Account Manager</div>
-      <div class="chat-am-role">Lunar Agency</div>
+      <div class="chat-am-role">Curtis Moon</div>
     </div>
     <div class="chat-online"></div>
   </div>
@@ -1348,16 +1327,16 @@ function renderEmptyState(){
   });
   const ga=document.getElementById('badge-approvals');
   if(ga)ga.textContent='⚡ Nothing to approve';
-  ['s-campaigns','s-outstanding','s-roas','m-roas','m-ctr','m-conv'].forEach(id=>{
+  ['sc-adspend','sc-roas','sc-outstanding','sc-conv'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent='—';
   });
-  renderBars([]);
 }
 
 function updateStats(invoices){
-  const outstanding=invoices.filter(i=>i.status==='upcoming'||i.status==='due').reduce((s,i)=>s+Number(i.amount||0),0);
-  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  set('s-outstanding',outstanding>0?'$'+(outstanding/1000).toFixed(1)+'k':'—');
+  const outstanding=invoices.filter(i=>i.status==='upcoming'||i.status==='due')
+    .reduce((s,i)=>s+Number(i.amount||0),0);
+  const el=document.getElementById('sc-outstanding');
+  if(el)el.textContent=outstanding>0?'$'+outstanding.toLocaleString():'—';
 }
 
 function renderInvoices(data,containerId){
@@ -1412,30 +1391,9 @@ function renderAppts(data,containerId){
 
 function renderPerf(p){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  if(!p){
-    set('s-roas','—');
-    set('m-roas','—');set('m-ctr','—');set('m-conv','—');
-    renderBars([]);return;
-  }
-  const roas=p.roas?Number(p.roas).toFixed(1)+'×':'—';
-  const ctr=p.ctr?Number(p.ctr).toFixed(1)+'%':'—';
-  const conv=p.conv_rate?Number(p.conv_rate).toFixed(1)+'%':'—';
-  set('s-roas',roas);   // top stat card
-  set('m-roas',roas);   // bottom performance card
-  set('m-ctr',ctr);
-  set('m-conv',conv);
-  renderBars([]);
-}
-
-function renderBars(data){
-  const bc=document.getElementById('bar-chart');
-  const bl=document.getElementById('bar-labels');
-  if(!bc||!bl)return;
-  if(!data.length){bc.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;width:100%;padding:20px">No performance data yet</div>';bl.innerHTML='';return;}
-  const max=Math.max(...data.map(b=>b.v));
-  bc.innerHTML=data.map(b=>`<div class="bar-col"><div class="bar${b.hi?' hi':''}" style="height:0" data-h="${Math.round(b.v/max*70)}px"></div></div>`).join('');
-  bl.innerHTML=data.map(b=>`<div class="bar-col"><div class="bar-lbl">${b.l}</div></div>`).join('');
-  setTimeout(()=>document.querySelectorAll('.bar').forEach(b=>b.style.height=b.dataset.h),200);
+  set('sc-adspend', p?.ad_spend ? '$'+Number(p.ad_spend).toLocaleString() : '—');
+  set('sc-roas',    p?.roas     ? Number(p.roas).toFixed(1)+'×'           : '—');
+  set('sc-conv',    p?.conv_rate? Number(p.conv_rate).toFixed(1)+'%'      : '—');
 }
 
 function renderApprovals(data){
@@ -2129,11 +2087,23 @@ async function sendResetEmail(){
 async function saveAdminStats(){
   const clientId=v('stats-client-select');
   if(!clientId){toast('Please select a client first.');return;}
-  const roas=v('s-roas'),ctr=v('s-ctr'),conv_rate=v('s-conv'),ad_spend=v('s-spend'),month=v('s-month');
-  const {error}=await sb.from('performance').insert({client_id:clientId,roas,ctr,conv_rate,ad_spend:Number(ad_spend)||0,month});
+  const ad_spend=v('stat-adspend');
+  const roas=v('stat-roas');
+  const conv_rate=v('stat-conv');
+  const month=v('stat-month');
+  if(!month){toast('Please enter a month.');return;}
+  const {error}=await sb.from('performance').insert({
+    client_id:clientId,
+    ad_spend:Number(ad_spend)||0,
+    roas:roas?Number(roas):null,
+    conv_rate:conv_rate?Number(conv_rate):null,
+    month
+  });
   if(error){toast('Error: '+error.message);return;}
   toast('✓ Stats updated!');
-  ['s-roas','s-ctr','s-conv','s-spend','s-month'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['stat-adspend','stat-roas','stat-conv','stat-month'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
 }
 
 /* ── ADMIN MODALS ── */
@@ -2611,7 +2581,7 @@ function navTo(id,btn){
   btn.classList.add('on');
   const targets={
     home:()=>window.scrollTo({top:0,behavior:'smooth'}),
-    performance:()=>document.querySelector('.metric-row')?.scrollIntoView({behavior:'smooth',block:'start'}),
+    performance:()=>document.getElementById('stat-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),
     files:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth',block:'start'}),
     messages:()=>openChat(),
   };
