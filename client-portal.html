@@ -237,7 +237,7 @@ textarea.field{resize:none;line-height:1.5}
 .gate-card{background:var(--white);border-radius:28px;padding:32px 28px;width:320px;max-width:92vw;box-shadow:var(--shadow-lg);animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
 
 /* ── SIGN OUT CONFIRM ── */
-#signout-confirm{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+#signout-confirm{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
 #signout-confirm.open{display:flex}
 .signout-card{background:var(--white);border-radius:24px;padding:28px 24px;width:300px;max-width:90vw;box-shadow:var(--shadow-lg);animation:slideUp .25s cubic-bezier(.22,1,.36,1);text-align:center}
 .signout-card .so-icon{width:52px;height:52px;border-radius:50%;background:var(--red-l);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
@@ -349,7 +349,7 @@ textarea.field{resize:none;line-height:1.5}
 .acct-divider{height:1px;background:var(--border);margin:2px 0}
 
 /* ── CHANGE PASSWORD MODAL ── */
-#chpw-modal{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+#chpw-modal{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
 #chpw-modal.open{display:flex}
 .chpw-card{background:var(--white);border-radius:24px;padding:28px 24px;width:340px;max-width:92vw;box-shadow:var(--shadow-lg);animation:slideUp .25s cubic-bezier(.22,1,.36,1)}
 .chpw-card h3{font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:4px}
@@ -897,7 +897,7 @@ textarea.field{resize:none;line-height:1.5}
 </div>
 
 <!-- CHANGE EMAIL MODAL -->
-<div id="chemail-modal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center">
+<div id="chemail-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center">
   <div class="chpw-card">
     <h3>Change Email</h3>
     <p>A confirmation will be sent to your new address.</p>
@@ -1674,10 +1674,19 @@ async function loadAdminInbox(){
   if(!list)return;
   list.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Loading...</div>';
 
-  const [{data:clients},{data:msgs}]=await Promise.all([
-    sb.from('clients').select('id,name,email,color,created_at,auth_user_id').order('created_at',{ascending:false}),
-    sb.from('messages').select('*').order('created_at',{ascending:false})
-  ]);
+  // Try to fetch with auth_user_id, fall back without it if column doesn't exist
+  let clientsData=null;
+  try{
+    const {data,error}=await sb.from('clients').select('id,name,email,color,created_at,auth_user_id').order('created_at',{ascending:false});
+    if(error)throw error;
+    clientsData=data;
+  }catch(e){
+    // auth_user_id column may not exist yet — fetch without it
+    const {data}=await sb.from('clients').select('id,name,email,color,created_at').order('created_at',{ascending:false});
+    clientsData=data;
+  }
+  const clients=clientsData||[];
+  const {data:msgs}=await sb.from('messages').select('*').order('created_at',{ascending:false});
 
   if(!clients?.length){
     list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No clients yet</div>';
@@ -1783,33 +1792,56 @@ async function loadAdminVideos(tab='approved'){
   if(!list)return;
   list.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div>';
 
-  let query=sb.from('files').select('*,clients(name,color)').order('created_at',{ascending:false});
+  let query=sb.from('files').select('*').order('created_at',{ascending:false});
   if(tab==='approved'){
     query=query.eq('approved',true);
   } else {
     query=query.not('revision_note','is',null).neq('revision_note','');
   }
   const {data,error}=await query;
-  if(error){list.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">Error loading videos</div>';return;}
-  if(!data?.length){
-    list.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">${tab==='approved'?'No approved videos yet':'No revision requests yet'}</div>`;
+  if(error){
+    console.error('loadAdminVideos:',error);
+    list.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">Error loading files: '+esc(error.message)+'</div>';
     return;
   }
+  if(!data?.length){
+    list.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">${tab==='approved'?'No approved files yet':'No revision requests yet'}</div>`;
+    return;
+  }
+
+  // Get client names from cache
+  const clients=await getClients();
+  const clientById={};
+  clients.forEach(c=>clientById[c.id]=c);
+
   const videoTypes=new Set(['MP4','MOV','WEBM']);
   list.innerHTML=data.map(f=>{
-    const ext=(f.file_type||'').toUpperCase();
+    const ext=(f.file_type||'FILE').toUpperCase();
     const isVid=videoTypes.has(ext);
-    const clientName=f.clients?.name||'Unknown client';
-    const clientColor=f.clients?.color||'#9C958F';
+    const client=clientById[f.client_id];
+    const clientName=client?.name||'Unknown client';
+    const clientColor=client?.color||'#9C958F';
     const dt=new Date(f.created_at);
     const dateStr=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const previewAction=isVid&&f.drive_embed_url
-      ?`onclick="playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')"`
-      :f.drive_view_url?`onclick="window.open('${esc(f.drive_view_url)}','_blank')"`:'' ;
+
+    // Build tap action — try embed first, then view, then nothing
+    let thumbAction='';
+    let thumbInner='<div style="color:rgba(255,255,255,.4);font-size:32px;pointer-events:none">↗</div>';
+    if(isVid&&f.drive_embed_url){
+      thumbAction=`onclick="playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')"`;
+      thumbInner='<div class="play-btn" style="pointer-events:none"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
+    } else if(f.drive_view_url){
+      thumbAction=`onclick="window.open('${esc(f.drive_view_url)}','_blank')"`;
+      thumbInner='<div style="color:rgba(255,255,255,.6);font-size:13px;font-weight:600;pointer-events:none">TAP TO VIEW ↗</div>';
+    } else if(f.drive_embed_url){
+      thumbAction=`onclick="playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')"`;
+      thumbInner='<div class="play-btn" style="pointer-events:none"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
+    }
+
     return `<div class="review-card">
-      <div class="review-card-thumb" ${previewAction}>
-        <div class="media-type-badge">${ext||'FILE'}</div>
-        ${isVid?'<div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>':'<div style="color:rgba(255,255,255,.4);font-size:28px">↗</div>'}
+      <div class="review-card-thumb" ${thumbAction} style="${thumbAction?'cursor:pointer':''}">
+        <div class="media-type-badge">${ext}</div>
+        ${thumbInner}
       </div>
       <div class="review-card-body">
         <div class="review-card-name">${esc(f.name)}</div>
@@ -1853,7 +1885,12 @@ function openAdminChat(roomId,name,color){
 
 async function loadAdminInvoices(){
   const list=document.getElementById('admin-invoices-list');if(!list)return;
-  const {data}=await sb.from('invoices').select('*,clients(name)').order('created_at',{ascending:false}).limit(10);
+  const [{data},clients]=await Promise.all([
+    sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(20),
+    getClients()
+  ]);
+  const clientById={};
+  clients.forEach(c=>clientById[c.id]=c);
   if(!data?.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No invoices yet</div>';return;}
   const bg={paid:'bg-green c-green',due:'bg-orange c-orange',upcoming:'bg-amber c-amber'};
   const lbl={paid:'Paid',due:'Due Soon',upcoming:'Upcoming'};
@@ -1861,7 +1898,7 @@ async function loadAdminInvoices(){
     <div class="inv-item">
       <div class="inv-left">
         <div class="inv-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <div><div class="inv-id">${esc(i.invoice_number||'')} <span style="font-size:11px;color:var(--muted)">${esc(i.clients?.name||'')}</span></div><div class="inv-date">${esc(i.due_date||'')}</div></div>
+        <div><div class="inv-id">${esc(i.invoice_number||'')} <span style="font-size:11px;color:var(--muted)">${esc(clientById[i.client_id]?.name||'')}</span></div><div class="inv-date">${esc(i.due_date||'')}</div></div>
       </div>
       <div class="inv-right">
         <div class="inv-amt">$${Number(i.amount||0).toLocaleString()}</div>
