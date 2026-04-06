@@ -877,34 +877,12 @@ textarea.field{resize:none;line-height:1.5}
 <div id="resetpw-modal" style="display:none;position:fixed;inset:0;z-index:810;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center">
   <div class="chpw-card">
     <h3>Reset Password</h3>
-    <p id="resetpw-sub">For <strong id="resetpw-name"></strong></p>
-    <!-- Tab toggle -->
-    <div class="tab-row" style="margin-bottom:18px">
-      <button class="tab-btn on" id="resetpw-tab-email" onclick="switchResetTab('email')">Send Email</button>
-      <button class="tab-btn" id="resetpw-tab-manual" onclick="switchResetTab('manual')">Set Manually</button>
-    </div>
-    <!-- Email tab -->
-    <div id="resetpw-email-panel">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">A password reset link will be sent to <strong id="resetpw-email-display"></strong></p>
-      <div id="resetpw-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
-      <div class="btn-row">
-        <button class="btn-cancel" onclick="closeResetPassword()">Cancel</button>
-        <button class="btn-save" id="resetpw-send-btn" onclick="sendResetEmail()">Send Link</button>
-      </div>
-    </div>
-    <!-- Manual tab -->
-    <div id="resetpw-manual-panel" style="display:none">
-      <div class="pw-field-wrap">
-        <input class="field" id="resetpw-new" type="password" placeholder="New password"/>
-        <button class="pw-toggle" type="button" onclick="togglePw('resetpw-new',this)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-      <div id="resetpw-manual-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
-      <div class="btn-row">
-        <button class="btn-cancel" onclick="closeResetPassword()">Cancel</button>
-        <button class="btn-save" id="resetpw-manual-btn" onclick="saveManualReset()">Set Password</button>
-      </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:6px">A password reset link will be sent to:</p>
+    <p style="font-size:14px;font-weight:600;margin-bottom:20px;word-break:break-all" id="resetpw-email-display"></p>
+    <div id="resetpw-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeResetPassword()">Cancel</button>
+      <button class="btn-save" id="resetpw-send-btn" onclick="sendResetEmail()">Send Reset Link</button>
     </div>
   </div>
 </div>
@@ -936,7 +914,49 @@ const DRIVE_ROOT_FOLDER = '1Gdze4pOGygErK6NpLjUZwL5Br_oCpR30';
 const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
 const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+/*
+  ══════════════════════════════════════════════════════
+  REQUIRED: Run this SQL in Supabase → SQL Editor
+  This gives the admin broad read/write access to all tables.
+  ══════════════════════════════════════════════════════
+
+  -- Helper function (run once)
+  CREATE OR REPLACE FUNCTION is_admin()
+  RETURNS boolean LANGUAGE sql SECURITY DEFINER AS $$
+    SELECT EXISTS (
+      SELECT 1 FROM admins WHERE id = auth.uid()
+    ) OR auth.jwt()->>'email' = 'cm.fileshares@gmail.com';
+  $$;
+
+  -- Broad read policy for admin on all key tables
+  DO $$ DECLARE t text;
+  BEGIN FOR t IN SELECT unnest(ARRAY['clients','projects','invoices','files','appointments','performance','messages','admins'])
+  LOOP
+    EXECUTE format('CREATE POLICY IF NOT EXISTS "admin_read_all" ON %I FOR SELECT TO authenticated USING (is_admin())', t);
+    EXECUTE format('CREATE POLICY IF NOT EXISTS "admin_write_all" ON %I FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin())', t);
+  END LOOP; END $$;
+
+  -- Client can only see their own data
+  CREATE POLICY IF NOT EXISTS "client_own_data" ON clients FOR SELECT TO authenticated
+    USING (email = auth.jwt()->>'email');
+  ══════════════════════════════════════════════════════
+*/
+
+// Remember Me: use sessionStorage (tab-only) when not remembered, localStorage (persistent) when remembered.
+// We rebuild the Supabase client depending on the choice.
+function buildSbClient(persist){
+  return supabase.createClient(SUPABASE_URL, SUPABASE_ANON,{
+    auth:{
+      storage: persist ? window.localStorage : window.sessionStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+    }
+  });
+}
+
+// Default: check localStorage for remembered preference, default to persistent
+const _rememberDefault = localStorage.getItem('lunar_remember_pref') !== 'false';
+let sb = buildSbClient(_rememberDefault);
 let currentUser = null;
 let currentClientId = null;
 let isAdminUser = false;
@@ -949,18 +969,37 @@ let googleAccessToken = null;
 let _pendingUploadFile = null;
 const DB_notifs = [];
 
+// Client cache — loaded once on admin login, refreshed after add/delete
+let _clientCache = null;
+let _clientCacheLoading = null;
+
+async function getClients(forceRefresh=false){
+  if(_clientCache&&!forceRefresh)return _clientCache;
+  if(_clientCacheLoading)return _clientCacheLoading;
+  _clientCacheLoading=(async()=>{
+    const {data,error}=await sb.from('clients').select('id,name,email,company,color,created_at').order('name');
+    _clientCacheLoading=null;
+    if(error){console.error('getClients:',error);return _clientCache||[];}
+    _clientCache=data||[];
+    return _clientCache;
+  })();
+  return _clientCacheLoading;
+}
+
+function invalidateClientCache(){_clientCache=null;}
+
 /* ══════════════════════════════════════════
    BOOT — fast path first, no long waits
 ══════════════════════════════════════════ */
 async function boot(){
-  // Pre-fill remembered email
-  const rem=localStorage.getItem('lunar_remember');
-  if(rem){
-    const el=document.getElementById('si-email');
-    if(el)el.value=rem;
-    const cb=document.getElementById('si-remember');
-    if(cb)cb.checked=true;
-  }
+  // Pre-fill remembered email and set checkbox
+  const remEmail=localStorage.getItem('lunar_remember_email');
+  const remPref=localStorage.getItem('lunar_remember_pref');
+  const willRemember=remPref!=='false'; // default true
+  const emailEl=document.getElementById('si-email');
+  const cb=document.getElementById('si-remember');
+  if(remEmail&&emailEl)emailEl.value=remEmail;
+  if(cb)cb.checked=willRemember;
   try{
     // Short 2s timeout — Supabase session check is local storage, should be instant
     const p=sb.auth.getSession();
@@ -1043,10 +1082,16 @@ async function signIn(){
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
   if(btn){btn.textContent='Signing in…';btn.disabled=true;}
-  const remember=document.getElementById('si-remember')?.checked;
-  // Supabase persists session by default; for "forget me" use local storage only flag
-  if(remember){localStorage.setItem('lunar_remember',email);}
-  else{localStorage.removeItem('lunar_remember');}
+
+  const remember=document.getElementById('si-remember')?.checked!==false;
+  // Save preference so the right client is built on next page load
+  localStorage.setItem('lunar_remember_pref', remember?'true':'false');
+  // Save email for pre-fill
+  if(remember){localStorage.setItem('lunar_remember_email',email);}
+  else{localStorage.removeItem('lunar_remember_email');}
+  // Rebuild the sb client with the right storage
+  sb=buildSbClient(remember);
+
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
     err.textContent=error.message;
@@ -1599,8 +1644,7 @@ async function loadAdminData(){
 }
 
 async function loadAdminClientSelects(){
-  const {data:clients}=await sb.from('clients').select('id,name').order('name');
-  if(!clients)return;
+  const clients=await getClients();
   const opts=clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
   ['upload-client-select','invoice-client-select','stats-client-select'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1725,8 +1769,9 @@ async function loadAdminInvoices(){
 
 async function loadAdminClients(){
   const list=document.getElementById('admin-clients-list');if(!list)return;
-  const {data}=await sb.from('clients').select('*').order('name');
-  if(!data?.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No clients yet</div>';return;}
+  list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Loading…</div>';
+  const data=await getClients();
+  if(!data.length){list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No clients yet</div>';return;}
   list.innerHTML=data.map((c,i)=>`
     <div class="admin-client-row" style="cursor:default">
       <div class="admin-client-av" style="background:${c.color||CLIENT_COLORS[i%6]}">${(c.name||'?').charAt(0).toUpperCase()}</div>
@@ -1745,27 +1790,15 @@ async function loadAdminClients(){
 let _resetEmail='';
 function openResetPassword(email,name){
   _resetEmail=email;
-  document.getElementById('resetpw-name').textContent=name||email;
   document.getElementById('resetpw-email-display').textContent=email;
   document.getElementById('resetpw-err').textContent='';
-  document.getElementById('resetpw-manual-err').textContent='';
-  document.getElementById('resetpw-new').value='';
-  const sendBtn=document.getElementById('resetpw-send-btn');
-  const manBtn=document.getElementById('resetpw-manual-btn');
-  if(sendBtn){sendBtn.textContent='Send Link';sendBtn.disabled=false;}
-  if(manBtn){manBtn.textContent='Set Password';manBtn.disabled=false;}
-  switchResetTab('email');
+  const btn=document.getElementById('resetpw-send-btn');
+  if(btn){btn.textContent='Send Reset Link';btn.disabled=false;}
   document.getElementById('resetpw-modal').style.display='flex';
 }
 function closeResetPassword(){
   document.getElementById('resetpw-modal').style.display='none';
   _resetEmail='';
-}
-function switchResetTab(tab){
-  document.getElementById('resetpw-email-panel').style.display=tab==='email'?'block':'none';
-  document.getElementById('resetpw-manual-panel').style.display=tab==='manual'?'block':'none';
-  document.getElementById('resetpw-tab-email').classList.toggle('on',tab==='email');
-  document.getElementById('resetpw-tab-manual').classList.toggle('on',tab==='manual');
 }
 async function sendResetEmail(){
   const btn=document.getElementById('resetpw-send-btn');
@@ -1773,39 +1806,16 @@ async function sendResetEmail(){
   errEl.textContent='';
   if(!_resetEmail){errEl.textContent='No email address found.';return;}
   btn.textContent='Sending…';btn.disabled=true;
-  const {error}=await sb.auth.resetPasswordForEmail(_resetEmail,{
-    redirectTo:window.location.href
-  });
+  // redirectTo must be an allowed redirect URL in your Supabase Auth settings
+  const redirectTo=window.location.origin+window.location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(_resetEmail,{redirectTo});
   if(error){
     errEl.textContent=error.message;
-    btn.textContent='Send Link';btn.disabled=false;
+    btn.textContent='Send Reset Link';btn.disabled=false;
     return;
   }
   closeResetPassword();
   toast('✓ Reset link sent to '+_resetEmail);
-}
-async function saveManualReset(){
-  const np=document.getElementById('resetpw-new').value;
-  const errEl=document.getElementById('resetpw-manual-err');
-  const btn=document.getElementById('resetpw-manual-btn');
-  errEl.textContent='';
-  if(!np){errEl.textContent='Please enter a new password.';return;}
-  if(np.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
-  btn.textContent='Setting…';btn.disabled=true;
-  // Use admin API endpoint directly — avoids touching the current admin session
-  try{
-    const res=await fetch(SUPABASE_URL+'/auth/v1/admin/users',{
-      method:'GET',
-      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
-    });
-    // We can't list users with anon key — use resetPasswordForEmail as fallback
-    // and tell admin it was sent
-    errEl.textContent='Manual reset requires service key. Use "Send Email" instead.';
-    btn.textContent='Set Password';btn.disabled=false;
-  }catch(e){
-    errEl.textContent='Error: '+e.message;
-    btn.textContent='Set Password';btn.disabled=false;
-  }
 }
 
 async function saveAdminStats(){
@@ -1874,10 +1884,12 @@ function openAdminModal(type){
   const content=document.getElementById('admin-modal-content');
   content.innerHTML=tpl();
   overlay.style.display='flex';
-  // Populate all client dropdowns that appear in any modal
-  sb.from('clients').select('id,name').order('name').then(({data,error})=>{
-    if(error){console.error('loadClients for modal:',error);return;}
-    const clients=data||[];
+
+  // 'add-client' has no client dropdown — nothing to populate
+  if(type==='add-client')return;
+
+  // Use cached clients — instant if already loaded, single fetch if not
+  const populate=(clients)=>{
     const opts=clients.length
       ? clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')
       : '';
@@ -1886,7 +1898,15 @@ function openAdminModal(type){
       const el=document.getElementById(id);
       if(el)el.innerHTML=emptyOpt+opts;
     });
-  });
+  };
+
+  if(_clientCache){
+    // Instant — already in memory
+    populate(_clientCache);
+  } else {
+    // First load — fetch and populate
+    getClients().then(populate);
+  }
 }
 function closeAdminModal(){
   document.getElementById('admin-modal-overlay').style.display='none';
@@ -2014,6 +2034,8 @@ async function saveNewClient(){
   }
 
   closeAdminModal();
+  invalidateClientCache();
+  await getClients(); // pre-warm cache immediately
   loadAdminClients();
   loadAdminClientSelects();
 }
