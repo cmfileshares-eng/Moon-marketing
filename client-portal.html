@@ -1208,34 +1208,6 @@ async function saveNewEmail(){
    CLIENT PORTAL
 ══════════════════════════════════════════ */
 
-/* Check that the logged-in user still has an active auth account AND a
-   matching row in the clients table. If either is gone, sign them out
-   and show an appropriate message. */
-async function verifyAccountStillExists(){
-  if(!currentUser)return false;
-  try{
-    // 1. Confirm the auth session is still valid (getUser hits the server)
-    const {data:{user},error}=await sb.auth.getUser();
-    if(error||!user){
-      console.warn('verifyAccount: auth user gone',error?.message);
-      return false;
-    }
-    // 2. Confirm the clients row still exists (non-admins only)
-    if(!isAdminUser){
-      const {data:row,error:rowErr}=await sb.from('clients').select('id').eq('email',user.email).maybeSingle();
-      if(rowErr){console.warn('verifyAccount: clients query error',rowErr.message);}
-      if(!row){
-        console.warn('verifyAccount: no clients row for',user.email);
-        return false;
-      }
-    }
-    return true;
-  }catch(e){
-    console.error('verifyAccount error:',e);
-    return false;
-  }
-}
-
 async function enterApp(){
   try{
     show('app');hide('loading-screen');hide('auth-screen');
@@ -1248,18 +1220,6 @@ async function enterApp(){
     if(ap)ap.textContent=firstName.charAt(0).toUpperCase();
     if(gn)gn.textContent=firstName+' ☽';
     if(gd)gd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-
-    // Verify account still exists before loading portal data
-    const exists=await verifyAccountStillExists();
-    if(!exists){
-      toast('Your account could not be found. Please sign in again.');
-      setTimeout(async()=>{
-        hide('app');
-        await sb.auth.signOut();
-      },1800);
-      return;
-    }
-
     const {data:cr}=await sb.from('clients').select('id').eq('email',currentUser.email).maybeSingle();
     if(cr)currentClientId=cr.id;
     await loadClientPortal();
