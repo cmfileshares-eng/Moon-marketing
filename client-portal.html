@@ -396,6 +396,31 @@ textarea.field{resize:none;line-height:1.5}
 .admin-client-info{flex:1;min-width:0}
 .admin-client-name{font-size:14px;font-weight:600}
 .admin-client-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── ADMIN INBOX ── */
+.inbox-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative}
+.inbox-item:last-child{border-bottom:none}
+.inbox-item:active{background:var(--off)}
+.inbox-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;flex-shrink:0}
+.inbox-info{flex:1;min-width:0}
+.inbox-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.inbox-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.inbox-time{font-size:11px;color:var(--muted)}
+.inbox-unread-dot{width:9px;height:9px;border-radius:50%;background:var(--orange)}
+/* ── VIDEO REVIEW CARDS ── */
+.review-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;margin-top:4px}
+.review-tab-row{display:flex;gap:8px;margin-bottom:16px}
+.review-tab{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:none;font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.review-tab.on{background:var(--ink);color:white;border-color:var(--ink)}
+.review-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
+.review-card-thumb{width:100%;height:120px;background:linear-gradient(135deg,#1C1917,#3D3530);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.review-card-body{padding:14px}
+.review-card-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.review-card-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+.review-status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.review-status-badge.approved{background:var(--green-l);color:var(--green)}
+.review-status-badge.revised{background:var(--amber-l);color:var(--amber)}
+.review-note{margin-top:10px;padding:10px 12px;background:var(--off);border-radius:var(--radius-xs);font-size:12px;color:var(--muted);line-height:1.5}
 /* ── CHAT ── */
 #chat-screen{display:none;position:fixed;inset:0;z-index:260;background:var(--off);flex-direction:column}
 #chat-screen.open{display:flex}
@@ -676,11 +701,19 @@ textarea.field{resize:none;line-height:1.5}
   <div class="admin-page">
     <!-- MESSAGES -->
     <div class="admin-section active" id="admin-sec-messages">
-      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:4px;margin-top:4px">Messages</div>
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Messages</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:16px">All client conversations</div>
-      <div class="admin-card" style="padding:0;overflow:hidden">
-        <div id="admin-inbox-list"><div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div></div>
+      <div id="admin-inbox-list"><div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div></div>
+    </div>
+    <!-- VIDEOS -->
+    <div class="admin-section" id="admin-sec-videos">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Videos</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Review status across all clients</div>
+      <div class="review-tab-row">
+        <button class="review-tab on" id="vtab-approved" onclick="switchVideoTab('approved')">✓ Approved</button>
+        <button class="review-tab" id="vtab-revised" onclick="switchVideoTab('revised')">↩ Revision Requested</button>
       </div>
+      <div id="admin-videos-list"><div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div></div>
     </div>
     <!-- UPLOAD -->
     <div class="admin-section" id="admin-sec-upload">
@@ -750,6 +783,9 @@ textarea.field{resize:none;line-height:1.5}
   <nav class="admin-bottom-nav">
     <button class="admin-nav-btn on" id="anav-messages" onclick="adminNavTo('messages',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages
+    </button>
+    <button class="admin-nav-btn" id="anav-videos" onclick="adminNavTo('videos',this)">
+      <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Videos
     </button>
     <button class="admin-nav-btn" id="anav-upload" onclick="adminNavTo('upload',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
@@ -1100,12 +1136,23 @@ async function signIn(){
   localStorage.setItem('lunar_remember_pref',remember?'true':'false');
   if(remember)localStorage.setItem('lunar_remember_email',email);
   else localStorage.removeItem('lunar_remember_email');
-  _ignoreNextSignIn=false; // ensure the SIGNED_IN event routes
+  _ignoreNextSignIn=false;
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
-    err.textContent=error.message;
+    const msg=(error.message||'').toLowerCase();
+    if(msg.includes('invalid login')||msg.includes('invalid credentials')){
+      err.textContent='Incorrect email or password. Please try again.';
+    } else if(msg.includes('email not confirmed')){
+      err.textContent='Please confirm your email address before signing in.';
+    } else if(msg.includes('user not found')||msg.includes('no user')){
+      err.textContent='No account found with that email address.';
+    } else {
+      err.textContent=error.message;
+    }
+    _ignoreNextSignIn=true; // sign-in failed — ignore any stale SIGNED_IN event
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
   }
+  // On success, onAuthStateChange fires and handles all routing
 }
 
 async function adminSignIn(){
@@ -1115,10 +1162,16 @@ async function adminSignIn(){
   err.textContent='';
   if(!email||!pass){err.textContent='Please enter your email and password.';return;}
   if(btn){btn.textContent='Signing in…';btn.disabled=true;}
-  _ignoreNextSignIn=false; // ensure the SIGNED_IN event routes
+  _ignoreNextSignIn=false;
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){
-    err.textContent=error.message;
+    const msg=(error.message||'').toLowerCase();
+    if(msg.includes('invalid login')||msg.includes('invalid credentials')){
+      err.textContent='Incorrect email or password.';
+    } else {
+      err.textContent=error.message;
+    }
+    _ignoreNextSignIn=true;
     if(btn){btn.textContent='Sign In as Admin →';btn.disabled=false;}
   }
 }
@@ -1594,6 +1647,7 @@ function adminNavTo(section,btn){
   const sec=document.getElementById('admin-sec-'+section);
   if(sec)sec.classList.add('active');
   if(section==='messages')loadAdminInbox();
+  if(section==='videos')loadAdminVideos('approved');
   if(section==='invoices')loadAdminInvoices();
   if(section==='clients')loadAdminClients();
 }
@@ -1683,6 +1737,67 @@ async function loadAdminInbox(){
         +'<div class="inbox-time">'+timeStr+'</div>'
         +unreadDot
       +'</div></div>';
+  }).join('');
+}
+
+let _currentVideoTab='approved';
+function switchVideoTab(tab){
+  _currentVideoTab=tab;
+  document.getElementById('vtab-approved').classList.toggle('on',tab==='approved');
+  document.getElementById('vtab-revised').classList.toggle('on',tab==='revised');
+  loadAdminVideos(tab);
+}
+
+async function loadAdminVideos(tab='approved'){
+  _currentVideoTab=tab;
+  const list=document.getElementById('admin-videos-list');
+  if(!list)return;
+  list.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted);font-size:14px">Loading…</div>';
+
+  let query=sb.from('files').select('*,clients(name,color)').order('created_at',{ascending:false});
+  if(tab==='approved'){
+    query=query.eq('approved',true);
+  } else {
+    query=query.not('revision_note','is',null).neq('revision_note','');
+  }
+  const {data,error}=await query;
+  if(error){list.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">Error loading videos</div>';return;}
+  if(!data?.length){
+    list.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px">${tab==='approved'?'No approved videos yet':'No revision requests yet'}</div>`;
+    return;
+  }
+  const videoTypes=new Set(['MP4','MOV','WEBM']);
+  list.innerHTML=data.map(f=>{
+    const ext=(f.file_type||'').toUpperCase();
+    const isVid=videoTypes.has(ext);
+    const clientName=f.clients?.name||'Unknown client';
+    const clientColor=f.clients?.color||'#9C958F';
+    const dt=new Date(f.created_at);
+    const dateStr=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const previewAction=isVid&&f.drive_embed_url
+      ?`onclick="playDriveVideo('${esc(f.drive_embed_url)}','${esc(f.name)}')"`
+      :f.drive_view_url?`onclick="window.open('${esc(f.drive_view_url)}','_blank')"`:'' ;
+    return `<div class="review-card">
+      <div class="review-card-thumb" ${previewAction}>
+        <div class="media-type-badge">${ext||'FILE'}</div>
+        ${isVid?'<div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>':'<div style="color:rgba(255,255,255,.4);font-size:28px">↗</div>'}
+      </div>
+      <div class="review-card-body">
+        <div class="review-card-name">${esc(f.name)}</div>
+        <div class="review-card-meta">
+          <span style="display:inline-flex;align-items:center;gap:5px">
+            <span style="width:8px;height:8px;border-radius:50%;background:${clientColor};display:inline-block"></span>
+            ${esc(clientName)}
+          </span>
+          <span style="margin-left:8px;color:var(--muted)">· ${dateStr}</span>
+        </div>
+        ${tab==='approved'
+          ?'<span class="review-status-badge approved">✓ Approved</span>'
+          :`<span class="review-status-badge revised">↩ Revision Requested</span>
+            ${f.revision_note?`<div class="review-note">"${esc(f.revision_note)}"</div>`:''}`
+        }
+      </div>
+    </div>`;
   }).join('');
 }
 
