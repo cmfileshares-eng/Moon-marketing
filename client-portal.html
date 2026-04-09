@@ -2267,7 +2267,17 @@ async function saveAdminUpload(fileIdToReplace){
   const prog=document.getElementById('upload-progress');
   const fill=document.getElementById('upload-fill');
 
-  const resetBtn=()=>{if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}};
+  const resetBtn=()=>{
+    if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}
+    if(prog)prog.style.display='none';
+    if(fill)fill.style.width='0%';
+  };
+
+  // Safety net — reset UI if the whole thing takes more than 3 minutes
+  const safetyTimer=setTimeout(()=>{
+    resetBtn();
+    toast('Upload timed out — please try again. Large files may need a stable connection.');
+  },180000);
 
   if(saveBtn){saveBtn.innerHTML='<span class="spinner"></span> Uploading…';saveBtn.disabled=true;}
   if(prog)prog.style.display='block';
@@ -2328,6 +2338,7 @@ async function saveAdminUpload(fileIdToReplace){
 
     if(fill)fill.style.width='100%';
     _pendingUploadFile=null;
+    clearTimeout(safetyTimer);
 
     // Small delay so user sees 100% before modal closes
     setTimeout(()=>{
@@ -2341,6 +2352,7 @@ async function saveAdminUpload(fileIdToReplace){
     },400);
 
   }catch(err){
+    clearTimeout(safetyTimer);
     console.error('saveAdminUpload error:',err);
     toast('Upload failed: '+err.message);
     resetBtn();
@@ -2434,45 +2446,95 @@ function initGoogleDrive(){
 
 async function uploadToDriveWithToken(file,clientName,token){
   if(!token)throw new Error('No Google access token');
+
+  // Helper: fetch with a timeout so we never hang
+  const fetchWithTimeout=(url,opts,ms=30000)=>{
+    const controller=new AbortController();
+    const t=setTimeout(()=>controller.abort(),ms);
+    return fetch(url,{...opts,signal:controller.signal}).finally(()=>clearTimeout(t));
+  };
+
+  // Find or create the client folder
   let folderId=DRIVE_ROOT_FOLDER;
   try{
-    const sr=await fetch(
+    const sr=await fetchWithTimeout(
       `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(clientName)}' and '${DRIVE_ROOT_FOLDER}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      {headers:{Authorization:'Bearer '+token}}
+      {headers:{Authorization:'Bearer '+token}},10000
     );
-    const sd=await sr.json();
-    if(sd.files?.length){
-      folderId=sd.files[0].id;
-    } else {
-      const mr=await fetch('https://www.googleapis.com/drive/v3/files',{
-        method:'POST',
-        headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-        body:JSON.stringify({name:clientName,mimeType:'application/vnd.google-apps.folder',parents:[DRIVE_ROOT_FOLDER]})
-      });
-      const md=await mr.json();
-      folderId=md.id||DRIVE_ROOT_FOLDER;
+    if(sr.ok){
+      const sd=await sr.json();
+      if(sd.files?.length){
+        folderId=sd.files[0].id;
+      } else {
+        const mr=await fetchWithTimeout('https://www.googleapis.com/drive/v3/files',{
+          method:'POST',
+          headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+          body:JSON.stringify({name:clientName,mimeType:'application/vnd.google-apps.folder',parents:[DRIVE_ROOT_FOLDER]})
+        },10000);
+        if(mr.ok){const md=await mr.json();folderId=md.id||DRIVE_ROOT_FOLDER;}
+      }
     }
   }catch(e){console.warn('Folder lookup failed, using root:',e.message);}
 
-  const form=new FormData();
-  form.append('metadata',new Blob([JSON.stringify({name:file.name,parents:[folderId]})],{type:'application/json'}));
-  form.append('file',file);
-  const ur=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
-    {method:'POST',headers:{Authorization:'Bearer '+token},body:form});
-  const ud=await ur.json();
-  if(!ud.id)throw new Error('Drive upload returned no file ID — check Drive quota or permissions');
+  // Upload the file — use resumable upload for files >5MB to avoid timeouts
+  let fileId;
+  if(file.size>5*1024*1024){
+    // Resumable upload
+    const initResp=await fetchWithTimeout('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id',{
+      method:'POST',
+      headers:{
+        Authorization:'Bearer '+token,
+        'Content-Type':'application/json',
+        'X-Upload-Content-Type':file.type||'application/octet-stream',
+        'X-Upload-Content-Length':file.size
+      },
+      body:JSON.stringify({name:file.name,parents:[folderId]})
+    },15000);
+    if(!initResp.ok)throw new Error('Could not initiate resumable upload ('+initResp.status+')');
+    const uploadUrl=initResp.headers.get('Location');
+    if(!uploadUrl)throw new Error('No upload URL returned from Drive');
+    // Upload the actual bytes — no timeout here as large files need time
+    const uploadResp=await fetch(uploadUrl,{
+      method:'PUT',
+      headers:{'Content-Type':file.type||'application/octet-stream','Content-Length':file.size},
+      body:file
+    });
+    if(!uploadResp.ok){
+      const errText=await uploadResp.text().catch(()=>'');
+      throw new Error('Resumable upload failed ('+uploadResp.status+'): '+errText.slice(0,200));
+    }
+    const ud=await uploadResp.json();
+    if(!ud.id)throw new Error('Upload completed but no file ID returned');
+    fileId=ud.id;
+  } else {
+    // Multipart upload for small files
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify({name:file.name,parents:[folderId]})],{type:'application/json'}));
+    form.append('file',file);
+    const ur=await fetchWithTimeout('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {method:'POST',headers:{Authorization:'Bearer '+token},body:form},60000);
+    if(!ur.ok){
+      const errText=await ur.text().catch(()=>'');
+      throw new Error('Upload failed ('+ur.status+'): '+errText.slice(0,200));
+    }
+    const ud=await ur.json();
+    if(!ud.id)throw new Error('Upload completed but no file ID returned');
+    fileId=ud.id;
+  }
 
-  // Make file publicly readable so clients can preview it
-  await fetch(`https://www.googleapis.com/drive/v3/files/${ud.id}/permissions`,{
-    method:'POST',
-    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify({role:'reader',type:'anyone'})
-  });
+  // Make the file publicly readable — non-fatal if this fails
+  try{
+    await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,{
+      method:'POST',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({role:'reader',type:'anyone'})
+    },10000);
+  }catch(e){console.warn('Could not set file permissions:',e.message);}
 
   return{
-    driveFileId:ud.id,
-    driveViewUrl:`https://drive.google.com/file/d/${ud.id}/view`,
-    driveEmbedUrl:`https://drive.google.com/file/d/${ud.id}/preview`
+    driveFileId:fileId,
+    driveViewUrl:`https://drive.google.com/file/d/${fileId}/view`,
+    driveEmbedUrl:`https://drive.google.com/file/d/${fileId}/preview`
   };
 }
 
