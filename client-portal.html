@@ -117,8 +117,6 @@ textarea.field{resize:none;line-height:1.5}
 .greeting-card h1{font-family:var(--font-display);font-size:26px;font-weight:400;color:white;line-height:1.2;margin-bottom:4px}
 .greeting-card h1 em{font-style:italic;font-weight:300}
 .greeting-card p{color:rgba(255,255,255,.8);font-size:13px}
-.greeting-meta{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.greeting-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:white;backdrop-filter:blur(4px)}
 
 /* ── STAT SCROLL ── */
 .stat-card{background:var(--white);border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column}
@@ -547,10 +545,6 @@ textarea.field{resize:none;line-height:1.5}
     <div class="greeting-card">
       <h1>Welcome back,<br><em id="greeting-name">there ☽</em></h1>
       <p id="greeting-date"></p>
-      <div class="greeting-meta">
-        <div class="greeting-badge" id="badge-campaigns">🚀 No active campaigns</div>
-        <div class="greeting-badge" id="badge-approvals">⚡ Nothing to approve</div>
-      </div>
     </div>
 
     <!-- STATS -->
@@ -978,7 +972,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
 let currentUser = null;
 let currentClientId = null;
 let isAdminUser = false;
-let autoApproveOn = false;
+let autoApproveOn = localStorage.getItem('lunar_auto_approve')==='1';
 let chatSubscription = null;
 let chatRoomId = null;
 let chatIsAdmin = false;
@@ -1014,31 +1008,6 @@ function invalidateClientCache(){_clientCache=null;}
 // signIn() and adminSignIn() set it back to false before signing in.
 let _ignoreNextSignIn = true;
 
-/* ══════════════════════════════════════════
-   PUSH NOTIFICATIONS (Web Push API)
-══════════════════════════════════════════ */
-async function requestPushPermission(){
-  if(!('Notification' in window))return false;
-  if(Notification.permission==='granted')return true;
-  if(Notification.permission==='denied')return false;
-  const perm=await Notification.requestPermission();
-  return perm==='granted';
-}
-
-function sendPushNotification(title,body,options={}){
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  try{
-    const n=new Notification(title,{
-      body,
-      icon:'/favicon.ico',
-      badge:'/favicon.ico',
-      tag:options.tag||'lunar-msg',
-      renotify:true,
-      ...options
-    });
-    n.onclick=()=>{window.focus();n.close();};
-  }catch(e){console.warn('Push notification failed:',e);}
-}
 
 async function boot(){
   const remEmail = localStorage.getItem('lunar_remember_email');
@@ -1286,7 +1255,8 @@ async function enterApp(){
     show('app');hide('loading-screen');hide('auth-screen');
     const meta=currentUser.user_metadata||{};
     const fullName=meta.full_name||meta.name||currentUser.email?.split('@')[0]||'there';
-    const firstName=fullName.split(' ')[0];
+    const rawFirst=fullName.split(' ')[0];
+    const firstName=rawFirst.charAt(0).toUpperCase()+rawFirst.slice(1);
     const ap=document.getElementById('avatar-pill');
     const gn=document.getElementById('greeting-name');
     const gd=document.getElementById('greeting-date');
@@ -1305,19 +1275,26 @@ async function enterApp(){
 async function loadClientPortal(){
   if(!currentClientId){renderEmptyState();return;}
   const cid=currentClientId;
-  const [inv,files,appts,perf,approvals]=await Promise.all([
-    sb.from('invoices').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('files').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('appointments').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
-    sb.from('performance').select('*').eq('client_id',cid).order('created_at',{ascending:false}).limit(1),
-    sb.from('files').select('*').eq('client_id',cid).eq('needs_approval',true).eq('approved',false),
-  ]);
-  renderInvoices(inv.data||[],'invoices-list');
-  renderFiles(files.data||[],'files-list');
-  renderAppts(appts.data||[],'appts-list');
-  renderPerf(perf.data?.[0]);
-  renderApprovals(approvals.data||[]);
-  updateStats(inv.data||[]);
+  try{
+    const [inv,files,appts,perf,approvals]=await Promise.all([
+      sb.from('invoices').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+      sb.from('files').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+      sb.from('appointments').select('*').eq('client_id',cid).order('created_at',{ascending:false}),
+      sb.from('performance').select('*').eq('client_id',cid).order('created_at',{ascending:false}).limit(1),
+      sb.from('files').select('*').eq('client_id',cid).eq('needs_approval',true).eq('approved',false),
+    ]);
+    renderInvoices(inv.data||[],'invoices-list');
+    renderFiles(files.data||[],'files-list');
+    renderAppts(appts.data||[],'appts-list');
+    renderPerf(perf.data?.[0]);
+    renderApprovals(approvals.data||[]);
+    updateStats(inv.data||[]);
+    const toggle=document.getElementById('auto-approve-toggle');
+    if(toggle)toggle.checked=autoApproveOn;
+  }catch(e){
+    console.error('loadClientPortal:',e);
+    toast('Failed to load portal data — please refresh.');
+  }
 }
 
 function renderEmptyState(){
@@ -1325,8 +1302,6 @@ function renderEmptyState(){
     const el=document.getElementById(id);
     if(el)el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No data yet</div>';
   });
-  const ga=document.getElementById('badge-approvals');
-  if(ga)ga.textContent='⚡ Nothing to approve';
   ['sc-adspend','sc-roas','sc-outstanding','sc-conv'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent='—';
   });
@@ -1398,8 +1373,6 @@ function renderPerf(p){
 
 function renderApprovals(data){
   const c=document.getElementById('approvals-container');if(!c)return;
-  const bg=document.getElementById('badge-approvals');
-  if(bg)bg.textContent=data.length>0?`⚡ ${data.length} Awaiting Approval`:'⚡ Nothing to approve';
   if(!data.length){c.innerHTML='<div style="padding:16px 0;color:var(--muted);font-size:14px;text-align:center">No creatives to approve</div>';return;}
   c.innerHTML=data.map(a=>{
     const ext=(a.file_type||'MP4').toUpperCase();
@@ -1445,7 +1418,11 @@ async function submitRevision(id){
   toast('✓ Feedback sent!');
   await loadClientPortal();
 }
-function onAutoApprove(cb){autoApproveOn=cb.checked;toast(cb.checked?'Auto-approve ON':'Auto-approve off.');}
+function onAutoApprove(cb){
+  autoApproveOn=cb.checked;
+  localStorage.setItem('lunar_auto_approve',cb.checked?'1':'0');
+  toast(cb.checked?'Auto-approve ON':'Auto-approve off.');
+}
 
 /* ══════════════════════════════════════════
    CHAT — keyed by auth uid, works for everyone
@@ -2304,16 +2281,18 @@ async function saveAdminUpload(fileIdToReplace){
       await initGoogleDrive();
       if(fill)fill.style.width='25%';
 
-      // Get client name for folder organisation
+      // Get client name for folder
       let clientName='General';
       if(fileIdToReplace){
-        const cached=_clientCache?.find(c=>{
-          // we don't have client_id here so just use General
-        });
-        clientName='General'; // will use General folder for re-uploads
+        // Look up which client this file belongs to
+        const {data:fd}=await sb.from('files').select('client_id').eq('id',fileIdToReplace).maybeSingle();
+        if(fd?.client_id){
+          const clients=await getClients();
+          clientName=clients.find(c=>c.id===fd.client_id)?.name||'General';
+        }
       } else {
-        const cached=_clientCache?.find(c=>c.id===cid);
-        clientName=cached?.name||'General';
+        const clients=await getClients();
+        clientName=clients.find(c=>c.id===cid)?.name||'General';
       }
 
       if(fill)fill.style.width='40%';
@@ -2428,14 +2407,28 @@ async function saveNewClient(){
    GOOGLE DRIVE
 ══════════════════════════════════════════ */
 function initGoogleDrive(){
-  return new Promise(resolve=>{
+  return new Promise((resolve,reject)=>{
     if(googleAccessToken){resolve();return;}
-    const client=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_CLIENT_ID,
-      scope:'https://www.googleapis.com/auth/drive.file',
-      callback:(resp)=>{if(resp.access_token){googleAccessToken=resp.access_token;resolve();}}
-    });
-    client.requestAccessToken();
+    try{
+      const client=google.accounts.oauth2.initTokenClient({
+        client_id:GOOGLE_CLIENT_ID,
+        scope:'https://www.googleapis.com/auth/drive.file',
+        callback:(resp)=>{
+          if(resp.access_token){
+            googleAccessToken=resp.access_token;
+            resolve();
+          } else {
+            reject(new Error(resp.error||'Google auth failed — no access token returned'));
+          }
+        },
+        error_callback:(err)=>{
+          reject(new Error('Google auth cancelled or failed: '+(err?.type||'unknown')));
+        }
+      });
+      client.requestAccessToken({prompt:''});
+    }catch(e){
+      reject(new Error('Google Drive not available: '+e.message));
+    }
   });
 }
 
@@ -2596,9 +2589,9 @@ function doSearch(q){
   const box=document.getElementById('search-results');
   if(!q.trim()){box.style.display='none';return;}
   const index=[
-    {label:'Projects',tag:'Section',action:()=>document.getElementById('projects-list')?.scrollIntoView({behavior:'smooth'})},
     {label:'Invoices',tag:'Section',action:()=>document.getElementById('invoices-list')?.scrollIntoView({behavior:'smooth'})},
     {label:'Files',tag:'Section',action:()=>document.getElementById('files-list')?.scrollIntoView({behavior:'smooth'})},
+    {label:'Performance',tag:'Section',action:()=>document.getElementById('stat-grid')?.scrollIntoView({behavior:'smooth'})},
     {label:'Messages',tag:'Chat',action:()=>openChat()},
     {label:'Book a Call',tag:'Action',action:()=>openModal('book')},
   ];
