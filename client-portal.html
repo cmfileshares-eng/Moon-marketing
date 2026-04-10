@@ -1039,6 +1039,7 @@ async function boot(){
 sb.auth.onAuthStateChange(async(event, session)=>{
   if(event === 'SIGNED_IN' && session){
     currentUser = session.user;
+    window._sbAccessToken = session.access_token;
     const btn = document.querySelector('#client-auth-card .btn-primary');
     if(btn){btn.textContent = 'Sign In →'; btn.disabled = false;}
     const adminBtn = document.querySelector('#admin-auth-card .btn-primary');
@@ -1047,8 +1048,12 @@ sb.auth.onAuthStateChange(async(event, session)=>{
     hide('auth-screen');
     await doRoute();
   }
+  if(event === 'TOKEN_REFRESHED' && session){
+    window._sbAccessToken = session.access_token;
+  }
   if(event === 'SIGNED_OUT'){
     _ignoreNextSignIn = false;
+    window._sbAccessToken = null;
     currentUser = null; currentClientId = null; isAdminUser = false;
     invalidateClientCache();
     stopGlobalMessageListener();
@@ -2243,96 +2248,109 @@ function onUploadFilePicked(file){
 }
 
 async function saveAdminUpload(fileIdToReplace){
-  const cid = fileIdToReplace ? null : v('modal-upload-client');
-  if(!fileIdToReplace && !cid){ toast('Please select a client first.'); return; }
-  if(!_pendingUploadFile){ toast('Please select a file first.'); return; }
-
-  const file          = _pendingUploadFile;
-  const name          = v('u-name') || file.name.replace(/\.[^/.]+$/,'');
+  const cid         = fileIdToReplace ? null : v('modal-upload-client');
+  const file        = _pendingUploadFile;
+  const name        = v('u-name') || (file?.name||'').replace(/\.[^/.]+$/,'');
   const needsApproval = fileIdToReplace ? true : (v('u-approval')==='yes');
-  const ext           = file.name.split('.').pop().toUpperCase();
-  const size          = file.size > 1024*1024
-    ? (file.size/1024/1024).toFixed(1)+' MB'
-    : (file.size/1024).toFixed(0)+' KB';
-  const approved      = autoApproveOn || !needsApproval;
 
-  const saveBtn = document.querySelector('#admin-modal-content .btn-save');
-  const prog    = document.getElementById('upload-progress');
-  const fill    = document.getElementById('upload-fill');
+  if(!fileIdToReplace && !cid){ toast('Select a client first.'); return; }
+  if(!file){ toast('Select a file first.'); return; }
 
-  if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span> Saving…'; saveBtn.disabled=true; }
-  if(prog) prog.style.display='block';
-  if(fill) fill.style.width='50%';
+  const ext      = file.name.split('.').pop().toUpperCase();
+  const size     = file.size > 1048576 ? (file.size/1048576).toFixed(1)+' MB' : (file.size/1024).toFixed(0)+' KB';
+  const approved = autoApproveOn || !needsApproval;
+  const token    = window._sbAccessToken;
 
-  // Save to DB using raw fetch — bypasses any JS client hanging issues
-  const session = await sb.auth.getSession();
-  const accessToken = session?.data?.session?.access_token;
-  if(!accessToken){
-    toast('Not authenticated — please sign out and back in.');
-    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
+  if(!token){ toast('Session expired — please sign out and back in.'); return; }
+
+  // UI
+  const btn  = document.querySelector('#admin-modal-content .btn-save');
+  const prog = document.getElementById('upload-progress');
+  const fill = document.getElementById('upload-fill');
+  const go   = pct => { if(fill) fill.style.width=pct+'%'; };
+  const fail = msg => {
+    toast(msg);
+    if(btn){ btn.innerHTML='Upload to Drive'; btn.disabled=false; }
     if(prog) prog.style.display='none';
-    return;
-  }
-
-  const payload = {
-    client_id:       cid,
-    name,
-    file_type:       ext,
-    size,
-    drive_file_id:   null,
-    drive_view_url:  null,
-    drive_embed_url: null,
-    needs_approval:  needsApproval,
-    approved,
-    auto_approved:   autoApproveOn
+    go(0);
   };
 
-  const resp = await fetch(SUPABASE_URL+'/rest/v1/files', {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'apikey':        SUPABASE_ANON,
-      'Authorization': 'Bearer '+accessToken,
-      'Prefer':        'return=minimal'
-    },
-    body: JSON.stringify(payload)
-  });
+  if(btn){ btn.innerHTML='<span class="spinner"></span> Uploading…'; btn.disabled=true; }
+  if(prog) prog.style.display='block';
+  go(10);
 
-  if(!resp.ok){
-    const errText = await resp.text().catch(()=>'');
-    toast('DB error ('+resp.status+'): '+errText.slice(0,120));
-    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
-    if(prog) prog.style.display='none';
+  // ── 1. Drive upload ───────────────────────────────────────
+  let driveFileId='', driveViewUrl='', driveEmbedUrl='';
+  try{
+    await initGoogleDrive();
+    go(25);
+    const clients    = await getClients();
+    const clientName = fileIdToReplace
+      ? (()=>{ /* look up later */ return 'General'; })()
+      : clients.find(c=>c.id===cid)?.name || 'General';
+    go(35);
+    const dr   = await uploadToDriveWithToken(file, clientName, googleAccessToken);
+    driveFileId  = dr.driveFileId;
+    driveViewUrl = dr.driveViewUrl;
+    driveEmbedUrl= dr.driveEmbedUrl;
+    go(70);
+  } catch(e){
+    fail('Drive upload failed: '+e.message);
     return;
   }
 
-  if(fill) fill.style.width='100%';
-  _pendingUploadFile = null;
-
-  closeAdminModal();
-  toast(needsApproval && !autoApproveOn ? '✓ Saved — sent for approval!' : '✓ Saved!');
-
-  // Now upload to Drive in background and update the record with the link
+  // ── 2. DB write via raw REST (no Supabase JS client) ─────
+  go(80);
   try{
-    await initGoogleDrive();
-    const clients   = await getClients();
-    const clientName = clients.find(c=>c.id===cid)?.name || 'General';
-    const result    = await uploadToDriveWithToken(file, clientName, googleAccessToken);
-    // Find the record we just inserted and update it with Drive URLs
-    const {data:rows} = await sb.from('files')
-      .select('id').eq('client_id',cid).eq('name',name).eq('file_type',ext)
-      .order('created_at',{ascending:false}).limit(1);
-    if(rows?.[0]?.id){
-      await sb.from('files').update({
-        drive_file_id:   result.driveFileId,
-        drive_view_url:  result.driveViewUrl,
-        drive_embed_url: result.driveEmbedUrl
-      }).eq('id', rows[0].id);
-      toast('✓ Drive link attached!');
+    let ok, statusCode, bodyText;
+
+    if(fileIdToReplace){
+      const updates = JSON.stringify({
+        name, file_type:ext, size,
+        needs_approval:true, approved:false, revision_note:null,
+        drive_file_id:driveFileId, drive_view_url:driveViewUrl, drive_embed_url:driveEmbedUrl
+      });
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${fileIdToReplace}`,{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+        body:updates
+      });
+      ok=r.ok; statusCode=r.status; bodyText=await r.text().catch(()=>'');
+    } else {
+      const payload = JSON.stringify({
+        client_id:cid, name, file_type:ext, size,
+        drive_file_id:driveFileId||null, drive_view_url:driveViewUrl||null, drive_embed_url:driveEmbedUrl||null,
+        needs_approval:needsApproval, approved, auto_approved:autoApproveOn
+      });
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/files`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+        body:payload
+      });
+      ok=r.ok; statusCode=r.status; bodyText=await r.text().catch(()=>'');
     }
-  }catch(driveErr){
-    toast('File saved but Drive link failed: '+driveErr.message);
+
+    if(!ok){
+      fail('DB error '+statusCode+': '+bodyText.slice(0,150));
+      return;
+    }
+  } catch(e){
+    fail('DB fetch error: '+e.message);
+    return;
   }
+
+  // ── 3. Done ───────────────────────────────────────────────
+  go(100);
+  _pendingUploadFile = null;
+  setTimeout(()=>{
+    closeAdminModal();
+    if(fileIdToReplace){
+      toast('✓ Re-uploaded and sent for approval!');
+      loadAdminVideos(_currentVideoTab);
+    } else {
+      toast(needsApproval && !autoApproveOn ? '✓ Uploaded — sent for approval!' : '✓ Uploaded!');
+    }
+  }, 300);
 }
 
 async function saveNewClient(){
