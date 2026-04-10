@@ -1053,20 +1053,8 @@ sb.auth.onAuthStateChange(async(event, session)=>{
     invalidateClientCache();
     stopGlobalMessageListener();
     if(chatSubscription){chatSubscription.unsubscribe();chatSubscription=null;}
-    hide('app');
-    const adminApp = document.getElementById('admin-app');
-    if(adminApp) adminApp.classList.remove('open');
-    // Close all overlays
-    document.getElementById('chat-screen')?.classList.remove('open');
-    document.getElementById('account-menu')?.classList.remove('open');
-    document.getElementById('signout-confirm')?.classList.remove('open');
-    document.getElementById('chpw-modal')?.classList.remove('open');
-    if(document.getElementById('chemail-modal'))   document.getElementById('chemail-modal').style.display   = 'none';
-    if(document.getElementById('resetpw-modal'))   document.getElementById('resetpw-modal').style.display   = 'none';
-    if(document.getElementById('admin-modal-overlay')) document.getElementById('admin-modal-overlay').style.display = 'none';
-    document.getElementById('notif-tray')?.classList.remove('open');
-    show('auth-screen');
-    showClientAuth();
+    // Reload the page — cleanest way to reset all state and show auth screen
+    window.location.reload();
   }
 });
 
