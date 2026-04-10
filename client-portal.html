@@ -2306,46 +2306,41 @@ async function saveAdminUpload(fileIdToReplace){
       // Don't return — still save the DB record
     }
 
-    // Drive upload succeeded — close the modal immediately
-    // Fire the DB insert in the background without awaiting it
-    if(fill)fill.style.width='100%';
-    _pendingUploadFile=null;
-    clearTimeout(safetyTimer);
-
+    // Save to database — show exact error as toast so we can debug on mobile
     const approved=autoApproveOn||!needsApproval;
+    let dbResult;
     if(fileIdToReplace){
       const updates={name,file_type:ext,size,needs_approval:true,approved:false,revision_note:null};
       if(driveFileId){updates.drive_file_id=driveFileId;updates.drive_view_url=driveViewUrl;updates.drive_embed_url=driveEmbedUrl;}
-      sb.from('files').update(updates).eq('id',fileIdToReplace).then(({error})=>{
-        if(error)console.error('DB update error:',error.message);
-      });
+      dbResult=await sb.from('files').update(updates).eq('id',fileIdToReplace);
     } else {
-      sb.from('files').insert({
+      dbResult=await sb.from('files').insert({
         client_id:cid,name,file_type:ext,size,
         drive_file_id:driveFileId||null,
         drive_view_url:driveViewUrl||null,
         drive_embed_url:driveEmbedUrl||null,
         needs_approval:needsApproval,approved,auto_approved:autoApproveOn
-      }).then(({error})=>{
-        if(error)console.error('DB insert error:',error.message);
       });
     }
 
-    setTimeout(()=>{
-      closeAdminModal();
-      if(fileIdToReplace){
-        toast('✓ Re-uploaded and sent for approval!');
-        loadAdminVideos(_currentVideoTab);
-      } else {
-        toast(needsApproval&&!autoApproveOn?'✓ Uploaded — sent for approval!':'✓ Uploaded!');
-      }
-    },400);
+    if(dbResult.error){
+      // Show full error so we can diagnose on mobile
+      toast('DB error: '+dbResult.error.code+' — '+dbResult.error.message);
+      resetBtn();
+      clearTimeout(safetyTimer);
+      return;
+    }
+    if(dbResult.status&&dbResult.status>=400){
+      toast('DB failed with status '+dbResult.status+' — '+JSON.stringify(dbResult.statusText));
+      resetBtn();
+      clearTimeout(safetyTimer);
+      return;
+    }
 
     if(fill)fill.style.width='100%';
     _pendingUploadFile=null;
     clearTimeout(safetyTimer);
 
-    // Small delay so user sees 100% before modal closes
     setTimeout(()=>{
       closeAdminModal();
       if(fileIdToReplace){
