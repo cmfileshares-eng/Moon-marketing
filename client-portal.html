@@ -2247,111 +2247,71 @@ async function saveAdminUpload(fileIdToReplace){
   if(!fileIdToReplace && !cid){ toast('Please select a client first.'); return; }
   if(!_pendingUploadFile){ toast('Please select a file first.'); return; }
 
-  const file        = _pendingUploadFile;
-  const name        = v('u-name') || file.name.replace(/\.[^/.]+$/,'');
+  const file          = _pendingUploadFile;
+  const name          = v('u-name') || file.name.replace(/\.[^/.]+$/,'');
   const needsApproval = fileIdToReplace ? true : (v('u-approval')==='yes');
-  const ext         = file.name.split('.').pop().toUpperCase();
-  const size        = file.size > 1024*1024
+  const ext           = file.name.split('.').pop().toUpperCase();
+  const size          = file.size > 1024*1024
     ? (file.size/1024/1024).toFixed(1)+' MB'
     : (file.size/1024).toFixed(0)+' KB';
+  const approved      = autoApproveOn || !needsApproval;
 
   const saveBtn = document.querySelector('#admin-modal-content .btn-save');
   const prog    = document.getElementById('upload-progress');
   const fill    = document.getElementById('upload-fill');
 
-  const setProgress = pct => { if(fill) fill.style.width = pct+'%'; };
-  const resetBtn    = () => {
+  if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span> Saving…'; saveBtn.disabled=true; }
+  if(prog) prog.style.display='block';
+  if(fill) fill.style.width='50%';
+
+  // Save to DB first — Drive upload happens separately in background
+  const {error} = await sb.from('files').insert({
+    client_id:       cid,
+    name,
+    file_type:       ext,
+    size,
+    drive_file_id:   null,
+    drive_view_url:  null,
+    drive_embed_url: null,
+    needs_approval:  needsApproval,
+    approved,
+    auto_approved:   autoApproveOn
+  });
+
+  if(error){
+    toast('DB error ('+error.code+'): '+error.message);
     if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
     if(prog) prog.style.display='none';
-    setProgress(0);
-  };
-
-  if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span> Uploading…'; saveBtn.disabled=true; }
-  if(prog) prog.style.display='block';
-  setProgress(5);
-
-  // ── STEP 1: Google Drive upload ──────────────────────────
-  let driveViewUrl='', driveEmbedUrl='', driveFileId='';
-  try{
-    await initGoogleDrive();
-    setProgress(20);
-
-    let clientName = 'General';
-    if(fileIdToReplace){
-      const {data:fd} = await sb.from('files').select('client_id').eq('id',fileIdToReplace).maybeSingle();
-      if(fd?.client_id){
-        const clients = await getClients();
-        clientName = clients.find(c=>c.id===fd.client_id)?.name || 'General';
-      }
-    } else {
-      const clients = await getClients();
-      clientName = clients.find(c=>c.id===cid)?.name || 'General';
-    }
-
-    setProgress(35);
-    const result = await uploadToDriveWithToken(file, clientName, googleAccessToken);
-    driveViewUrl  = result.driveViewUrl;
-    driveEmbedUrl = result.driveEmbedUrl;
-    driveFileId   = result.driveFileId;
-    setProgress(75);
-  } catch(driveErr){
-    toast('⚠️ Drive upload failed: '+driveErr.message);
-    resetBtn();
     return;
   }
 
-  // ── STEP 2: Save record to Supabase ──────────────────────
-  setProgress(85);
-  try{
-    const approved = autoApproveOn || !needsApproval;
-    let error;
-
-    if(fileIdToReplace){
-      const updates = {
-        name, file_type:ext, size,
-        needs_approval:true, approved:false, revision_note:null,
-        ...(driveFileId && { drive_file_id:driveFileId, drive_view_url:driveViewUrl, drive_embed_url:driveEmbedUrl })
-      };
-      ({ error } = await sb.from('files').update(updates).eq('id', fileIdToReplace));
-    } else {
-      ({ error } = await sb.from('files').insert({
-        client_id:      cid,
-        name,
-        file_type:      ext,
-        size,
-        drive_file_id:  driveFileId  || null,
-        drive_view_url: driveViewUrl  || null,
-        drive_embed_url:driveEmbedUrl || null,
-        needs_approval: needsApproval,
-        approved,
-        auto_approved:  autoApproveOn
-      }));
-    }
-
-    if(error){
-      toast('DB error ('+error.code+'): '+error.message);
-      resetBtn();
-      return;
-    }
-  } catch(dbErr){
-    toast('DB exception: '+dbErr.message);
-    resetBtn();
-    return;
-  }
-
-  // ── STEP 3: Done ─────────────────────────────────────────
-  setProgress(100);
+  if(fill) fill.style.width='100%';
   _pendingUploadFile = null;
 
-  setTimeout(()=>{
-    closeAdminModal();
-    if(fileIdToReplace){
-      toast('✓ Re-uploaded and sent for approval!');
-      loadAdminVideos(_currentVideoTab);
-    } else {
-      toast(needsApproval && !autoApproveOn ? '✓ Uploaded — sent for approval!' : '✓ Uploaded!');
+  closeAdminModal();
+  toast(needsApproval && !autoApproveOn ? '✓ Saved — sent for approval!' : '✓ Saved!');
+
+  // Now upload to Drive in background and update the record with the link
+  try{
+    await initGoogleDrive();
+    const clients   = await getClients();
+    const clientName = clients.find(c=>c.id===cid)?.name || 'General';
+    const result    = await uploadToDriveWithToken(file, clientName, googleAccessToken);
+    // Find the record we just inserted and update it with Drive URLs
+    const {data:rows} = await sb.from('files')
+      .select('id').eq('client_id',cid).eq('name',name).eq('file_type',ext)
+      .order('created_at',{ascending:false}).limit(1);
+    if(rows?.[0]?.id){
+      await sb.from('files').update({
+        drive_file_id:   result.driveFileId,
+        drive_view_url:  result.driveViewUrl,
+        drive_embed_url: result.driveEmbedUrl
+      }).eq('id', rows[0].id);
+      toast('✓ Drive link attached!');
     }
-  }, 400);
+  }catch(driveErr){
+    toast('File saved but Drive link failed: '+driveErr.message);
+  }
 }
 
 async function saveNewClient(){
