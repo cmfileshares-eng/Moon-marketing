@@ -2321,6 +2321,8 @@ async function saveAdminUpload(fileIdToReplace){
         drive_embed_url:driveEmbedUrl||null,
         needs_approval:needsApproval,approved,auto_approved:autoApproveOn
       });
+    // Toast full result for debugging
+    toast('DB result: status='+dbResult.status+' err='+JSON.stringify(dbResult.error)+' data='+JSON.stringify(dbResult.data));
     }
 
     if(dbResult.error){
