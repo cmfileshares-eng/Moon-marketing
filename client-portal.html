@@ -2243,122 +2243,115 @@ function onUploadFilePicked(file){
 }
 
 async function saveAdminUpload(fileIdToReplace){
-  const cid=fileIdToReplace?null:v('modal-upload-client');
-  if(!fileIdToReplace&&!cid){toast('Please select a client first.');return;}
-  if(!_pendingUploadFile){toast('Please select a file first.');return;}
-  const file=_pendingUploadFile;
-  const name=v('u-name')||file.name.replace(/\.[^/.]+$/,'');
-  const needsApproval=fileIdToReplace?true:(v('u-approval')==='yes');
-  const ext=file.name.split('.').pop().toUpperCase();
-  const size=file.size>1024*1024?(file.size/1024/1024).toFixed(1)+' MB':(file.size/1024).toFixed(0)+' KB';
-  const saveBtn=document.querySelector('#admin-modal-content .btn-save');
-  const prog=document.getElementById('upload-progress');
-  const fill=document.getElementById('upload-fill');
+  const cid = fileIdToReplace ? null : v('modal-upload-client');
+  if(!fileIdToReplace && !cid){ toast('Please select a client first.'); return; }
+  if(!_pendingUploadFile){ toast('Please select a file first.'); return; }
 
-  const resetBtn=()=>{
-    if(saveBtn){saveBtn.innerHTML='Upload to Drive';saveBtn.disabled=false;}
-    if(prog)prog.style.display='none';
-    if(fill)fill.style.width='0%';
+  const file        = _pendingUploadFile;
+  const name        = v('u-name') || file.name.replace(/\.[^/.]+$/,'');
+  const needsApproval = fileIdToReplace ? true : (v('u-approval')==='yes');
+  const ext         = file.name.split('.').pop().toUpperCase();
+  const size        = file.size > 1024*1024
+    ? (file.size/1024/1024).toFixed(1)+' MB'
+    : (file.size/1024).toFixed(0)+' KB';
+
+  const saveBtn = document.querySelector('#admin-modal-content .btn-save');
+  const prog    = document.getElementById('upload-progress');
+  const fill    = document.getElementById('upload-fill');
+
+  const setProgress = pct => { if(fill) fill.style.width = pct+'%'; };
+  const resetBtn    = () => {
+    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
+    if(prog) prog.style.display='none';
+    setProgress(0);
   };
 
-  // Safety net — reset UI if the whole thing takes more than 3 minutes
-  const safetyTimer=setTimeout(()=>{
-    resetBtn();
-    toast('Upload timed out — please try again. Large files may need a stable connection.');
-  },180000);
+  if(saveBtn){ saveBtn.innerHTML='<span class="spinner"></span> Uploading…'; saveBtn.disabled=true; }
+  if(prog) prog.style.display='block';
+  setProgress(5);
 
-  if(saveBtn){saveBtn.innerHTML='<span class="spinner"></span> Uploading…';saveBtn.disabled=true;}
-  if(prog)prog.style.display='block';
-  if(fill)fill.style.width='10%';
-
+  // ── STEP 1: Google Drive upload ──────────────────────────
+  let driveViewUrl='', driveEmbedUrl='', driveFileId='';
   try{
-    let driveViewUrl='',driveEmbedUrl='',driveFileId='';
+    await initGoogleDrive();
+    setProgress(20);
 
-    // Auth first — only if we don't already have a token
-    try{
-      await initGoogleDrive();
-      if(fill)fill.style.width='25%';
-
-      // Get client name for folder
-      let clientName='General';
-      if(fileIdToReplace){
-        // Look up which client this file belongs to
-        const {data:fd}=await sb.from('files').select('client_id').eq('id',fileIdToReplace).maybeSingle();
-        if(fd?.client_id){
-          const clients=await getClients();
-          clientName=clients.find(c=>c.id===fd.client_id)?.name||'General';
-        }
-      } else {
-        const clients=await getClients();
-        clientName=clients.find(c=>c.id===cid)?.name||'General';
-      }
-
-      if(fill)fill.style.width='40%';
-      // Upload to Drive — pass token directly to avoid re-auth inside uploadToDrive
-      const result=await uploadToDriveWithToken(file,clientName,googleAccessToken);
-      driveViewUrl=result.driveViewUrl;
-      driveEmbedUrl=result.driveEmbedUrl;
-      driveFileId=result.driveFileId;
-      if(fill)fill.style.width='75%';
-    }catch(driveErr){
-      console.warn('Drive upload failed:',driveErr.message);
-      toast('⚠️ Drive upload failed — saving record without preview link');
-      // Don't return — still save the DB record
-    }
-
-    // Save to database — show exact error as toast so we can debug on mobile
-    const approved=autoApproveOn||!needsApproval;
-    let dbResult;
+    let clientName = 'General';
     if(fileIdToReplace){
-      const updates={name,file_type:ext,size,needs_approval:true,approved:false,revision_note:null};
-      if(driveFileId){updates.drive_file_id=driveFileId;updates.drive_view_url=driveViewUrl;updates.drive_embed_url=driveEmbedUrl;}
-      dbResult=await sb.from('files').update(updates).eq('id',fileIdToReplace);
-    } else {
-      dbResult=await sb.from('files').insert({
-        client_id:cid,name,file_type:ext,size,
-        drive_file_id:driveFileId||null,
-        drive_view_url:driveViewUrl||null,
-        drive_embed_url:driveEmbedUrl||null,
-        needs_approval:needsApproval,approved,auto_approved:autoApproveOn
-      });
-    // Toast full result for debugging
-    toast('DB result: status='+dbResult.status+' err='+JSON.stringify(dbResult.error)+' data='+JSON.stringify(dbResult.data));
-    }
-
-    if(dbResult.error){
-      // Show full error so we can diagnose on mobile
-      toast('DB error: '+dbResult.error.code+' — '+dbResult.error.message);
-      resetBtn();
-      clearTimeout(safetyTimer);
-      return;
-    }
-    if(dbResult.status&&dbResult.status>=400){
-      toast('DB failed with status '+dbResult.status+' — '+JSON.stringify(dbResult.statusText));
-      resetBtn();
-      clearTimeout(safetyTimer);
-      return;
-    }
-
-    if(fill)fill.style.width='100%';
-    _pendingUploadFile=null;
-    clearTimeout(safetyTimer);
-
-    setTimeout(()=>{
-      closeAdminModal();
-      if(fileIdToReplace){
-        toast('✓ Re-uploaded and sent for approval!');
-        loadAdminVideos(_currentVideoTab);
-      } else {
-        toast(needsApproval&&!autoApproveOn?'✓ Uploaded — sent for approval!':'✓ Uploaded!');
+      const {data:fd} = await sb.from('files').select('client_id').eq('id',fileIdToReplace).maybeSingle();
+      if(fd?.client_id){
+        const clients = await getClients();
+        clientName = clients.find(c=>c.id===fd.client_id)?.name || 'General';
       }
-    },400);
+    } else {
+      const clients = await getClients();
+      clientName = clients.find(c=>c.id===cid)?.name || 'General';
+    }
 
-  }catch(err){
-    clearTimeout(safetyTimer);
-    console.error('saveAdminUpload error:',err);
-    toast('Upload failed: '+err.message);
+    setProgress(35);
+    const result = await uploadToDriveWithToken(file, clientName, googleAccessToken);
+    driveViewUrl  = result.driveViewUrl;
+    driveEmbedUrl = result.driveEmbedUrl;
+    driveFileId   = result.driveFileId;
+    setProgress(75);
+  } catch(driveErr){
+    toast('⚠️ Drive upload failed: '+driveErr.message);
     resetBtn();
+    return;
   }
+
+  // ── STEP 2: Save record to Supabase ──────────────────────
+  setProgress(85);
+  try{
+    const approved = autoApproveOn || !needsApproval;
+    let error;
+
+    if(fileIdToReplace){
+      const updates = {
+        name, file_type:ext, size,
+        needs_approval:true, approved:false, revision_note:null,
+        ...(driveFileId && { drive_file_id:driveFileId, drive_view_url:driveViewUrl, drive_embed_url:driveEmbedUrl })
+      };
+      ({ error } = await sb.from('files').update(updates).eq('id', fileIdToReplace));
+    } else {
+      ({ error } = await sb.from('files').insert({
+        client_id:      cid,
+        name,
+        file_type:      ext,
+        size,
+        drive_file_id:  driveFileId  || null,
+        drive_view_url: driveViewUrl  || null,
+        drive_embed_url:driveEmbedUrl || null,
+        needs_approval: needsApproval,
+        approved,
+        auto_approved:  autoApproveOn
+      }));
+    }
+
+    if(error){
+      toast('DB error ('+error.code+'): '+error.message);
+      resetBtn();
+      return;
+    }
+  } catch(dbErr){
+    toast('DB exception: '+dbErr.message);
+    resetBtn();
+    return;
+  }
+
+  // ── STEP 3: Done ─────────────────────────────────────────
+  setProgress(100);
+  _pendingUploadFile = null;
+
+  setTimeout(()=>{
+    closeAdminModal();
+    if(fileIdToReplace){
+      toast('✓ Re-uploaded and sent for approval!');
+      loadAdminVideos(_currentVideoTab);
+    } else {
+      toast(needsApproval && !autoApproveOn ? '✓ Uploaded — sent for approval!' : '✓ Uploaded!');
+    }
+  }, 400);
 }
 
 async function saveNewClient(){
