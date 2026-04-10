@@ -1396,7 +1396,14 @@ function renderApprovals(data){
 }
 
 async function approveAsset(id){
-  await sb.from('files').update({approved:true}).eq('id',id);
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired — please sign back in.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${id}`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({approved:true})
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
   addNotif('green','Creative approved ✓','Your approval has been sent.');
   toast('✓ Approved!');
   await loadClientPortal();
@@ -1406,7 +1413,14 @@ function hideReviseBox(id){toggle('abtns-'+id,true);toggle('rbox-'+id,false);}
 async function submitRevision(id){
   const txt=document.getElementById('rtxt-'+id)?.value.trim();
   if(!txt){toast('Please describe what you would like changed.');return;}
-  await sb.from('files').update({revision_note:txt,needs_approval:false}).eq('id',id);
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired — please sign back in.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${id}`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({revision_note:txt,needs_approval:false})
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
   addNotif('amber','Revision sent','Your feedback has been sent.');
   toast('✓ Feedback sent!');
   await loadClientPortal();
@@ -1518,22 +1532,25 @@ async function sendMessage(){
   container.appendChild(div);
   container.scrollTop=container.scrollHeight;
 
-  const {error}=await sb.from('messages').insert({
-    room_id:roomId,
-    sender:chatIsAdmin?'admin':'client',
-    sender_name:name,
-    body,read:false
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');input.value=body;div.remove();return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/messages`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({room_id:roomId,sender:chatIsAdmin?'admin':'client',sender_name:name,body,read:false})
   });
-  if(error){
-    console.error('sendMessage:',error);
-    toast('Failed to send: '+error.message);
+  if(!r.ok){
+    toast('Failed to send message.');
     div.remove();
     input.value=body;
   } else {
     updateChatPreview([{sender:chatIsAdmin?'admin':'client',body,created_at:now.toISOString(),read:false}]);
-    // Store the auth uid on the clients row so admin inbox can match rooms exactly
     if(!chatIsAdmin&&currentClientId){
-      sb.from('clients').update({auth_user_id:currentUser.id}).eq('id',currentClientId).then(()=>{});
+      fetch(`${SUPABASE_URL}/rest/v1/clients?id=eq.${currentClientId}`,{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+        body:JSON.stringify({auth_user_id:currentUser.id})
+      }).catch(()=>{});
     }
   }
 }
@@ -1938,16 +1955,14 @@ async function saveReupload(){
     const size=_pendingReuploadFile.size>1024*1024
       ?(_pendingReuploadFile.size/1024/1024).toFixed(1)+' MB'
       :(_pendingReuploadFile.size/1024).toFixed(0)+' KB';
-    const {error}=await sb.from('files').update({
-      drive_file_id:driveFileId,
-      drive_view_url:driveViewUrl,
-      drive_embed_url:driveEmbedUrl,
-      file_type:ext,size,
-      needs_approval:true,
-      approved:false,
-      revision_note:null
-    }).eq('id',_reuploadFileId);
-    if(error){errEl.textContent='DB error: '+error.message;btn.textContent='Upload & Send for Approval';btn.disabled=false;return;}
+    const token=window._sbAccessToken;
+    if(!token){errEl.textContent='Session expired — sign out and back in.';btn.textContent='Upload & Send for Approval';btn.disabled=false;return;}
+    const rr=await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${_reuploadFileId}`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+      body:JSON.stringify({drive_file_id:driveFileId,drive_view_url:driveViewUrl,drive_embed_url:driveEmbedUrl,file_type:ext,size,needs_approval:true,approved:false,revision_note:null})
+    });
+    if(!rr.ok){errEl.textContent='DB error: '+(await rr.text().catch(()=>rr.status));btn.textContent='Upload & Send for Approval';btn.disabled=false;return;}
     fill.style.width='100%';
     closeReuploadModal();
     toast('✓ Re-uploaded and sent for client approval!');
@@ -2220,14 +2235,15 @@ async function saveAdminInvoice(){
     }
   }
 
-  const {error}=await sb.from('invoices').insert({
-    client_id:cid,invoice_number,amount:Number(amount),
-    issue_date,due_date,description,status:'upcoming',
-    drive_view_url:driveViewUrl||null,
-    drive_file_id:driveFileId||null
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired — sign out and back in.');if(btn){btn.textContent='Create';btn.disabled=false;}return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/invoices`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({client_id:cid,invoice_number,amount:Number(amount),issue_date,due_date,description,status:'upcoming',drive_view_url:driveViewUrl||null,drive_file_id:driveFileId||null})
   });
-  if(error){
-    toast('Error: '+error.message);
+  if(!r.ok){
+    toast('Error: '+(await r.text().catch(()=>r.status)));
     if(btn){btn.textContent='Create';btn.disabled=false;}
     return;
   }
