@@ -1885,7 +1885,10 @@ async function loadAdminVideos(tab='approved'){
           <span style="margin-left:8px;color:var(--muted)">· ${dateStr}</span>
         </div>
         ${tab==='approved'
-          ?'<span class="review-status-badge approved">✓ Approved</span>'
+          ?`<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+              <span class="review-status-badge approved">✓ Approved</span>
+              <button onclick="adminDeleteFile('${f.id}')" style="padding:6px 10px;background:var(--red-l);color:var(--red);border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:11px;font-weight:600;cursor:pointer">✕ Remove</button>
+            </div>`
           :`<span class="review-status-badge revised">↩ Revision Requested</span>
             ${f.revision_note?`<div class="review-note">"${esc(f.revision_note)}"</div>`:''}
             <div style="margin-top:12px">
@@ -1971,6 +1974,19 @@ async function saveReupload(){
     errEl.textContent='Error: '+err.message;
     btn.textContent='Upload & Send for Approval';btn.disabled=false;
   }
+}
+
+async function adminDeleteFile(id){
+  if(!confirm('Remove this file? This cannot be undone.'))return;
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${id}`,{
+    method:'DELETE',
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+token}
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
+  toast('✓ File removed.');
+  loadAdminVideos(_currentVideoTab);
 }
 
 function handleInboxClick(el){
