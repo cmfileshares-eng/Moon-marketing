@@ -2264,8 +2264,17 @@ async function saveAdminUpload(fileIdToReplace){
   if(prog) prog.style.display='block';
   if(fill) fill.style.width='50%';
 
-  // Save to DB first — Drive upload happens separately in background
-  const {error} = await sb.from('files').insert({
+  // Save to DB using raw fetch — bypasses any JS client hanging issues
+  const session = await sb.auth.getSession();
+  const accessToken = session?.data?.session?.access_token;
+  if(!accessToken){
+    toast('Not authenticated — please sign out and back in.');
+    if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
+    if(prog) prog.style.display='none';
+    return;
+  }
+
+  const payload = {
     client_id:       cid,
     name,
     file_type:       ext,
@@ -2276,10 +2285,22 @@ async function saveAdminUpload(fileIdToReplace){
     needs_approval:  needsApproval,
     approved,
     auto_approved:   autoApproveOn
+  };
+
+  const resp = await fetch(SUPABASE_URL+'/rest/v1/files', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_ANON,
+      'Authorization': 'Bearer '+accessToken,
+      'Prefer':        'return=minimal'
+    },
+    body: JSON.stringify(payload)
   });
 
-  if(error){
-    toast('DB error ('+error.code+'): '+error.message);
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=>'');
+    toast('DB error ('+resp.status+'): '+errText.slice(0,120));
     if(saveBtn){ saveBtn.innerHTML='Upload to Drive'; saveBtn.disabled=false; }
     if(prog) prog.style.display='none';
     return;
