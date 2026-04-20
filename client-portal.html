@@ -3254,23 +3254,48 @@ function renderMiniCal(){
   const upcoming=document.getElementById('mini-cal-upcoming');
   if(!upcoming)return;
   const todayTs=new Date();todayTs.setHours(0,0,0,0);
-  const all=[
-    ..._calEvents.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).map(e=>({...e,source:'mine'})),
-    ..._calProposed.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).map(e=>({...e,name:e.title,source:'proposed'}))
-  ].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
-  if(!all.length){upcoming.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">No upcoming events</div>';return;}
-  upcoming.innerHTML=all.map(e=>{
+  const proposed=_calProposed.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).sort((a,b)=>a.date.localeCompare(b.date));
+  const mine=_calEvents.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+
+  if(!proposed.length&&!mine.length){upcoming.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">No upcoming events</div>';return;}
+
+  const statusBg={proposed:'bg-amber c-amber',approved:'bg-green c-green',reschedule_requested:'bg-orange c-orange'};
+  const statusLbl={proposed:'Awaiting approval',approved:'✓ Confirmed',reschedule_requested:'Reschedule requested'};
+
+  const proposedHTML=proposed.map(e=>{
+    const dt=new Date(e.date+'T00:00:00');
+    const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${e.colour};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${esc(e.title)}</div>
+          <div style="font-size:11px;color:var(--muted)">${ds}${e.time?' · '+e.time:''} · <span style="color:var(--orange);font-weight:700">From Curtis Moon</span></div>
+        </div>
+      </div>
+      <div style="margin-bottom:6px"><span class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}">${statusLbl[e.status]||e.status}</span></div>
+      ${e.status==='proposed'?`
+      <div style="display:flex;gap:8px">
+        <button onclick="approveSchedEvent('${e.id}')" style="flex:1;padding:12px;background:var(--green);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">✓ Approve</button>
+        <button onclick="openRescheduleModal('${e.id}','${esc(e.title)}')" style="flex:1;padding:12px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">↩ Reschedule</button>
+      </div>`:''}
+      ${e.reschedule_note?`<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:4px">"${esc(e.reschedule_note)}"</div>`:''}
+    </div>`;
+  }).join('');
+
+  const mineHTML=mine.map(e=>{
     const dt=new Date(e.date+'T00:00:00');
     const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
-      <div style="width:8px;height:8px;border-radius:50%;background:${e.colour};flex-shrink:0${e.source==='proposed'?';opacity:.7':''}"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:${e.colour};flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.name||e.title||'')}</div>
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.name||'')}</div>
         <div style="font-size:11px;color:var(--muted)">${ds}${e.time?' · '+e.time:''}</div>
       </div>
-      ${e.source==='proposed'&&e.status==='proposed'?`<span style="font-size:9px;font-weight:700;color:var(--orange);text-transform:uppercase">Review</span>`:''}
     </div>`;
   }).join('');
+
+  upcoming.innerHTML=proposedHTML+mineHTML;
 }
 
 function openAddEventModal(dateStr){
