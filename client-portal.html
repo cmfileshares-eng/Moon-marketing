@@ -211,6 +211,20 @@ textarea.field{resize:none;line-height:1.5}
 .appt-name{font-size:14px;font-weight:600}
 .appt-sub{font-size:12px;color:var(--muted);margin-top:2px}
 
+/* ── CALENDAR ── */
+.cal-day{min-height:46px;border-radius:6px;background:var(--white);border:1.5px solid var(--border);padding:4px 5px;cursor:pointer;transition:background .15s;display:flex;flex-direction:column;gap:2px}
+.cal-day:active{background:var(--off)}
+.cal-day.today{border-color:var(--orange);background:var(--orange-l)}
+.cal-day.other-month{opacity:.3;cursor:default;pointer-events:none}
+.cal-day-num{font-size:10px;font-weight:700;color:var(--ink)}
+.cal-dot{width:100%;height:4px;border-radius:3px;flex-shrink:0}
+.cal-event-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.cal-event-row:last-child{border-bottom:none}
+.cal-event-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cal-event-name{font-size:14px;font-weight:600;flex:1}
+.cal-event-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.cal-event-del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;flex-shrink:0;line-height:1}
+
 /* ── BOTTOM NAV ── */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted);transition:color .2s}
@@ -626,6 +640,24 @@ textarea.field{resize:none;line-height:1.5}
 
   </div><!-- /page-home -->
 
+  <!-- CALENDAR PAGE -->
+  <div class="page" id="page-calendar" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-family:var(--font-display);font-size:24px;font-weight:400" id="cal-month-label">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Tap a day to add an event</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="calPrev()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">‹</button>
+        <button onclick="calNext()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">›</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px" id="cal-day-headers"></div>
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:20px"></div>
+    <div class="section-head" style="margin-bottom:10px"><div class="section-title">Upcoming</div></div>
+    <div id="cal-events-list" class="bubble"></div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-btn on" id="nav-home" onclick="navTo('home',this)">
@@ -640,7 +672,9 @@ textarea.field{resize:none;line-height:1.5}
     <button class="nav-btn" id="nav-messages" onclick="navTo('messages',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
     </button>
-
+    <button class="nav-btn" id="nav-calendar" onclick="navTo('calendar',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar
+    </button>
   </nav>
 </div>
 
@@ -737,6 +771,39 @@ textarea.field{resize:none;line-height:1.5}
       <button class="btn-primary" onclick="openAdminModal('add-client')">+ Add New Client</button>
       <div class="admin-card"><div id="admin-clients-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Loading…</div></div></div>
     </div>
+
+    <!-- SCHEDULE -->
+    <div class="admin-section" id="admin-sec-schedule">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Schedule</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Propose shoot days and deadlines to clients</div>
+      <div class="admin-card">
+        <div class="admin-card-title">Propose a Day</div>
+        <div style="margin-bottom:12px"><label class="form-label">Client</label>
+          <select class="field" id="sched-client-select" style="margin-bottom:0"><option value="">Loading…</option></select></div>
+        <div style="margin-bottom:12px"><label class="form-label">Event Name</label>
+          <input class="field" id="sched-title" placeholder="e.g. Filming Day, Campaign Launch" style="margin-bottom:0"/></div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <div style="flex:1"><label class="form-label">Date</label><input class="field" type="date" id="sched-date" style="margin-bottom:0"/></div>
+          <div style="flex:1"><label class="form-label">Time (optional)</label><input class="field" type="time" id="sched-time" style="margin-bottom:0"/></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <label class="form-label">Colour</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="sched-colour-picker">
+            <div onclick="pickSchedColour('#FF6B2C',this)" style="width:26px;height:26px;border-radius:50%;background:#FF6B2C;cursor:pointer;border:3px solid var(--ink)"></div>
+            <div onclick="pickSchedColour('#4A8FD4',this)" style="width:26px;height:26px;border-radius:50%;background:#4A8FD4;cursor:pointer;border:3px solid transparent"></div>
+            <div onclick="pickSchedColour('#2ECC8F',this)" style="width:26px;height:26px;border-radius:50%;background:#2ECC8F;cursor:pointer;border:3px solid transparent"></div>
+            <div onclick="pickSchedColour('#F5A623',this)" style="width:26px;height:26px;border-radius:50%;background:#F5A623;cursor:pointer;border:3px solid transparent"></div>
+            <div onclick="pickSchedColour('#8B5CF6',this)" style="width:26px;height:26px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:3px solid transparent"></div>
+            <div onclick="pickSchedColour('#E74C3C',this)" style="width:26px;height:26px;border-radius:50%;background:#E74C3C;cursor:pointer;border:3px solid transparent"></div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-bottom:0" onclick="proposeSchedEvent()">Propose to Client →</button>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">Proposed Events</div>
+        <div id="admin-sched-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Loading…</div></div>
+      </div>
+    </div>
   </div>
   <nav class="admin-bottom-nav">
     <button class="admin-nav-btn on" id="anav-messages" onclick="adminNavTo('messages',this)">
@@ -753,6 +820,9 @@ textarea.field{resize:none;line-height:1.5}
     </button>
     <button class="admin-nav-btn" id="anav-stats" onclick="adminNavTo('stats',this)">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats
+    </button>
+    <button class="admin-nav-btn" id="anav-schedule" onclick="adminNavTo('schedule',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
     </button>
     <button class="admin-nav-btn" id="anav-clients" onclick="adminNavTo('clients',this)">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clients
@@ -896,6 +966,51 @@ textarea.field{resize:none;line-height:1.5}
     <div class="btn-row">
       <button class="btn-cancel" onclick="closeReuploadModal()">Cancel</button>
       <button class="btn-save" id="reupload-save-btn" onclick="saveReupload()">Upload &amp; Send for Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESCHEDULE MODAL -->
+<div id="reschedule-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center">
+  <div class="modal-sheet" style="max-width:480px;width:100%;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <h3 style="font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:6px">Request Reschedule</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px" id="reschedule-event-name">—</p>
+    <div style="margin-bottom:14px"><label class="form-label">Preferred alternative date (optional)</label>
+      <input class="field" type="date" id="reschedule-date" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:18px"><label class="form-label">Note to Curtis</label>
+      <textarea class="field" id="reschedule-note" placeholder="Let us know why and suggest an alternative…" rows="3" style="resize:none"></textarea></div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeRescheduleModal()">Cancel</button>
+      <button class="btn-save" onclick="submitReschedule()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div id="add-event-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center">
+  <div class="modal-sheet" style="max-width:480px;width:100%;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <h3 style="font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:18px">Add Event</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Event Name</label><input class="field" id="ev-name" placeholder="e.g. Filming Day" style="margin-bottom:0"/></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Date</label><input class="field" type="date" id="ev-date" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Time (optional)</label><input class="field" type="time" id="ev-time" style="margin-bottom:0"/></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <label class="form-label">Colour</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px" id="ev-colour-picker">
+        <div onclick="pickEvColour('#FF6B2C',this)" style="width:30px;height:30px;border-radius:50%;background:#FF6B2C;cursor:pointer;border:3px solid var(--ink)"></div>
+        <div onclick="pickEvColour('#4A8FD4',this)" style="width:30px;height:30px;border-radius:50%;background:#4A8FD4;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#2ECC8F',this)" style="width:30px;height:30px;border-radius:50%;background:#2ECC8F;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#F5A623',this)" style="width:30px;height:30px;border-radius:50%;background:#F5A623;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#8B5CF6',this)" style="width:30px;height:30px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#E74C3C',this)" style="width:30px;height:30px;border-radius:50%;background:#E74C3C;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#1ABC9C',this)" style="width:30px;height:30px;border-radius:50%;background:#1ABC9C;cursor:pointer;border:3px solid transparent"></div>
+        <div onclick="pickEvColour('#E91E8C',this)" style="width:30px;height:30px;border-radius:50%;background:#E91E8C;cursor:pointer;border:3px solid transparent"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeAddEventModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCalEvent()">Add Event</button>
     </div>
   </div>
 </div>
@@ -1336,16 +1451,6 @@ function renderFiles(data,containerId){
   }).join('');
 }
 
-function renderAppts(data,containerId){
-  const el=document.getElementById(containerId);if(!el)return;
-  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">No calls booked yet</div>';return;}
-  el.innerHTML=data.map(a=>`
-    <div class="appt-item">
-      <div class="time-block"><div class="t">${esc(a.appointment_time||'—')}</div><div class="p">Scheduled</div></div>
-      <div class="appt-info"><div class="appt-name">${esc(a.title)}</div><div class="appt-sub">${esc(a.appointment_date||'')} · ${esc(a.duration||'')}</div></div>
-    </div>`).join('');
-}
-
 function renderPerf(p){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   set('sc-adspend', p?.ad_spend ? '$'+Number(p.ad_spend).toLocaleString() : '—');
@@ -1451,7 +1556,7 @@ async function loadMessages(roomId){
   if(data?.length){
     const token=window._sbAccessToken;
     const senderToMark=chatIsAdmin?'client':'admin';
-    if(token)fetch(`${SUPABASE_URL}/rest/v1/messages?room_id=eq.${roomId}&sender=eq.${senderToMark}&read=eq.false`,{
+    if(token)fetch(`${SUPABASE_URL}/rest/v1/messages?room_id=eq.${roomId}&sender=eq.${senderToMark}&read=is.false`,{
       method:'PATCH',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
       body:JSON.stringify({read:true})
     }).catch(()=>{});
@@ -1629,8 +1734,9 @@ function stopGlobalMessageListener(){
 function startClientMessageListener(){
   const roomId=currentUser?.id;
   if(!roomId||!currentClientId)return;
-  // Messages from admin
-  sb.channel('client-notif-msgs-'+roomId)
+
+  // Messages — realtime works fine for this table
+  sb.channel('client-msgs-'+roomId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+roomId},payload=>{
       const m=payload.new;
       if(m.sender!=='admin')return;
@@ -1640,39 +1746,63 @@ function startClientMessageListener(){
       sendPushNotification('New message from Curtis Moon',m.body.slice(0,100),'client-chat');
       loadChatPreview();
     }).subscribe();
-  // New files / videos uploaded for this client
-  sb.channel('client-notif-files-'+currentClientId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'files',filter:'client_id=eq.'+currentClientId},payload=>{
-      const f=payload.new;
-      if(f.needs_approval&&!f.approved){
-        addNotif('orange','New creative to review',f.name+' is ready for your approval.');
-        toast('⚡ New creative ready for approval: '+f.name);
-        sendPushNotification('New creative to review',f.name+' is ready for your approval.','client-file');
-      } else {
-        addNotif('blue','New file added',f.name+' has been uploaded to your portal.');
-        toast('📁 New file: '+f.name);
-        sendPushNotification('New file added',f.name+' has been added to your portal.','client-file');
+
+  // Poll every 30s for new files, stats, invoices
+  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1;
+  async function pollClientUpdates(){
+    if(!currentClientId)return;
+    try{
+      const fr=await sb.from('files').select('id,name,needs_approval,approved',{count:'exact'}).eq('client_id',currentClientId);
+      const fc=fr.count||0;
+      if(_lastFileCount>=0&&fc>_lastFileCount){
+        const newest=fr.data?.[0];
+        if(newest?.needs_approval&&!newest?.approved){
+          addNotif('orange','New creative to review',(newest.name||'A file')+' is ready for your approval.');
+          toast('⚡ New creative: '+(newest.name||'ready for approval'));
+          sendPushNotification('New creative to review',(newest.name||'A file')+' needs your approval.','client-file');
+        } else if(newest){
+          addNotif('blue','New file added',(newest.name||'A file')+' has been added to your portal.');
+          toast('📁 New file: '+(newest.name||'added'));
+          sendPushNotification('New file added',(newest.name||'A file')+' added.','client-file');
+        }
+        loadClientPortal();
       }
-      loadClientPortal();
-    }).subscribe();
-  // Stats updated
-  sb.channel('client-notif-perf-'+currentClientId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'performance',filter:'client_id=eq.'+currentClientId},payload=>{
-      const p=payload.new;
-      addNotif('green','Performance updated','Your latest stats are in for '+( p.month||'this month')+'.');
-      toast('📊 Performance stats updated');
-      sendPushNotification('Performance updated','Your latest stats are in.','client-perf');
-      loadClientPortal();
-    }).subscribe();
-  // Invoices
-  sb.channel('client-notif-inv-'+currentClientId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'invoices',filter:'client_id=eq.'+currentClientId},payload=>{
-      const i=payload.new;
-      addNotif('blue','New invoice','Invoice '+( i.invoice_number||'')+ ' — $'+Number(i.amount||0).toLocaleString()+' has been issued.');
-      toast('🧾 New invoice: $'+Number(i.amount||0).toLocaleString());
-      sendPushNotification('New invoice','$'+Number(i.amount||0).toLocaleString()+' invoice has been issued.','client-inv');
-      loadClientPortal();
-    }).subscribe();
+      _lastFileCount=fc;
+
+      const pr=await sb.from('performance').select('id',{count:'exact'}).eq('client_id',currentClientId);
+      const pc=pr.count||0;
+      if(_lastPerfCount>=0&&pc>_lastPerfCount){
+        addNotif('green','Stats updated','Your latest campaign performance is in.');
+        toast('📊 Performance stats updated');
+        sendPushNotification('Stats updated','Your latest performance data is in.','client-perf');
+        loadClientPortal();
+      }
+      _lastPerfCount=pc;
+
+      const ir=await sb.from('invoices').select('id',{count:'exact'}).eq('client_id',currentClientId);
+      const ic=ir.count||0;
+      if(_lastInvCount>=0&&ic>_lastInvCount){
+        addNotif('blue','New invoice','A new invoice has been issued to your account.');
+        toast('🧾 New invoice received');
+        sendPushNotification('New invoice','A new invoice has been issued.','client-inv');
+        loadClientPortal();
+      }
+      _lastInvCount=ic;
+
+      // Check for new proposed events
+      const cr=await sb.from('calendar_events').select('id',{count:'exact'}).eq('client_id',currentClientId).eq('status','proposed');
+      const cc=cr.count||0;
+      if(_lastInvCount>=0&&cc>(_calProposed.filter(e=>e.status==='proposed').length)){
+        addNotif('orange','New shoot day proposed','Curtis Moon has proposed a new date. Check your calendar.');
+        toast('📅 New date proposed — check your calendar');
+        sendPushNotification('New shoot day proposed','Curtis Moon wants to book a date with you.','client-cal');
+        // Refresh proposed events if calendar is open
+        if(document.getElementById('page-calendar')?.style.display!=='none')loadProposedEvents();
+      }
+    }catch(e){}
+  }
+  pollClientUpdates();
+  setInterval(pollClientUpdates,30000);
 }
 async function enterAdminApp(){
   try{
@@ -1717,6 +1847,7 @@ function adminNavTo(section,btn){
   if(section==='videos')loadAdminVideos('approved');
   if(section==='invoices')loadAdminInvoices();
   if(section==='clients')loadAdminClients();
+  if(section==='schedule')loadAdminSchedule();
 }
 
 async function loadAdminData(){
@@ -1726,7 +1857,7 @@ async function loadAdminData(){
 async function loadAdminClientSelects(){
   const clients=await getClients();
   const opts=clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  ['upload-client-select','invoice-client-select','stats-client-select'].forEach(id=>{
+  ['upload-client-select','invoice-client-select','stats-client-select','sched-client-select'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.innerHTML='<option value="">Select client...</option>'+opts;
   });
@@ -2039,7 +2170,7 @@ function openAdminChat(roomId,name,color){
   subscribeToMessages(roomId);
   setTimeout(()=>document.getElementById('chat-input')?.focus(),300);
   const token=window._sbAccessToken;
-  if(token)fetch(`${SUPABASE_URL}/rest/v1/messages?room_id=eq.${roomId}&sender=eq.client&read=eq.false`,{
+  if(token)fetch(`${SUPABASE_URL}/rest/v1/messages?room_id=eq.${roomId}&sender=eq.client&read=is.false`,{
     method:'PATCH',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
     body:JSON.stringify({read:true})
   }).catch(()=>{});
@@ -2068,6 +2199,79 @@ async function loadAdminInvoices(){
         ${i.status!=='paid'?`<button onclick="markInvoicePaid('${i.id}')" style="margin-top:2px;padding:4px 10px;background:var(--green);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:10px;font-weight:700;cursor:pointer">✓ Mark Paid</button>`:''}
       </div>
     </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   ADMIN SCHEDULE
+══════════════════════════════════════════ */
+let _schedColour='#FF6B2C';
+
+function pickSchedColour(colour,el){
+  _schedColour=colour;
+  document.querySelectorAll('#sched-colour-picker div').forEach(d=>d.style.borderColor='transparent');
+  el.style.borderColor='var(--ink)';
+}
+
+async function proposeSchedEvent(){
+  const clientId=v('sched-client-select');
+  const title=v('sched-title');
+  const date=v('sched-date');
+  const time=v('sched-time');
+  if(!clientId){toast('Please select a client.');return;}
+  if(!title){toast('Please enter an event name.');return;}
+  if(!date){toast('Please select a date.');return;}
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({client_id:clientId,title,date,time,colour:_schedColour,status:'proposed'})
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
+  toast('✓ Proposed to client!');
+  document.getElementById('sched-title').value='';
+  document.getElementById('sched-date').value='';
+  document.getElementById('sched-time').value='';
+  loadAdminSchedule();
+}
+
+async function loadAdminSchedule(){
+  const list=document.getElementById('admin-sched-list');
+  if(!list)return;
+  list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px">Loading…</div>';
+  const {data,error}=await sb.from('calendar_events').select('*').order('date',{ascending:true});
+  if(error||!data?.length){
+    list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px">No proposed events yet</div>';
+    return;
+  }
+  const clients=await getClients();
+  const clientById={};clients.forEach(c=>clientById[c.id]=c);
+  const statusBg={proposed:'bg-amber c-amber',approved:'bg-green c-green',reschedule_requested:'bg-orange c-orange'};
+  const statusLbl={proposed:'Proposed',approved:'✓ Approved',reschedule_requested:'↩ Reschedule Requested'};
+  list.innerHTML=data.map(e=>`
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${e.colour};flex-shrink:0;margin-top:4px"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600">${esc(e.title)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(clientById[e.client_id]?.name||'Unknown')} · ${esc(e.date)}${e.time?' · '+e.time:''}</div>
+        ${e.reschedule_note?`<div style="font-size:12px;color:var(--orange);margin-top:4px;font-style:italic">"${esc(e.reschedule_note)}"</div>`:''}
+        <div style="margin-top:6px"><span class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}">${statusLbl[e.status]||e.status}</span></div>
+      </div>
+      <button onclick="adminDeleteSchedEvent('${e.id}')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0;flex-shrink:0">✕</button>
+    </div>`).join('');
+}
+
+async function adminDeleteSchedEvent(id){
+  if(!confirm('Remove this event?'))return;
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events?id=eq.${id}`,{
+    method:'DELETE',
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+token}
+  });
+  if(!r.ok){toast('Error deleting.');return;}
+  toast('✓ Event removed.');
+  loadAdminSchedule();
 }
 
 async function markInvoicePaid(id){
@@ -2711,6 +2915,17 @@ document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-tr
 function navTo(id,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
+  // Show/hide pages
+  const calPage=document.getElementById('page-calendar');
+  const homePage=document.getElementById('page-home');
+  if(id==='calendar'){
+    if(homePage)homePage.style.display='none';
+    if(calPage)calPage.style.display='block';
+    loadProposedEvents(); // loads from DB then renders
+    return;
+  }
+  if(calPage)calPage.style.display='none';
+  if(homePage)homePage.style.display='block';
   const targets={
     home:()=>window.scrollTo({top:0,behavior:'smooth'}),
     performance:()=>document.getElementById('stat-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),
@@ -2718,7 +2933,203 @@ function navTo(id,btn){
     messages:()=>openChat(),
   };
   if(targets[id])targets[id]();
-  setTimeout(()=>btn.classList.add('on'),300);
+}
+
+/* ══════════════════════════════════════════
+   CALENDAR
+══════════════════════════════════════════ */
+let _calYear=new Date().getFullYear();
+let _calMonth=new Date().getMonth();
+let _calEvents=JSON.parse(localStorage.getItem('lunar_cal_events')||'[]');
+let _calProposed=[]; // events proposed by admin, loaded from DB
+let _evColour='#FF6B2C';
+let _rescheduleEventId=null;
+
+function saveCalToStorage(){localStorage.setItem('lunar_cal_events',JSON.stringify(_calEvents));}
+
+async function loadProposedEvents(){
+  if(!currentClientId)return;
+  const {data}=await sb.from('calendar_events').select('*').eq('client_id',currentClientId).order('date',{ascending:true});
+  _calProposed=data||[];
+  renderCalendar();
+  renderCalEventsList();
+}function renderCalendar(){
+  const today=new Date();
+  const label=new Date(_calYear,_calMonth,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const lel=document.getElementById('cal-month-label');
+  if(lel)lel.textContent=label;
+
+  // Day headers
+  const hd=document.getElementById('cal-day-headers');
+  if(hd)hd.innerHTML=['S','M','T','W','T','F','S'].map(d=>`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:3px 0">${d}</div>`).join('');
+
+  const grid=document.getElementById('cal-grid');
+  if(!grid)return;
+
+  const firstDay=new Date(_calYear,_calMonth,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  const daysInPrev=new Date(_calYear,_calMonth,0).getDate();
+  let html='';
+
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div class="cal-day other-month"><div class="cal-day-num">${daysInPrev-i}</div></div>`;
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=d===today.getDate()&&_calMonth===today.getMonth()&&_calYear===today.getFullYear();
+    const evs=_calEvents.filter(e=>e.date===ds);
+    const proposed=_calProposed.filter(e=>e.date===ds);
+    const allDots=[...evs.slice(0,2).map(e=>`<div class="cal-dot" style="background:${e.colour}"></div>`),
+                   ...proposed.slice(0,1).map(e=>`<div class="cal-dot" style="background:${e.colour};opacity:.7;border:1px dashed ${e.colour}"></div>`)].join('');
+    html+=`<div class="cal-day${isToday?' today':''}" onclick="openAddEventModal('${ds}')"><div class="cal-day-num">${d}</div>${allDots}</div>`;
+  }
+  const total=firstDay+daysInMonth;
+  const trailing=(7-total%7)%7;
+  for(let d=1;d<=trailing;d++){
+    html+=`<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+  grid.innerHTML=html;
+  renderCalEventsList();
+}
+
+function renderCalEventsList(){
+  const list=document.getElementById('cal-events-list');
+  if(!list)return;
+  const today=new Date();today.setHours(0,0,0,0);
+
+  // My events (local)
+  const myEvents=_calEvents
+    .filter(e=>new Date(e.date+'T00:00:00')>=today)
+    .sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+
+  // Proposed events from admin
+  const proposedEvents=_calProposed
+    .filter(e=>new Date(e.date+'T00:00:00')>=today)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(!myEvents.length&&!proposedEvents.length){
+    list.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No upcoming events</div>';
+    return;
+  }
+
+  const statusBg={proposed:'bg-amber c-amber',approved:'bg-green c-green',reschedule_requested:'bg-orange c-orange'};
+  const statusLbl={proposed:'Awaiting your approval',approved:'✓ Confirmed',reschedule_requested:'Reschedule requested'};
+
+  const proposedHTML=proposedEvents.map(e=>{
+    const dt=new Date(e.date+'T00:00:00');
+    const ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="cal-event-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="cal-event-dot" style="background:${e.colour}"></div>
+        <div style="flex:1">
+          <div class="cal-event-name">${esc(e.title)}</div>
+          <div class="cal-event-sub">${ds}${e.time?' · '+e.time:''} · <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--orange)">From Curtis Moon</span></div>
+        </div>
+      </div>
+      <div class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}" style="margin-left:18px">${statusLbl[e.status]||e.status}</div>
+      ${e.status==='proposed'?`
+        <div style="display:flex;gap:8px;width:100%;padding-left:18px">
+          <button onclick="approveSchedEvent('${e.id}')" style="flex:1;padding:9px;background:var(--green);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer">✓ Approve</button>
+          <button onclick="openRescheduleModal('${e.id}','${esc(e.title)}')" style="flex:1;padding:9px;background:var(--orange-l);color:var(--orange);border:1.5px solid var(--orange);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer">↩ Reschedule</button>
+        </div>`:''}
+      ${e.reschedule_note?`<div style="font-size:12px;color:var(--muted);font-style:italic;padding-left:18px">"${esc(e.reschedule_note)}"</div>`:''}
+    </div>`;
+  }).join('');
+
+  const myHTML=myEvents.map(e=>{
+    const dt=new Date(e.date+'T00:00:00');
+    const ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="cal-event-row">
+      <div class="cal-event-dot" style="background:${e.colour}"></div>
+      <div style="flex:1">
+        <div class="cal-event-name">${esc(e.name)}</div>
+        <div class="cal-event-sub">${ds}${e.time?' · '+e.time:''}</div>
+      </div>
+      <button class="cal-event-del" onclick="deleteCalEvent('${e.id}')">✕</button>
+    </div>`;
+  }).join('');
+
+  list.innerHTML=proposedHTML+myHTML;
+}
+
+function calPrev(){_calMonth--;if(_calMonth<0){_calMonth=11;_calYear--;}renderCalendar();}
+function calNext(){_calMonth++;if(_calMonth>11){_calMonth=0;_calYear++;}renderCalendar();}
+
+function openAddEventModal(dateStr){
+  document.getElementById('ev-name').value='';
+  document.getElementById('ev-date').value=dateStr||'';
+  document.getElementById('ev-time').value='';
+  _evColour='#FF6B2C';
+  document.querySelectorAll('#ev-colour-picker div').forEach((el,i)=>{el.style.borderColor=i===0?'var(--ink)':'transparent';});
+  document.getElementById('add-event-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('ev-name')?.focus(),200);
+}
+function closeAddEventModal(){document.getElementById('add-event-modal').style.display='none';}
+function pickEvColour(colour,el){
+  _evColour=colour;
+  document.querySelectorAll('#ev-colour-picker div').forEach(d=>d.style.borderColor='transparent');
+  el.style.borderColor='var(--ink)';
+}
+function saveCalEvent(){
+  const name=document.getElementById('ev-name').value.trim();
+  const date=document.getElementById('ev-date').value;
+  const time=document.getElementById('ev-time').value;
+  if(!name){toast('Please enter an event name.');return;}
+  if(!date){toast('Please select a date.');return;}
+  _calEvents.push({id:Date.now().toString(),name,date,time,colour:_evColour});
+  saveCalToStorage();
+  closeAddEventModal();
+  renderCalendar();
+  toast('✓ Event added!');
+}
+function deleteCalEvent(id){
+  _calEvents=_calEvents.filter(e=>e.id!==id);
+  saveCalToStorage();
+  renderCalendar();
+}
+
+async function approveSchedEvent(id){
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events?id=eq.${id}`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify({status:'approved'})
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
+  toast('✓ Event confirmed!');
+  await loadProposedEvents();
+}
+
+function openRescheduleModal(id,title){
+  _rescheduleEventId=id;
+  document.getElementById('reschedule-event-name').textContent=title;
+  document.getElementById('reschedule-note').value='';
+  document.getElementById('reschedule-date').value='';
+  document.getElementById('reschedule-modal').style.display='flex';
+}
+function closeRescheduleModal(){
+  document.getElementById('reschedule-modal').style.display='none';
+  _rescheduleEventId=null;
+}
+async function submitReschedule(){
+  const note=document.getElementById('reschedule-note').value.trim();
+  const newDate=document.getElementById('reschedule-date').value;
+  if(!note&&!newDate){toast('Please add a note or preferred date.');return;}
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const body={status:'reschedule_requested'};
+  if(note)body.reschedule_note=note+(newDate?' (Preferred: '+newDate+')':'');
+  else body.reschedule_note='Preferred date: '+newDate;
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events?id=eq.${_rescheduleEventId}`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
+  closeRescheduleModal();
+  toast('✓ Reschedule request sent to Curtis Moon!');
+  await loadProposedEvents();
 }
 
 /* ══════════════════════════════════════════
