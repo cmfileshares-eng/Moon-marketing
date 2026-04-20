@@ -660,9 +660,10 @@ textarea.field{resize:none;line-height:1.5}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div style="font-family:var(--font-display);font-size:24px;font-weight:400" id="cal-month-label">—</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Tap a day to add an event</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Tap a day to see what's on</div>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="openAddEventModal('')" style="padding:8px 14px;background:var(--orange);color:white;border:none;border-radius:20px;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer">+ Add</button>
         <button onclick="calPrev()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">‹</button>
         <button onclick="calNext()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">›</button>
       </div>
@@ -790,7 +791,19 @@ textarea.field{resize:none;line-height:1.5}
     <!-- SCHEDULE -->
     <div class="admin-section" id="admin-sec-schedule">
       <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Schedule</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Propose shoot days and deadlines to clients</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Tap a day to view or propose events</div>
+      <!-- Admin calendar grid -->
+      <div class="admin-card" style="padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-weight:700;font-size:15px" id="admin-cal-label">—</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="adminCalPrev()" style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:16px">‹</button>
+            <button onclick="adminCalNext()" style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:16px">›</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:3px" id="admin-cal-headers"></div>
+        <div id="admin-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px"></div>
+      </div>
       <div class="admin-card">
         <div class="admin-card-title">Propose a Day</div>
         <div style="margin-bottom:12px"><label class="form-label">Client</label>
@@ -983,6 +996,18 @@ textarea.field{resize:none;line-height:1.5}
       <button class="btn-cancel" onclick="closeReuploadModal()">Cancel</button>
       <button class="btn-save" id="reupload-save-btn" onclick="saveReupload()">Upload &amp; Send for Approval</button>
     </div>
+  </div>
+</div>
+
+<!-- DAY VIEW MODAL -->
+<div id="day-view-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeDayView()">
+  <div class="modal-sheet" style="max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div id="day-view-title" style="font-family:var(--font-display);font-size:22px;font-weight:400">—</div>
+      <button onclick="closeDayView()" style="background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;padding:4px">✕</button>
+    </div>
+    <div id="day-view-events"></div>
+    <div id="day-view-actions" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -1397,7 +1422,7 @@ async function enterApp(){
     startClientMessageListener();
     await loadClientPortal();
     await loadChatPreview();
-    loadProposedEvents(); // renders mini-cal on home page
+    await loadProposedEvents(); // must await so mini-cal has data on first render
   }catch(e){console.error('enterApp:',e);show('app');hide('loading-screen');}
 }
 
@@ -1965,7 +1990,7 @@ function adminNavTo(section,btn){
   if(section==='videos')loadAdminVideos('approved');
   if(section==='invoices')loadAdminInvoices();
   if(section==='clients')loadAdminClients();
-  if(section==='schedule')loadAdminSchedule();
+  if(section==='schedule'){loadAdminSchedule();loadAdminCal();}
 }
 
 async function loadAdminData(){
@@ -2353,6 +2378,7 @@ async function proposeSchedEvent(){
   document.getElementById('sched-time').value='';
   document.getElementById('sched-end-time').value='';
   loadAdminSchedule();
+  loadAdminCal();
 }
 
 async function loadAdminSchedule(){
@@ -3092,6 +3118,134 @@ function navTo(id,btn){
 }
 
 /* ══════════════════════════════════════════
+   DAY VIEW (shared client + admin)
+══════════════════════════════════════════ */
+function openDayView(dateStr){
+  const dt=new Date(dateStr+'T00:00:00');
+  const label=dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('day-view-title').textContent=label;
+
+  const eventsEl=document.getElementById('day-view-events');
+  const actionsEl=document.getElementById('day-view-actions');
+
+  // Collect events for this day
+  const isAdmin=isAdminUser;
+  let items=[];
+
+  if(isAdmin){
+    // Admin: show all calendar_events for this date
+    (_adminCalEvents||[]).filter(e=>e.date===dateStr).forEach(e=>{
+      const clientName=(_adminCalClients||{})[e.client_id]?.name||'Unknown';
+      items.push({colour:e.colour,name:e.title,sub:clientName+(e.time?' · '+e.time+(e.end_time?' – '+e.end_time:''):''),status:e.status,id:e.id,isAdmin:true});
+    });
+  } else {
+    // Client: local events
+    _calEvents.filter(e=>e.date===dateStr).forEach(e=>{
+      items.push({colour:e.colour,name:e.name,sub:e.time?(e.time+(e.endTime?' – '+e.endTime:'')):'',isLocal:true,id:e.id});
+    });
+    // Client: proposed events
+    _calProposed.filter(e=>e.date===dateStr).forEach(e=>{
+      items.push({colour:e.colour,name:e.title,sub:e.time?(e.time+(e.end_time?' – '+e.end_time:'')):'',status:e.status,id:e.id,isProposed:true,reschedule_note:e.reschedule_note});
+    });
+  }
+
+  if(!items.length){
+    eventsEl.innerHTML='<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px 0">Nothing scheduled</div>';
+  } else {
+    const statusBg={proposed:'bg-amber c-amber',approved:'bg-green c-green',reschedule_requested:'bg-orange c-orange'};
+    const statusLbl={proposed:'Awaiting approval',approved:'✓ Confirmed',reschedule_requested:'Reschedule requested'};
+    eventsEl.innerHTML=items.map(e=>`
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="width:10px;height:10px;border-radius:50%;background:${e.colour};flex-shrink:0;margin-top:4px"></div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600">${esc(e.name)}</div>
+          ${e.sub?`<div style="font-size:12px;color:var(--muted);margin-top:1px">${esc(e.sub)}</div>`:''}
+          ${e.status?`<div style="margin-top:4px"><span class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}">${statusLbl[e.status]||e.status}</span></div>`:''}
+          ${e.reschedule_note?`<div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:4px">"${esc(e.reschedule_note)}"</div>`:''}
+          ${e.isProposed&&e.status==='proposed'?`
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button onclick="closeDayView();approveSchedEvent('${e.id}')" style="flex:1;padding:12px;background:var(--green);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">✓ Approve</button>
+              <button onclick="closeDayView();openRescheduleModal('${e.id}','${esc(e.name)}')" style="flex:1;padding:12px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">↩ Reschedule</button>
+            </div>`:''}
+          ${e.isLocal?`<button onclick="closeDayView();deleteCalEvent('${e.id}')" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">✕ Remove</button>`:''}
+          ${e.isAdmin&&e.status==='reschedule_requested'?`
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button onclick="closeDayView();adminAcceptReschedule('${e.id}')" style="flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer">✓ Accept</button>
+              <button onclick="closeDayView();adminDeleteSchedEvent('${e.id}')" style="flex:1;padding:10px;background:var(--red-l);color:var(--red);border:none;border-radius:10px;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer">✕ Remove</button>
+            </div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  // Action button at bottom
+  if(isAdmin){
+    actionsEl.innerHTML=`<button onclick="closeDayView();document.getElementById('sched-date').value='${dateStr}';document.getElementById('admin-sec-schedule').scrollIntoView({behavior:'smooth'})" style="width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer">+ Propose Event for this Day</button>`;
+  } else {
+    actionsEl.innerHTML=`<button onclick="closeDayView();openAddEventModal('${dateStr}')" style="width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer">+ Add Event</button>`;
+  }
+
+  document.getElementById('day-view-modal').style.display='flex';
+}
+
+function closeDayView(){
+  document.getElementById('day-view-modal').style.display='none';
+}
+
+/* ── ADMIN CALENDAR ── */
+let _adminCalYear=new Date().getFullYear();
+let _adminCalMonth=new Date().getMonth();
+let _adminCalEvents=[];
+let _adminCalClients={};
+
+function adminCalPrev(){_adminCalMonth--;if(_adminCalMonth<0){_adminCalMonth=11;_adminCalYear--;}renderAdminCal();}
+function adminCalNext(){_adminCalMonth++;if(_adminCalMonth>11){_adminCalMonth=0;_adminCalYear++;}renderAdminCal();}
+
+function renderAdminCal(){
+  const today=new Date();
+  const lel=document.getElementById('admin-cal-label');
+  if(lel)lel.textContent=new Date(_adminCalYear,_adminCalMonth,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+
+  const hd=document.getElementById('admin-cal-headers');
+  if(hd)hd.innerHTML=['S','M','T','W','T','F','S'].map(d=>`<div style="text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:2px 0">${d}</div>`).join('');
+
+  const grid=document.getElementById('admin-cal-grid');
+  if(!grid)return;
+
+  const firstDay=new Date(_adminCalYear,_adminCalMonth,1).getDay();
+  const daysInMonth=new Date(_adminCalYear,_adminCalMonth+1,0).getDate();
+  const daysInPrev=new Date(_adminCalYear,_adminCalMonth,0).getDate();
+  let html='';
+
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div style="min-height:34px;opacity:.2;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">${daysInPrev-i}</div>`;
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${_adminCalYear}-${String(_adminCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=d===today.getDate()&&_adminCalMonth===today.getMonth()&&_adminCalYear===today.getFullYear();
+    const evs=(_adminCalEvents||[]).filter(e=>e.date===ds);
+    const dots=evs.slice(0,3).map(e=>`<div style="width:5px;height:5px;border-radius:50%;background:${e.colour}"></div>`).join('');
+    html+=`<div onclick="openDayView('${ds}')" style="min-height:34px;border-radius:5px;background:${isToday?'var(--orange-l)':'none'};border:${isToday?'1.5px solid var(--orange)':'1.5px solid transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:2px">
+      <div style="font-size:10px;font-weight:${isToday?'700':'500'};color:var(--ink)">${d}</div>
+      ${dots}
+    </div>`;
+  }
+  const total=firstDay+daysInMonth;
+  const trailing=(7-total%7)%7;
+  for(let d=1;d<=trailing;d++){
+    html+=`<div style="min-height:34px;opacity:.2;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+async function loadAdminCal(){
+  const {data}=await sb.from('calendar_events').select('*').order('date',{ascending:true});
+  _adminCalEvents=data||[];
+  const clients=await getClients();
+  _adminCalClients={};clients.forEach(c=>_adminCalClients[c.id]=c);
+  renderAdminCal();
+}
+
+/* ══════════════════════════════════════════
    CALENDAR
 ══════════════════════════════════════════ */
 let _calYear=new Date().getFullYear();
@@ -3138,7 +3292,7 @@ async function loadProposedEvents(){
     const proposed=_calProposed.filter(e=>e.date===ds);
     const allDots=[...evs.slice(0,2).map(e=>`<div class="cal-dot" style="background:${e.colour}"></div>`),
                    ...proposed.slice(0,1).map(e=>`<div class="cal-dot" style="background:${e.colour};opacity:.7;border:1px dashed ${e.colour}"></div>`)].join('');
-    html+=`<div class="cal-day${isToday?' today':''}" onclick="openAddEventModal('${ds}')"><div class="cal-day-num">${d}</div>${allDots}</div>`;
+    html+=`<div class="cal-day${isToday?' today':''}" onclick="openDayView('${ds}')"><div class="cal-day-num">${d}</div>${allDots}</div>`;
   }
   const total=firstDay+daysInMonth;
   const trailing=(7-total%7)%7;
@@ -3238,7 +3392,7 @@ function renderMiniCal(){
     const proposed=_calProposed.filter(e=>e.date===ds);
     const hasDot=myEvs.length||proposed.length;
     const dotColour=proposed.length?proposed[0].colour:myEvs[0]?.colour;
-    html+=`<div onclick="openAddEventModal('${ds}')" style="min-height:30px;border-radius:5px;background:${isToday?'var(--orange-l)':'none'};border:${isToday?'1.5px solid var(--orange)':'1.5px solid transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:2px">
+    html+=`<div onclick="openDayView('${ds}')" style="min-height:30px;border-radius:5px;background:${isToday?'var(--orange-l)':'none'};border:${isToday?'1.5px solid var(--orange)':'1.5px solid transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:2px">
       <div style="font-size:10px;font-weight:${isToday?'700':'500'};color:var(--ink)">${d}</div>
       ${hasDot?`<div style="width:5px;height:5px;border-radius:50%;background:${dotColour}"></div>`:''}
     </div>`;
@@ -3259,27 +3413,25 @@ function renderMiniCal(){
 
   if(!proposed.length&&!mine.length){upcoming.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">No upcoming events</div>';return;}
 
-  const statusBg={proposed:'bg-amber c-amber',approved:'bg-green c-green',reschedule_requested:'bg-orange c-orange'};
-  const statusLbl={proposed:'Awaiting approval',approved:'✓ Confirmed',reschedule_requested:'Reschedule requested'};
-
   const proposedHTML=proposed.map(e=>{
     const dt=new Date(e.date+'T00:00:00');
     const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${e.colour};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600">${esc(e.title)}</div>
-          <div style="font-size:11px;color:var(--muted)">${ds}${e.time?' · '+e.time:''} · <span style="color:var(--orange);font-weight:700">From Curtis Moon</span></div>
+    const isProposed=e.status==='proposed';
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${e.colour};flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${esc(e.title)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px">${ds}${e.time?' · '+e.time:''}</div>
         </div>
+        <span style="font-size:9px;font-weight:700;color:var(--orange);text-transform:uppercase;background:var(--orange-l);padding:3px 7px;border-radius:20px">${isProposed?'Review':'Curtis Moon'}</span>
       </div>
-      <div style="margin-bottom:6px"><span class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}">${statusLbl[e.status]||e.status}</span></div>
-      ${e.status==='proposed'?`
+      ${isProposed?`
       <div style="display:flex;gap:8px">
-        <button onclick="approveSchedEvent('${e.id}')" style="flex:1;padding:12px;background:var(--green);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">✓ Approve</button>
-        <button onclick="openRescheduleModal('${e.id}','${esc(e.title)}')" style="flex:1;padding:12px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer">↩ Reschedule</button>
-      </div>`:''}
-      ${e.reschedule_note?`<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:4px">"${esc(e.reschedule_note)}"</div>`:''}
+        <button onclick="approveSchedEvent('${e.id}')" style="flex:1;padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">✓ Approve</button>
+        <button onclick="openRescheduleModal('${e.id}','${esc(e.title)}')" style="flex:1;padding:13px;background:var(--orange);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">↩ Reschedule</button>
+      </div>`:`<span class="inv-badge ${e.status==='approved'?'bg-green c-green':'bg-orange c-orange'}">${e.status==='approved'?'✓ Confirmed':'Reschedule requested'}</span>`}
+      ${e.reschedule_note?`<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:6px">"${esc(e.reschedule_note)}"</div>`:''}
     </div>`;
   }).join('');
 
