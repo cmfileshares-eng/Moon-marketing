@@ -1380,8 +1380,19 @@ async function enterApp(){
     if(ap)ap.textContent=firstName.charAt(0).toUpperCase();
     if(gn)gn.textContent=firstName+' ☽';
     if(gd)gd.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    const {data:cr}=await sb.from('clients').select('id').eq('email',currentUser.email).maybeSingle();
-    if(cr)currentClientId=cr.id;
+    const {data:cr}=await sb.from('clients').select('id,auth_user_id').eq('email',currentUser.email).maybeSingle();
+    if(cr){
+      currentClientId=cr.id;
+      // Ensure auth_user_id is linked — required for RLS policies on calendar_events, files, etc.
+      if(!cr.auth_user_id){
+        const token=window._sbAccessToken;
+        if(token)fetch(`${SUPABASE_URL}/rest/v1/clients?id=eq.${cr.id}`,{
+          method:'PATCH',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
+          body:JSON.stringify({auth_user_id:currentUser.id})
+        }).catch(()=>{});
+      }
+    }
     requestPushPermission();
     startClientMessageListener();
     await loadClientPortal();
@@ -1621,6 +1632,7 @@ function subscribeToMessages(roomId){
         div.innerHTML='<div class="chat-bubble theirs">'+esc(m.body)+'</div><div class="chat-time">'+time+'</div>';
         container.appendChild(div);
         container.scrollTop=container.scrollHeight;
+        playMsgSound();
         updateChatPreview([m]);
         // Mark as read
         const token=window._sbAccessToken;
@@ -1742,6 +1754,20 @@ async function requestPushPermission(){
   return p==='granted';
 }
 
+function playMsgSound(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.setValueAtTime(880,ctx.currentTime);
+    o.frequency.setValueAtTime(1100,ctx.currentTime+0.08);
+    g.gain.setValueAtTime(0.3,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
 function sendPushNotification(title,body,tag='lunar'){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   try{
@@ -1774,6 +1800,7 @@ function startGlobalMessageListener(){
           }
           if(document.getElementById('admin-sec-messages')?.classList.contains('active'))loadAdminInbox();
           const senderName=m.sender_name||'A client';
+          playMsgSound();
           toast('💬 '+senderName+': '+m.body.slice(0,50)+(m.body.length>50?'…':''));
           sendPushNotification('New message — '+senderName,m.body.slice(0,100),'admin-chat-'+m.room_id);
         }
@@ -1835,6 +1862,7 @@ function startClientMessageListener(){
             _lastAdminMsgId=m.id;
             addNotif('orange','New message from Curtis Moon',m.body.slice(0,80));
             toast('💬 Curtis Moon: '+m.body.slice(0,50)+(m.body.length>50?'…':''));
+            playMsgSound();
             sendPushNotification('New message from Curtis Moon',m.body.slice(0,100),'client-chat');
             loadChatPreview();
           }
