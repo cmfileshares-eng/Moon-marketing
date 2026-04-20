@@ -589,6 +589,21 @@ textarea.field{resize:none;line-height:1.5}
       </div>
     </div>
 
+    <!-- MINI CALENDAR -->
+    <div class="section-head" style="margin-bottom:10px">
+      <div class="section-title">Schedule</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="calPrev();renderMiniCal()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1">‹</button>
+        <span id="mini-cal-label" style="font-size:12px;font-weight:600;color:var(--muted)"></span>
+        <button onclick="calNext();renderMiniCal()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1">›</button>
+      </div>
+    </div>
+    <div class="bubble" style="padding:14px">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:3px" id="mini-cal-headers"></div>
+      <div id="mini-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:12px"></div>
+      <div id="mini-cal-upcoming" style="border-top:1px solid var(--border);padding-top:10px"></div>
+    </div>
+
     <!-- APPROVALS -->
     <div class="section-head">
       <div class="section-title">Needs Your Approval</div>
@@ -782,9 +797,10 @@ textarea.field{resize:none;line-height:1.5}
           <select class="field" id="sched-client-select" style="margin-bottom:0"><option value="">Loading…</option></select></div>
         <div style="margin-bottom:12px"><label class="form-label">Event Name</label>
           <input class="field" id="sched-title" placeholder="e.g. Filming Day, Campaign Launch" style="margin-bottom:0"/></div>
-        <div style="display:flex;gap:10px;margin-bottom:12px">
-          <div style="flex:1"><label class="form-label">Date</label><input class="field" type="date" id="sched-date" style="margin-bottom:0"/></div>
-          <div style="flex:1"><label class="form-label">Time (optional)</label><input class="field" type="time" id="sched-time" style="margin-bottom:0"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+          <div><label class="form-label">Date</label><input class="field" type="date" id="sched-date" style="margin-bottom:0"/></div>
+          <div><label class="form-label">Start time</label><input class="field" type="time" id="sched-time" style="margin-bottom:0"/></div>
+          <div><label class="form-label">End time</label><input class="field" type="time" id="sched-end-time" style="margin-bottom:0"/></div>
         </div>
         <div style="margin-bottom:16px">
           <label class="form-label">Colour</label>
@@ -977,7 +993,7 @@ textarea.field{resize:none;line-height:1.5}
     <p style="font-size:13px;color:var(--muted);margin-bottom:18px" id="reschedule-event-name">—</p>
     <div style="margin-bottom:14px"><label class="form-label">Preferred alternative date (optional)</label>
       <input class="field" type="date" id="reschedule-date" style="margin-bottom:0"/></div>
-    <div style="margin-bottom:18px"><label class="form-label">Note to Curtis</label>
+    <div style="margin-bottom:18px"><label class="form-label">Leave a note</label>
       <textarea class="field" id="reschedule-note" placeholder="Let us know why and suggest an alternative…" rows="3" style="resize:none"></textarea></div>
     <div class="btn-row">
       <button class="btn-cancel" onclick="closeRescheduleModal()">Cancel</button>
@@ -991,9 +1007,10 @@ textarea.field{resize:none;line-height:1.5}
   <div class="modal-sheet" style="max-width:480px;width:100%;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
     <h3 style="font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:18px">Add Event</h3>
     <div style="margin-bottom:14px"><label class="form-label">Event Name</label><input class="field" id="ev-name" placeholder="e.g. Filming Day" style="margin-bottom:0"/></div>
-    <div style="display:flex;gap:10px;margin-bottom:14px">
-      <div style="flex:1"><label class="form-label">Date</label><input class="field" type="date" id="ev-date" style="margin-bottom:0"/></div>
-      <div style="flex:1"><label class="form-label">Time (optional)</label><input class="field" type="time" id="ev-time" style="margin-bottom:0"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><label class="form-label">Date</label><input class="field" type="date" id="ev-date" style="margin-bottom:0"/></div>
+      <div><label class="form-label">Start time</label><input class="field" type="time" id="ev-time" style="margin-bottom:0"/></div>
+      <div><label class="form-label">End time</label><input class="field" type="time" id="ev-end-time" style="margin-bottom:0"/></div>
     </div>
     <div style="margin-bottom:20px">
       <label class="form-label">Colour</label>
@@ -1164,7 +1181,8 @@ sb.auth.onAuthStateChange(async(event, session)=>{
     invalidateClientCache();
     stopGlobalMessageListener();
     if(chatSubscription){chatSubscription.unsubscribe();chatSubscription=null;}
-    // Reload the page — cleanest way to reset all state and show auth screen
+    if(window._clientPollInterval)clearInterval(window._clientPollInterval);
+    if(window._adminPollIntervals)(window._adminPollIntervals||[]).forEach(clearInterval);
     window.location.reload();
   }
 });
@@ -1361,13 +1379,14 @@ async function enterApp(){
     const gd=document.getElementById('greeting-date');
     if(ap)ap.textContent=firstName.charAt(0).toUpperCase();
     if(gn)gn.textContent=firstName+' ☽';
-    if(gd)gd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    if(gd)gd.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
     const {data:cr}=await sb.from('clients').select('id').eq('email',currentUser.email).maybeSingle();
     if(cr)currentClientId=cr.id;
     requestPushPermission();
     startClientMessageListener();
     await loadClientPortal();
     await loadChatPreview();
+    loadProposedEvents(); // renders mini-cal on home page
   }catch(e){console.error('enterApp:',e);show('app');hide('loading-screen');}
 }
 
@@ -1576,7 +1595,7 @@ function subscribeToMessages(roomId){
         const container=document.getElementById('chat-messages');
         const empty=document.getElementById('chat-empty');
         if(empty)empty.style.display='none';
-        const time=new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+        const time=new Date(m.created_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
         const div=document.createElement('div');
         div.className='chat-bubble-wrap theirs';
         div.innerHTML='<div class="chat-bubble theirs">'+esc(m.body)+'</div><div class="chat-time">'+time+'</div>';
@@ -1600,10 +1619,10 @@ function renderChatMessages(msgs){
   let lastDate='',html='';
   msgs.forEach(m=>{
     const dt=new Date(m.created_at);
-    const dateStr=dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    const dateStr=dt.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
     if(dateStr!==lastDate){html+='<div class="chat-date-divider">'+dateStr+'</div>';lastDate=dateStr;}
     const mine=chatIsAdmin?m.sender==='admin':m.sender==='client';
-    const time=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const time=dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
     html+='<div class="chat-bubble-wrap '+(mine?'mine':'theirs')+'">'
       +'<div class="chat-bubble '+(mine?'mine':'theirs')+'">'+esc(m.body)+'</div>'
       +'<div class="chat-time">'+time+'</div></div>';
@@ -1627,7 +1646,7 @@ async function sendMessage(){
   const empty=document.getElementById('chat-empty');
   if(empty)empty.style.display='none';
   const now=new Date();
-  const time=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const time=now.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   const div=document.createElement('div');
   div.className='chat-bubble-wrap mine';
   div.innerHTML='<div class="chat-bubble mine">'+esc(body)+'</div><div class="chat-time">'+time+'</div>';
@@ -1667,8 +1686,8 @@ function updateChatPreview(msgs){
   if(time){
     const dt=new Date(last.created_at),now=new Date();
     time.textContent=dt.toDateString()===now.toDateString()
-      ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
-      :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      ?dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})
+      :dt.toLocaleDateString(undefined,{month:'short',day:'numeric'});
   }
   const unread=msgs.filter(m=>m.sender==='admin'&&!m.read).length;
   if(badge)badge.innerHTML=unread>0?'<span class="msg-unread-badge">'+unread+'</span>':'';
@@ -1704,27 +1723,63 @@ function sendPushNotification(title,body,tag='lunar'){
 
 function startGlobalMessageListener(){
   if(_globalMsgSub)_globalMsgSub.unsubscribe();
-  _globalMsgSub=sb.channel('global-admin-msgs')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},payload=>{
-      const m=payload.new;
-      if(m.sender!=='client')return;
-      // Don't duplicate if this room is already open
-      if(chatRoomId===m.room_id&&document.getElementById('chat-screen')?.classList.contains('open'))return;
-      // Badge on Messages nav
-      const navBtn=document.getElementById('anav-messages');
-      if(navBtn&&!document.getElementById('admin-msg-badge')){
-        const dot=document.createElement('div');
-        dot.id='admin-msg-badge';
-        dot.style.cssText='position:absolute;top:4px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--orange);pointer-events:none';
-        navBtn.style.position='relative';
-        navBtn.appendChild(dot);
-      }
-      // Refresh inbox if visible
-      if(document.getElementById('admin-sec-messages')?.classList.contains('active'))loadAdminInbox();
-      const senderName=m.sender_name||'A client';
-      toast('💬 '+senderName+': '+m.body.slice(0,50)+(m.body.length>50?'…':''));
-      sendPushNotification('New message — '+senderName,m.body.slice(0,100),'admin-chat-'+m.room_id);
-    }).subscribe();
+
+  // Poll every 8s for new client messages
+  let _lastMsgCount={};
+  async function pollAdminMessages(){
+    try{
+      const {data}=await sb.from('messages').select('id,room_id,sender,sender_name,body,read,created_at')
+        .eq('sender','client').eq('read',false).order('created_at',{ascending:false}).limit(20);
+      const msgs=data||[];
+      msgs.forEach(m=>{
+        if(!_lastMsgCount[m.id]){
+          _lastMsgCount[m.id]=true;
+          if(chatRoomId===m.room_id&&document.getElementById('chat-screen')?.classList.contains('open'))return;
+          const navBtn=document.getElementById('anav-messages');
+          if(navBtn&&!document.getElementById('admin-msg-badge')){
+            const dot=document.createElement('div');
+            dot.id='admin-msg-badge';
+            dot.style.cssText='position:absolute;top:4px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--orange);pointer-events:none';
+            navBtn.style.position='relative';
+            navBtn.appendChild(dot);
+          }
+          if(document.getElementById('admin-sec-messages')?.classList.contains('active'))loadAdminInbox();
+          const senderName=m.sender_name||'A client';
+          toast('💬 '+senderName+': '+m.body.slice(0,50)+(m.body.length>50?'…':''));
+          sendPushNotification('New message — '+senderName,m.body.slice(0,100),'admin-chat-'+m.room_id);
+        }
+      });
+    }catch(e){}
+  }
+
+  // Poll every 12s for schedule status changes and video updates
+  let _lastSchedStates={};
+  async function pollAdminSchedule(){
+    try{
+      const {data}=await sb.from('calendar_events').select('id,status,title').order('created_at',{ascending:false});
+      (data||[]).forEach(e=>{
+        const prev=_lastSchedStates[e.id];
+        if(prev&&prev!==e.status){
+          if(e.status==='reschedule_requested'){
+            toast('📅 Reschedule requested: '+e.title);
+            sendPushNotification('Reschedule requested',e.title+' — client wants to reschedule.','admin-cal');
+          } else if(e.status==='approved'){
+            toast('✓ '+e.title+' confirmed by client');
+          }
+          if(document.getElementById('admin-sec-schedule')?.classList.contains('active'))loadAdminSchedule();
+        }
+        _lastSchedStates[e.id]=e.status;
+      });
+    }catch(e){}
+  }
+
+  pollAdminMessages();
+  pollAdminSchedule();
+  const _msgInterval=setInterval(pollAdminMessages,8000);
+  const _schedInterval=setInterval(pollAdminSchedule,12000);
+
+  // Store intervals for cleanup on sign out
+  window._adminPollIntervals=[_msgInterval,_schedInterval];
 }
 
 function stopGlobalMessageListener(){
@@ -1735,7 +1790,7 @@ function startClientMessageListener(){
   const roomId=currentUser?.id;
   if(!roomId||!currentClientId)return;
 
-  // Messages — realtime works fine for this table
+  // Keep chat subscription — it's on a per-room channel and more reliable
   sb.channel('client-msgs-'+roomId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+roomId},payload=>{
       const m=payload.new;
@@ -1747,15 +1802,16 @@ function startClientMessageListener(){
       loadChatPreview();
     }).subscribe();
 
-  // Poll every 30s for new files, stats, invoices
-  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1;
+  // Poll for everything else
+  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1,_lastCalCount=-1;
+
   async function pollClientUpdates(){
     if(!currentClientId)return;
     try{
       const fr=await sb.from('files').select('id,name,needs_approval,approved',{count:'exact'}).eq('client_id',currentClientId);
       const fc=fr.count||0;
       if(_lastFileCount>=0&&fc>_lastFileCount){
-        const newest=fr.data?.[0];
+        const newest=(fr.data||[])[0];
         if(newest?.needs_approval&&!newest?.approved){
           addNotif('orange','New creative to review',(newest.name||'A file')+' is ready for your approval.');
           toast('⚡ New creative: '+(newest.name||'ready for approval'));
@@ -1789,20 +1845,21 @@ function startClientMessageListener(){
       }
       _lastInvCount=ic;
 
-      // Check for new proposed events
-      const cr=await sb.from('calendar_events').select('id',{count:'exact'}).eq('client_id',currentClientId).eq('status','proposed');
+      const cr=await sb.from('calendar_events').select('id',{count:'exact'}).eq('client_id',currentClientId);
       const cc=cr.count||0;
-      if(_lastInvCount>=0&&cc>(_calProposed.filter(e=>e.status==='proposed').length)){
+      if(_lastCalCount>=0&&cc>_lastCalCount){
         addNotif('orange','New shoot day proposed','Curtis Moon has proposed a new date. Check your calendar.');
         toast('📅 New date proposed — check your calendar');
         sendPushNotification('New shoot day proposed','Curtis Moon wants to book a date with you.','client-cal');
-        // Refresh proposed events if calendar is open
-        if(document.getElementById('page-calendar')?.style.display!=='none')loadProposedEvents();
+        loadProposedEvents();
       }
+      _lastCalCount=cc;
     }catch(e){}
   }
+
   pollClientUpdates();
-  setInterval(pollClientUpdates,30000);
+  const _pollInterval=setInterval(pollClientUpdates,15000);
+  window._clientPollInterval=_pollInterval;
 }
 async function enterAdminApp(){
   try{
@@ -1952,8 +2009,8 @@ async function loadAdminInbox(){
       preview=(room.latest.sender==='admin'?'You: ':'')+room.latest.body;
       const dt=new Date(room.latest.created_at);
       timeStr=dt.toDateString()===now.toDateString()
-        ?dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
-        :dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        ?dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})
+        :dt.toLocaleDateString(undefined,{month:'short',day:'numeric'});
       if(room.unread>0)unreadDot='<div class="inbox-unread-dot"></div>';
     }
     const clickable=!!room; // only tappable if there are messages
@@ -2016,7 +2073,7 @@ async function loadAdminVideos(tab='approved'){
     const clientName=client?.name||'Unknown client';
     const clientColor=client?.color||'#9C958F';
     const dt=new Date(f.created_at);
-    const dateStr=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const dateStr=dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
 
     // Build tap action — try embed first, then view, then nothing
     let thumbAction='';
@@ -2217,6 +2274,7 @@ async function proposeSchedEvent(){
   const title=v('sched-title');
   const date=v('sched-date');
   const time=v('sched-time');
+  const endTime=v('sched-end-time');
   if(!clientId){toast('Please select a client.');return;}
   if(!title){toast('Please enter an event name.');return;}
   if(!date){toast('Please select a date.');return;}
@@ -2225,13 +2283,14 @@ async function proposeSchedEvent(){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events`,{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
-    body:JSON.stringify({client_id:clientId,title,date,time,colour:_schedColour,status:'proposed'})
+    body:JSON.stringify({client_id:clientId,title,date,time,end_time:endTime,colour:_schedColour,status:'proposed'})
   });
   if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
   toast('✓ Proposed to client!');
   document.getElementById('sched-title').value='';
   document.getElementById('sched-date').value='';
   document.getElementById('sched-time').value='';
+  document.getElementById('sched-end-time').value='';
   loadAdminSchedule();
 }
 
@@ -2253,12 +2312,48 @@ async function loadAdminSchedule(){
       <div style="width:10px;height:10px;border-radius:50%;background:${e.colour};flex-shrink:0;margin-top:4px"></div>
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:600">${esc(e.title)}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(clientById[e.client_id]?.name||'Unknown')} · ${esc(e.date)}${e.time?' · '+e.time:''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(clientById[e.client_id]?.name||'Unknown')} · ${esc(e.date)}${e.time?' · '+e.time+(e.end_time?' – '+e.end_time:''):''}</div>
         ${e.reschedule_note?`<div style="font-size:12px;color:var(--orange);margin-top:4px;font-style:italic">"${esc(e.reschedule_note)}"</div>`:''}
         <div style="margin-top:6px"><span class="inv-badge ${statusBg[e.status]||'bg-amber c-amber'}">${statusLbl[e.status]||e.status}</span></div>
+        ${e.status==='reschedule_requested'?`
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="adminAcceptReschedule('${e.id}')" style="flex:1;padding:8px;background:var(--green);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:11px;font-weight:600;cursor:pointer">✓ Accept & Remove</button>
+          <button onclick="adminProposeNewDate('${e.id}','${esc(e.title)}','${e.client_id}')" style="flex:1;padding:8px;background:var(--orange);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:11px;font-weight:600;cursor:pointer">📅 Propose New Date</button>
+        </div>`:''}
       </div>
       <button onclick="adminDeleteSchedEvent('${e.id}')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0;flex-shrink:0">✕</button>
     </div>`).join('');
+}
+
+async function adminAcceptReschedule(id){
+  // Accept means we acknowledge the reschedule — delete the old event so client can see it's gone
+  if(!confirm('Accept and remove this event? You can then propose a new date.'))return;
+  const token=window._sbAccessToken;
+  if(!token){toast('Session expired.');return;}
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/calendar_events?id=eq.${id}`,{
+    method:'DELETE',
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+token}
+  });
+  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
+  toast('✓ Reschedule accepted — event removed. Propose a new date above.');
+  loadAdminSchedule();
+}
+
+let _reschedAdminEventId=null,_reschedAdminClientId=null,_reschedAdminTitle='';
+function adminProposeNewDate(id,title,clientId){
+  _reschedAdminEventId=id;
+  _reschedAdminClientId=clientId;
+  _reschedAdminTitle=title;
+  // Pre-fill the propose form with the same event details
+  document.getElementById('sched-client-select').value=clientId;
+  document.getElementById('sched-title').value=title;
+  document.getElementById('sched-date').value='';
+  document.getElementById('sched-time').value='';
+  document.getElementById('sched-end-time').value='';
+  // Switch to top of schedule section
+  document.getElementById('admin-sec-schedule').scrollTop=0;
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('Fill in the new date above and tap "Propose to Client"');
 }
 
 async function adminDeleteSchedEvent(id){
@@ -2953,9 +3048,10 @@ async function loadProposedEvents(){
   _calProposed=data||[];
   renderCalendar();
   renderCalEventsList();
+  renderMiniCal();
 }function renderCalendar(){
   const today=new Date();
-  const label=new Date(_calYear,_calMonth,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const label=new Date(_calYear,_calMonth,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
   const lel=document.getElementById('cal-month-label');
   if(lel)lel.textContent=label;
 
@@ -3017,7 +3113,7 @@ function renderCalEventsList(){
 
   const proposedHTML=proposedEvents.map(e=>{
     const dt=new Date(e.date+'T00:00:00');
-    const ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
     return `<div class="cal-event-row" style="flex-direction:column;align-items:flex-start;gap:8px">
       <div style="display:flex;align-items:center;gap:8px;width:100%">
         <div class="cal-event-dot" style="background:${e.colour}"></div>
@@ -3038,12 +3134,12 @@ function renderCalEventsList(){
 
   const myHTML=myEvents.map(e=>{
     const dt=new Date(e.date+'T00:00:00');
-    const ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
     return `<div class="cal-event-row">
       <div class="cal-event-dot" style="background:${e.colour}"></div>
       <div style="flex:1">
         <div class="cal-event-name">${esc(e.name)}</div>
-        <div class="cal-event-sub">${ds}${e.time?' · '+e.time:''}</div>
+        <div class="cal-event-sub">${ds}${e.time?' · '+e.time+(e.endTime?' – '+e.endTime:''):''}</div>
       </div>
       <button class="cal-event-del" onclick="deleteCalEvent('${e.id}')">✕</button>
     </div>`;
@@ -3052,13 +3148,75 @@ function renderCalEventsList(){
   list.innerHTML=proposedHTML+myHTML;
 }
 
-function calPrev(){_calMonth--;if(_calMonth<0){_calMonth=11;_calYear--;}renderCalendar();}
-function calNext(){_calMonth++;if(_calMonth>11){_calMonth=0;_calYear++;}renderCalendar();}
+function calPrev(){_calMonth--;if(_calMonth<0){_calMonth=11;_calYear--;}renderCalendar();renderMiniCal();}
+function calNext(){_calMonth++;if(_calMonth>11){_calMonth=0;_calYear++;}renderCalendar();renderMiniCal();}
+
+function renderMiniCal(){
+  const today=new Date();
+  const labelEl=document.getElementById('mini-cal-label');
+  if(labelEl)labelEl.textContent=new Date(_calYear,_calMonth,1).toLocaleDateString(undefined,{month:'short',year:'numeric'});
+
+  const hd=document.getElementById('mini-cal-headers');
+  if(hd)hd.innerHTML=['S','M','T','W','T','F','S'].map(d=>`<div style="text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:2px 0">${d}</div>`).join('');
+
+  const grid=document.getElementById('mini-cal-grid');
+  if(!grid)return;
+
+  const firstDay=new Date(_calYear,_calMonth,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  const daysInPrev=new Date(_calYear,_calMonth,0).getDate();
+  let html='';
+
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div style="min-height:30px;opacity:.2;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">${daysInPrev-i}</div>`;
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=d===today.getDate()&&_calMonth===today.getMonth()&&_calYear===today.getFullYear();
+    const myEvs=_calEvents.filter(e=>e.date===ds);
+    const proposed=_calProposed.filter(e=>e.date===ds);
+    const hasDot=myEvs.length||proposed.length;
+    const dotColour=proposed.length?proposed[0].colour:myEvs[0]?.colour;
+    html+=`<div onclick="openAddEventModal('${ds}')" style="min-height:30px;border-radius:5px;background:${isToday?'var(--orange-l)':'none'};border:${isToday?'1.5px solid var(--orange)':'1.5px solid transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:2px">
+      <div style="font-size:10px;font-weight:${isToday?'700':'500'};color:var(--ink)">${d}</div>
+      ${hasDot?`<div style="width:5px;height:5px;border-radius:50%;background:${dotColour}"></div>`:''}
+    </div>`;
+  }
+  const total=firstDay+daysInMonth;
+  const trailing=(7-total%7)%7;
+  for(let d=1;d<=trailing;d++){
+    html+=`<div style="min-height:30px;opacity:.2;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">${d}</div>`;
+  }
+  grid.innerHTML=html;
+
+  // Upcoming events (next 3)
+  const upcoming=document.getElementById('mini-cal-upcoming');
+  if(!upcoming)return;
+  const todayTs=new Date();todayTs.setHours(0,0,0,0);
+  const all=[
+    ..._calEvents.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).map(e=>({...e,source:'mine'})),
+    ..._calProposed.filter(e=>new Date(e.date+'T00:00:00')>=todayTs).map(e=>({...e,name:e.title,source:'proposed'}))
+  ].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+  if(!all.length){upcoming.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">No upcoming events</div>';return;}
+  upcoming.innerHTML=all.map(e=>{
+    const dt=new Date(e.date+'T00:00:00');
+    const ds=dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${e.colour};flex-shrink:0${e.source==='proposed'?';opacity:.7':''}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.name||e.title||'')}</div>
+        <div style="font-size:11px;color:var(--muted)">${ds}${e.time?' · '+e.time:''}</div>
+      </div>
+      ${e.source==='proposed'&&e.status==='proposed'?`<span style="font-size:9px;font-weight:700;color:var(--orange);text-transform:uppercase">Review</span>`:''}
+    </div>`;
+  }).join('');
+}
 
 function openAddEventModal(dateStr){
   document.getElementById('ev-name').value='';
   document.getElementById('ev-date').value=dateStr||'';
   document.getElementById('ev-time').value='';
+  document.getElementById('ev-end-time').value='';
   _evColour='#FF6B2C';
   document.querySelectorAll('#ev-colour-picker div').forEach((el,i)=>{el.style.borderColor=i===0?'var(--ink)':'transparent';});
   document.getElementById('add-event-modal').style.display='flex';
@@ -3074,9 +3232,10 @@ function saveCalEvent(){
   const name=document.getElementById('ev-name').value.trim();
   const date=document.getElementById('ev-date').value;
   const time=document.getElementById('ev-time').value;
+  const endTime=document.getElementById('ev-end-time').value;
   if(!name){toast('Please enter an event name.');return;}
   if(!date){toast('Please select a date.');return;}
-  _calEvents.push({id:Date.now().toString(),name,date,time,colour:_evColour});
+  _calEvents.push({id:Date.now().toString(),name,date,time,endTime,colour:_evColour});
   saveCalToStorage();
   closeAddEventModal();
   renderCalendar();
