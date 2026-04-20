@@ -1564,7 +1564,11 @@ async function openChat(){
 function closeChat(){
   document.getElementById('chat-screen').classList.remove('open');
   document.body.style.overflow='';
-  if(chatSubscription){chatSubscription.unsubscribe();chatSubscription=null;}
+  if(chatSubscription){
+    if(chatSubscription.unsubscribe)chatSubscription.unsubscribe();
+    else clearInterval(chatSubscription);
+    chatSubscription=null;
+  }
 }
 
 async function loadMessages(roomId){
@@ -1584,16 +1588,32 @@ async function loadMessages(roomId){
 }
 
 function subscribeToMessages(roomId){
-  if(chatSubscription)chatSubscription.unsubscribe();
-  chatSubscription=sb.channel('room:'+roomId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+roomId},
-      payload=>{
-        const m=payload.new;
+  // Cancel any existing subscription/poll
+  if(chatSubscription){
+    if(chatSubscription.unsubscribe)chatSubscription.unsubscribe();
+    else clearInterval(chatSubscription);
+    chatSubscription=null;
+  }
+
+  let _lastMsgId=null;
+
+  async function pollMessages(){
+    if(!chatRoomId)return;
+    try{
+      const {data}=await sb.from('messages').select('*').eq('room_id',roomId).order('created_at',{ascending:true});
+      if(!data?.length)return;
+
+      // Find messages newer than the last one we've seen
+      const lastIdx=_lastMsgId?data.findIndex(m=>m.id===_lastMsgId):-1;
+      const newMsgs=lastIdx>=0?data.slice(lastIdx+1):[];
+      _lastMsgId=data[data.length-1].id;
+
+      newMsgs.forEach(m=>{
         const mine=chatIsAdmin?m.sender==='admin':m.sender==='client';
-        // Skip own messages — already shown optimistically
-        if(mine)return;
+        if(mine)return; // already shown optimistically
         const container=document.getElementById('chat-messages');
         const empty=document.getElementById('chat-empty');
+        if(!container)return;
         if(empty)empty.style.display='none';
         const time=new Date(m.created_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
         const div=document.createElement('div');
@@ -1602,13 +1622,22 @@ function subscribeToMessages(roomId){
         container.appendChild(div);
         container.scrollTop=container.scrollHeight;
         updateChatPreview([m]);
+        // Mark as read
         const token=window._sbAccessToken;
         if(token)fetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${m.id}`,{
           method:'PATCH',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
           body:JSON.stringify({read:true})
         }).catch(()=>{});
-      }
-    ).subscribe();
+      });
+    }catch(e){}
+  }
+
+  // Set last seen ID from already-loaded messages, then poll every 3s
+  const container=document.getElementById('chat-messages');
+  const existing=container?.querySelectorAll('.chat-bubble-wrap');
+  // We'll rely on loadMessages having run first; poll will catch up
+  pollMessages(); // run once immediately to set _lastMsgId
+  chatSubscription=setInterval(pollMessages,3000);
 }
 
 function renderChatMessages(msgs){
@@ -1790,24 +1819,28 @@ function startClientMessageListener(){
   const roomId=currentUser?.id;
   if(!roomId||!currentClientId)return;
 
-  // Keep chat subscription — it's on a per-room channel and more reliable
-  sb.channel('client-msgs-'+roomId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+roomId},payload=>{
-      const m=payload.new;
-      if(m.sender!=='admin')return;
-      if(document.getElementById('chat-screen')?.classList.contains('open'))return;
-      addNotif('orange','New message from Curtis Moon',m.body.slice(0,80));
-      toast('💬 Curtis Moon: '+m.body.slice(0,50)+(m.body.length>50?'…':''));
-      sendPushNotification('New message from Curtis Moon',m.body.slice(0,100),'client-chat');
-      loadChatPreview();
-    }).subscribe();
-
-  // Poll for everything else
-  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1,_lastCalCount=-1;
+  // Poll for everything — realtime is unavailable
+  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1,_lastCalCount=-1,_lastAdminMsgId=null;
 
   async function pollClientUpdates(){
     if(!currentClientId)return;
     try{
+      // New admin messages (for notification when chat is closed)
+      if(!document.getElementById('chat-screen')?.classList.contains('open')){
+        const {data:newMsgs}=await sb.from('messages').select('id,body,created_at')
+          .eq('room_id',roomId).eq('sender','admin').eq('read',false)
+          .order('created_at',{ascending:false}).limit(5);
+        (newMsgs||[]).forEach(m=>{
+          if(!_lastAdminMsgId||m.id!==_lastAdminMsgId){
+            _lastAdminMsgId=m.id;
+            addNotif('orange','New message from Curtis Moon',m.body.slice(0,80));
+            toast('💬 Curtis Moon: '+m.body.slice(0,50)+(m.body.length>50?'…':''));
+            sendPushNotification('New message from Curtis Moon',m.body.slice(0,100),'client-chat');
+            loadChatPreview();
+          }
+        });
+      }
+
       const fr=await sb.from('files').select('id,name,needs_approval,approved',{count:'exact'}).eq('client_id',currentClientId);
       const fc=fr.count||0;
       if(_lastFileCount>=0&&fc>_lastFileCount){
@@ -1858,7 +1891,7 @@ function startClientMessageListener(){
   }
 
   pollClientUpdates();
-  const _pollInterval=setInterval(pollClientUpdates,15000);
+  const _pollInterval=setInterval(pollClientUpdates,10000);
   window._clientPollInterval=_pollInterval;
 }
 async function enterAdminApp(){
