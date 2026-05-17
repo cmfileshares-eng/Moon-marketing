@@ -638,13 +638,6 @@ nav{
   display:flex;align-items:flex-start;gap:0.7rem;line-height:1.5;
 }
 .card-features li::before{content:'→';color:var(--gold);flex-shrink:0;}
-.card-blur{
-  font-size:0.82rem;color:var(--text-muted);
-  display:flex;align-items:center;gap:0.5rem;
-  margin-bottom:2rem;
-  filter:blur(3.5px);user-select:none;
-}
-.card-blur::before{content:'◈';color:var(--gold-dim);filter:blur(0);}
 .card-apply{
   font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;
   letter-spacing:0.12em;text-transform:uppercase;
@@ -1074,20 +1067,20 @@ footer{
     <!-- Step 3 -->
     <div class="quiz-step" id="qStep3">
       <div class="quiz-step-num">Question 03 / 03</div>
-      <div class="quiz-q">What do you actually need most right now?</div>
-      <div class="quiz-hint">Pick the one that hits hardest.</div>
+      <div class="quiz-q">How aggressively do you want to find what works?</div>
+      <div class="quiz-hint">More volume = more data = faster answers. Pick your pace.</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-q="3" data-v="creatives-only" onclick="selectOpt(this)">
+        <button class="quiz-opt" data-q="3" data-v="core" onclick="selectOpt(this)">
           <span class="opt-marker">A</span>
-          <span class="opt-text">Just great video creatives — I'll manage the ads myself</span>
+          <span class="opt-text">Start lean — 6 videos a week, test the market, scale when ready</span>
         </button>
-        <button class="quiz-opt" data-q="3" data-v="creatives-plus" onclick="selectOpt(this)">
+        <button class="quiz-opt" data-q="3" data-v="growth" onclick="selectOpt(this)">
           <span class="opt-marker">B</span>
-          <span class="opt-text">Creatives + variations to test — I want to find what works</span>
+          <span class="opt-text">Scale up — 10 videos a week, more data, find winners faster</span>
         </button>
-        <button class="quiz-opt" data-q="3" data-v="full-service" onclick="selectOpt(this)">
+        <button class="quiz-opt" data-q="3" data-v="dominate" onclick="selectOpt(this)">
           <span class="opt-marker">C</span>
-          <span class="opt-text">Full creative + management — I want it completely handled</span>
+          <span class="opt-text">Go all in — 14 videos + 5 static ads, maximum signal, maximum speed</span>
         </button>
       </div>
       <div class="quiz-nav">
@@ -1212,51 +1205,28 @@ footer{
 <!-- PRICING TEASE -->
 <section class="pricing-section" id="pricing">
   <div class="section-label">Investment</div>
-  <h2 class="section-title">Transparent Starting Points.<br><em>Everything Else on the Call.</em></h2>
+  <h2 class="section-title">One System. Three Volumes.<br><em>All Fully Managed.</em></h2>
+  <p class="section-sub" style="margin-top:0.8rem;">Every plan includes full Meta ads management and rigorous A/B testing across every video. The only difference is how much firepower you want.</p>
   <div class="pricing-cards">
     <div class="pricing-card">
-      <div class="card-tag">Creatives Focus</div>
-      <div class="card-name">Creative + Variations</div>
-      <div class="card-from">Starting from</div>
-      <div class="card-price">$520<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
-      <div class="card-price-note">1 base video + 4 tested variations</div>
-      <ul class="card-features">
-        <li>1 professionally edited base video</li>
-        <li>4 variations — hooks, pacing, formats</li>
-        <li>Built for Meta: Feed, Reels & Stories</li>
-        <li>20+ data points per month vs. industry avg of 4–5</li>
-      </ul>
-      <div class="card-blur">+ Full backend management available</div>
+      <div class="card-tag">Foundation</div>
+      <div class="card-name">Core</div>
+      <div class="card-price">$800<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">240 data points/month</div>
       <button class="card-apply outline" onclick="scrollToApply()">Apply →</button>
     </div>
     <div class="pricing-card featured">
-      <div class="card-tag gold">Most Popular</div>
-      <div class="card-name">Creative + Management</div>
-      <div class="card-from">Starting from</div>
-      <div class="card-price">$720<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
-      <div class="card-price-note">creatives + full backend ads management</div>
-      <ul class="card-features">
-        <li>Everything in Creative + Variations</li>
-        <li>Full Meta ads management</li>
-        <li>Ongoing optimisation & winner scaling</li>
-        <li>Monthly reporting — no black boxes</li>
-      </ul>
-      <div class="card-blur">+ Scale with additional video packages</div>
+      <div class="card-tag gold">Best Value</div>
+      <div class="card-name">Growth</div>
+      <div class="card-price">$1,120<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">400 data points/month</div>
       <button class="card-apply solid" onclick="scrollToApply()">Apply →</button>
     </div>
     <div class="pricing-card">
-      <div class="card-tag">Growth</div>
-      <div class="card-name">Scale Package</div>
-      <div class="card-from">Starting from</div>
-      <div class="card-price">$1,200<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
-      <div class="card-price-note">high-volume creative + full management</div>
-      <ul class="card-features">
-        <li>Multiple base videos per week</li>
-        <li>Full variation suite — maximum data</li>
-        <li>Priority production & turnaround</li>
-        <li>Dedicated strategy & reporting cadence</li>
-      </ul>
-      <div class="card-blur">+ Custom volume & strategy pricing</div>
+      <div class="card-tag">Maximum Signal</div>
+      <div class="card-name">Dominate</div>
+      <div class="card-price">$1,440<small style="font-size:1.1rem;color:var(--text-muted);font-family:'Inconsolata',monospace;">/wk</small></div>
+      <div class="card-price-note">560 data points/month</div>
       <button class="card-apply outline" onclick="scrollToApply()">Apply →</button>
     </div>
   </div>
@@ -1412,9 +1382,9 @@ footer{
               <label class="form-label">Which package are you interested in?</label>
               <select class="form-select" id="fpkg">
                 <option value="">Select…</option>
-                <option>Creative + Variations ($520/wk)</option>
-                <option>Creative + Management ($720/wk)</option>
-                <option>Scale Package ($1,200/wk)</option>
+                <option>Core — 6 videos/wk ($800/wk)</option>
+                <option>Growth — 10 videos/wk ($1,120/wk)</option>
+                <option>Dominate — 14 videos + 5 statics/wk ($1,440/wk)</option>
                 <option>Not sure — recommend something</option>
               </select>
             </div>
@@ -1500,23 +1470,23 @@ function updateProgress(step){
   document.getElementById('quizProgress').style.width=(step/3*100)+'%';
 }
 function showResult(){
-  const a1=answers['1'],a3=answers['3'];
+  const a3=answers['3'];
   let title,desc,pkg,price,includes;
-  if(a3==='creatives-only'){
-    title='Creative + <span>Variation Testing</span>';
-    desc="You want great ads built — and you'll take it from there. We produce a base video plus 4 variations weekly, giving you 20+ data points a month. That's the difference between guessing and knowing.";
-    pkg='Creative + Variations';price='$520 <span>/ per week, starting from</span>';
-    includes=['1 professionally edited base video ad','4 variations — hooks, pacing & formats','20+ data points/month vs. industry avg of 4–5','Built for Meta: Feed, Reels & Stories'];
-  } else if(a3==='creatives-plus'){
-    title='Creative + <span>Variation Testing</span>';
-    desc="You know one creative isn't enough. Smart move. We produce 4+ variations every week — that's 20+ data points a month while the average agency gives you 4 or 5. You'll know what works in weeks, not quarters.";
-    pkg='Creative + 4 Variations';price='$520 <span>/ per week, starting from</span>';
-    includes=['1 base video ad per week','4 variations for split testing','20+ data points/month — industry avg is 4–5','Different hooks, pacing & format edits'];
+  if(a3==='core'){
+    title='The <span>Core</span> Package';
+    desc="6 videos a week. Every single one A/B tested rigorously. Every single one fully managed in Meta. Most agencies don't give you this at triple the price — this is where you start building real momentum.";
+    pkg='Core — 6 Videos/Week';price='$800 <span>/ per week</span>';
+    includes=['6 professionally edited video ads per week','Rigorous A/B testing across all 6 creatives','Full Meta ads management — completely handled','Feed, Reels & Stories formats','Winner scaling & loser culling'];
+  } else if(a3==='growth'){
+    title='The <span>Growth</span> Package';
+    desc="10 videos a week means 40 real data points every month. You're not guessing what your audience wants — you're finding out in weeks. Same full management and testing. Just more signal.";
+    pkg='Growth — 10 Videos/Week';price='$1,120 <span>/ per week</span>';
+    includes=['10 professionally edited video ads per week','Rigorous A/B testing across all 10 creatives','Full Meta ads management — completely handled','Feed, Reels & Stories formats','Winner scaling & loser culling'];
   } else {
-    title='The <span>Full Stack</span> Package';
-    desc="You need great creatives AND someone who knows what to do with them. We build the ads, run 20+ variations a month, and manage the backend — while most agencies are still waiting on their 5th data point.";
-    pkg='Creative + Variations + Management';price='$720 <span>/ per week, starting from</span>';
-    includes=['1 base video + 4 variations per week','Full Meta ads management','20+ data points monthly — maximum signal','Backend optimisation & winner scaling','Monthly reporting — no black boxes'];
+    title='The <span>Dominate</span> Package';
+    desc="14 videos plus 5 static ads every week. That's 56+ data points a month while your competitors are still waiting on their 5th. Maximum creative firepower, maximum signal, fully managed end to end.";
+    pkg='Dominate — 14 Videos + 5 Statics/Week';price='$1,440 <span>/ per week</span>';
+    includes=['14 professionally edited video ads per week','5 bonus static ads included — no extra charge','Rigorous A/B testing across all creatives','Full Meta ads management — completely handled','Winner scaling & loser culling'];
   }
   document.getElementById('resultTitle').innerHTML=title;
   document.getElementById('resultDesc').textContent=desc;
