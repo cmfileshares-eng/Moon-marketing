@@ -1563,7 +1563,13 @@ function submitForm(){
     notes:      document.getElementById('fnotes').value || 'None provided'
   };
 
-  emailjs.send('service_6kv4sgv', 'template_1804t4o', templateParams)
+ emailjs.send('service_6kv4sgv', 'template_1804t4o', templateParams)
+    .then(() => {
+      return emailjs.send('service_6kv4sgv', 'template_n7uo86g', {
+        from_name:  templateParams.from_name,
+        from_email: templateParams.from_email
+      });
+    })
     .then(() => {
       document.querySelector('.form-steps').style.display = 'none';
       document.querySelector('.form-body').style.display  = 'none';
