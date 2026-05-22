@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function() {
+    emailjs.init("oXiFHfdL1FLPyxCqf");
+  });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Moon Marketing — Find Your Ad Strategy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1571,8 +1577,8 @@ function submitForm(){
     });
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init('oXiFHfdL1FLPyxCqf');</script>
+
+
 <script>
 function toggleDrawer(){
   const drawer = document.getElementById('navDrawer');
