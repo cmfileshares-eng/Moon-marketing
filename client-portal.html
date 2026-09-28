@@ -73,7 +73,7 @@ textarea.field{resize:none;line-height:1.5}
 .topbar-brand{display:flex;align-items:center;gap:8px}
 .topbar-orb{width:32px;height:32px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .topbar-orb svg{width:15px;height:15px;fill:white}
-.topbar-name{font-family:var(--font-display);font-size:18px;font-weight:600}
+.topbar-name{font-family:var(--font-display);font-size:18px;font-weight:600;white-space:nowrap}
 .topbar-actions{display:flex;align-items:center;gap:8px}
 .icon-pill{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .2s}
 .icon-pill svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2}
@@ -526,7 +526,7 @@ button.dl-status:focus-visible{outline:2px solid var(--orange);outline-offset:2p
 <div id="auth-screen" class="hidden">
   <div class="auth-brand">
     <div class="brand-orb"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-    <div class="brand-name">Lunar</div>
+    <div class="brand-name">Lunar Portal</div>
   </div>
   <div class="auth-card">
     <!-- CLIENT LOGIN -->
@@ -583,7 +583,7 @@ button.dl-status:focus-visible{outline:2px solid var(--orange);outline-offset:2p
         </a>
         <div style="width:1px;height:18px;background:var(--border);margin-right:10px"></div>
         <div class="topbar-orb"><svg viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-        <div class="topbar-name">Lunar</div>
+        <div class="topbar-name">Lunar Portal</div>
       </div>
       <div class="topbar-actions">
         <div class="icon-pill" onclick="toggleNotif()">
@@ -775,7 +775,7 @@ button.dl-status:focus-visible{outline:2px solid var(--orange);outline-offset:2p
   <div class="admin-topbar">
     <div class="admin-topbar-left">
       <div style="width:32px;height:32px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="white" width="15" height="15"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-      <div class="admin-topbar-title">Lunar</div>
+      <div class="admin-topbar-title">Lunar Portal</div>
       <div class="admin-topbar-badge">ADMIN</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -1181,7 +1181,7 @@ const GOOGLE_CLIENT_ID  = '55525879916-ukhn0eugsuku8oad987lngvm0vanrq04.apps.goo
 const DRIVE_ROOT_FOLDER = '1Gdze4pOGygErK6NpLjUZwL5Br_oCpR30';
 // Google Picker (choose files already in Drive). Cloud Console → APIs & Services → Credentials → Create API key,
 // enable "Google Picker API", and restrict the key to https://moon-marketing.net/*
-const GOOGLE_API_KEY = 'AIzaSyABZyHYhHiwfpUC1fY42DrCGIC7tee76HgE';
+const GOOGLE_API_KEY = 'AIzaSyABZyHYhHiwfpUC1fY42DrCGIC7tee76Hg';
 const GOOGLE_APP_ID  = GOOGLE_CLIENT_ID.split('-')[0]; // Cloud project number
 const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
 const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
