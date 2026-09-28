@@ -374,8 +374,8 @@ textarea.field{resize:none;line-height:1.5}
 .admin-topbar-title{font-family:var(--font-display);font-size:18px;font-weight:400}
 .admin-topbar-badge{font-size:10px;font-weight:700;background:var(--ink);color:white;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
 .admin-page{flex:1;overflow-y:auto;padding:16px;padding-bottom:90px;-webkit-overflow-scrolling:touch}
-.admin-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
-.admin-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted);transition:color .2s}
+.admin-bottom-nav{overflow-x:auto;scrollbar-width:none;position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.admin-nav-btn{flex:1 0 auto;min-width:50px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted);transition:color .2s}
 .admin-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 .admin-nav-btn.on{color:var(--orange)}
 .admin-section{display:none}
@@ -452,6 +452,66 @@ textarea.field{resize:none;line-height:1.5}
 .chat-empty svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
 .msg-unread-badge{background:var(--orange);color:white;border-radius:20px;font-size:10px;font-weight:700;padding:2px 7px}
 
+
+/* ── DRIVE PICKER ── */
+.drive-pick-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;margin:-4px 0 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--white);font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s}
+.drive-pick-btn:active,.drive-pick-btn:focus-visible{border-color:var(--orange);background:var(--orange-l);outline:none}
+.drive-pick-btn svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.8;flex-shrink:0}
+.picker-dialog-bg{z-index:2000!important}.picker-dialog{z-index:2001!important}
+
+/* ── PROJECTS & DELIVERABLES ── */
+.pj-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.pj-stat{background:var(--white);border-radius:var(--radius-sm);padding:14px 12px;box-shadow:var(--shadow)}
+.pj-stat b{display:block;font-family:var(--font-display);font-size:26px;font-weight:400;line-height:1}
+.pj-stat span{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+.pj-stat.late b{color:var(--red)}
+.pj-empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+.pj-due-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.pj-due-row:last-child{border-bottom:none}
+.pj-due-row:focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-radius:6px}
+.pj-due-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+.pj-due-dot.late{background:var(--red)}.pj-due-dot.soon{background:var(--orange)}
+.pj-due-main{flex:1;min-width:0}
+.pj-due-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pj-due-sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pj-due-when{font-size:12px;font-weight:600;color:var(--muted);flex-shrink:0;text-align:right}
+.pj-due-when.late{color:var(--red)}.pj-due-when.soon{color:var(--orange)}
+.pj-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.pj-head{display:flex;align-items:flex-start;gap:12px;padding:16px;cursor:pointer}
+.pj-head:focus-visible{outline:2px solid var(--orange);outline-offset:-2px;border-radius:var(--radius)}
+.pj-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.pj-main{flex:1;min-width:0}
+.pj-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.pj-name{font-size:15px;font-weight:600;line-height:1.35;min-width:0}
+.pj-client{font-size:12px;color:var(--muted);margin-top:2px}
+.pj-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:var(--blue-l);color:var(--blue)}
+.pj-badge.review{background:var(--amber-l);color:#B97A0A}.pj-badge.hold{background:var(--off);color:var(--muted)}.pj-badge.done{background:var(--green-l);color:#1B9E6B}
+.pj-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.pj-meta .late{color:var(--red);font-weight:600}
+.pj-bar{height:6px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:10px}
+.pj-bar i{display:block;height:100%;background:var(--green);border-radius:10px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.pj-count{font-size:11px;color:var(--muted);margin-top:6px}
+.pj-chev{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;flex-shrink:0;margin-top:2px;transition:transform .2s}
+.pj-chev.open{transform:rotate(180deg)}
+.pj-body{border-top:1px solid var(--border);padding:4px 16px 12px}
+.pj-desc{font-size:13px;color:var(--muted);line-height:1.55;padding:10px 0 6px}
+.pj-actions{display:flex;gap:18px;padding-top:12px}
+.dl-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.dl-main{flex:1;min-width:0}
+.dl-main.edit{cursor:pointer}
+.dl-title{font-size:14px;font-weight:500;line-height:1.35}
+.dl-due{font-size:11px;color:var(--muted);margin-top:2px}
+.dl-due.late{color:var(--red);font-weight:600}
+.dl-status{font-family:var(--font-body);font-size:10px;font-weight:700;padding:5px 10px;border-radius:20px;border:none;white-space:nowrap;flex-shrink:0;background:var(--off);color:var(--muted);min-width:78px;text-align:center}
+button.dl-status{cursor:pointer}
+button.dl-status:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.dl-status.progress{background:var(--blue-l);color:var(--blue)}.dl-status.review{background:var(--amber-l);color:#B97A0A}.dl-status.done{background:var(--green-l);color:#1B9E6B}
+.dl-file{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--orange);background:var(--orange-l);border:none;border-radius:20px;padding:6px 12px;cursor:pointer;flex-shrink:0}
+.dl-attached{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;margin-bottom:10px;background:var(--green-l);border-radius:var(--radius-sm);font-size:13px;font-weight:600}
+.dl-attached span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pj-check{display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:14px;cursor:pointer}
+.pj-check input{width:18px;height:18px;accent-color:var(--orange)}
+.pj-danger{color:var(--red)!important}
 </style>
 </head>
 <body>
@@ -674,6 +734,19 @@ textarea.field{resize:none;line-height:1.5}
     <div id="cal-events-list" class="bubble"></div>
   </div>
 
+  <!-- PROJECTS PAGE -->
+  <div class="page" id="page-projects" style="display:none">
+    <div style="margin-bottom:16px;margin-top:4px">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400">Projects</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">Where everything stands and what's due next</div>
+    </div>
+    <div class="pj-stats" id="pj-client-stats"></div>
+    <div class="section-head"><div class="section-title">Due soon</div></div>
+    <div class="bubble" id="pj-client-due"><div class="pj-empty">Loading…</div></div>
+    <div class="section-head"><div class="section-title">All projects</div></div>
+    <div id="pj-client-list"></div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-btn on" id="nav-home" onclick="navTo('home',this)">
@@ -684,6 +757,9 @@ textarea.field{resize:none;line-height:1.5}
     </button>
     <button class="nav-btn" id="nav-files" onclick="navTo('files',this)">
       <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Files
+    </button>
+    <button class="nav-btn" id="nav-projects" onclick="navTo('projects',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Projects
     </button>
     <button class="nav-btn" id="nav-messages" onclick="navTo('messages',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
@@ -736,10 +812,10 @@ textarea.field{resize:none;line-height:1.5}
             <div class="admin-action-label">Upload Creative</div>
             <div class="admin-action-sub">Video, image, PDF</div>
           </div>
-          <div class="admin-action-card" onclick="openAdminModal('project')">
+          <div class="admin-action-card" onclick="openProjectModal()">
             <div class="admin-action-icon bg-orange"><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <div class="admin-action-label">New Project</div>
-            <div class="admin-action-sub">Add a campaign</div>
+            <div class="admin-action-sub">Deliverables, deadline, budget</div>
           </div>
         </div>
       </div>
@@ -788,6 +864,24 @@ textarea.field{resize:none;line-height:1.5}
       <div class="admin-card"><div id="admin-clients-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Loading…</div></div></div>
     </div>
 
+    <!-- PROJECTS -->
+    <div class="admin-section" id="admin-sec-projects">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Projects</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Every project, deliverable and deadline across clients</div>
+      <button class="btn-primary" onclick="openProjectModal()">+ New Project</button>
+      <div class="pj-stats" id="pj-admin-stats"></div>
+      <div class="admin-card">
+        <div class="admin-card-title">Due soon</div>
+        <div id="pj-admin-due"><div class="pj-empty">Loading…</div></div>
+      </div>
+      <select class="field" id="pj-admin-client" onchange="pjSetClient(this.value)" aria-label="Filter by client"><option value="">All clients</option></select>
+      <div class="review-tab-row">
+        <button class="review-tab on" id="pjtab-open" onclick="pjSetTab('open')">Open</button>
+        <button class="review-tab" id="pjtab-done" onclick="pjSetTab('done')">Complete</button>
+        <button class="review-tab" id="pjtab-all" onclick="pjSetTab('all')">All</button>
+      </div>
+      <div id="pj-admin-list"></div>
+    </div>
     <!-- SCHEDULE -->
     <div class="admin-section" id="admin-sec-schedule">
       <div style="font-family:var(--font-display);font-size:24px;font-weight:400;margin-bottom:2px;margin-top:4px">Schedule</div>
@@ -843,6 +937,9 @@ textarea.field{resize:none;line-height:1.5}
     </button>
     <button class="admin-nav-btn" id="anav-upload" onclick="adminNavTo('upload',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
+    </button>
+    <button class="admin-nav-btn" id="anav-projects" onclick="adminNavTo('projects',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Projects
     </button>
     <button class="admin-nav-btn" id="anav-invoices" onclick="adminNavTo('invoices',this)">
       <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Invoices
@@ -991,6 +1088,7 @@ textarea.field{resize:none;line-height:1.5}
       <span>MP4, MOV, Image, PDF</span>
       <div class="upload-progress" id="reupload-progress" style="display:none"><div class="upload-progress-fill" id="reupload-fill"></div></div>
     </div>
+    <button type="button" class="drive-pick-btn" onclick="pickDriveForReupload()"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose from Google Drive</button>
     <div id="reupload-err" style="font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px"></div>
     <div class="btn-row">
       <button class="btn-cancel" onclick="closeReuploadModal()">Cancel</button>
@@ -1081,6 +1179,10 @@ const SUPABASE_URL  = 'https://onxodaeoqvttrazzklgn.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_mq-p3HHfwzropQeceoQVGw_Ci92qFEd';
 const GOOGLE_CLIENT_ID  = '55525879916-ukhn0eugsuku8oad987lngvm0vanrq04.apps.googleusercontent.com';
 const DRIVE_ROOT_FOLDER = '1Gdze4pOGygErK6NpLjUZwL5Br_oCpR30';
+// Google Picker (choose files already in Drive). Cloud Console → APIs & Services → Credentials → Create API key,
+// enable "Google Picker API", and restrict the key to https://moon-marketing.net/*
+const GOOGLE_API_KEY = 'PASTE_YOUR_PICKER_API_KEY_HERE';
+const GOOGLE_APP_ID  = GOOGLE_CLIENT_ID.split('-')[0]; // Cloud project number
 const ADMIN_EMAIL = 'cm.fileshares@gmail.com';
 const CLIENT_COLORS = ['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6','#E5534B'];
 
@@ -1872,7 +1974,7 @@ function startClientMessageListener(){
   if(!roomId||!currentClientId)return;
 
   // Poll for everything — realtime is unavailable
-  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1,_lastCalCount=-1,_lastAdminMsgId=null;
+  let _lastFileCount=-1,_lastPerfCount=-1,_lastInvCount=-1,_lastCalCount=-1,_lastAdminMsgId=null,_lastPjCount=-1,_lastDlCount=-1,_lastDlDone=-1;
 
   async function pollClientUpdates(){
     if(!currentClientId)return;
@@ -1940,6 +2042,29 @@ function startClientMessageListener(){
         loadProposedEvents();
       }
       _lastCalCount=cc;
+
+      // Projects + deliverables (own try so a missing table can't break the rest of the poll)
+      try{
+        const [pjr,dlr]=await Promise.all([
+          pjRpc('client_projects'),
+          pjGet(`deliverables?select=id,status&client_id=eq.${encodeURIComponent(currentClientId)}`)
+        ]);
+        const pcount=pjr.length,dcount=dlr.length,ddone=dlr.filter(x=>x.status==='done').length;
+        if(_lastPjCount>=0&&pcount>_lastPjCount){
+          addNotif('orange','New project','A new project was added to your portal.');
+          toast('📌 New project added');
+          sendPushNotification('New project','A new project was added to your portal.','client-project');
+        }else if(_lastDlCount>=0&&dcount>_lastDlCount){
+          addNotif('blue','New deliverable','A deliverable was added to one of your projects.');
+        }
+        if(_lastDlDone>=0&&ddone>_lastDlDone){
+          addNotif('green','Deliverable delivered','One of your deliverables was marked delivered.');
+          toast('✓ A deliverable was delivered');
+          sendPushNotification('Deliverable delivered','One of your deliverables is ready.','client-deliverable');
+        }
+        _lastPjCount=pcount;_lastDlCount=dcount;_lastDlDone=ddone;
+        if(document.getElementById('page-projects')?.style.display==='block')loadClientProjects();
+      }catch(e){}
     }catch(e){}
   }
 
@@ -1957,6 +2082,7 @@ async function enterAdminApp(){
     if(av)av.textContent=name.charAt(0).toUpperCase();
     requestPushPermission();
     startGlobalMessageListener();
+    pjStartAdminPoll();
     await loadAdminData();
   }catch(e){console.error('enterAdminApp:',e);}
 }
@@ -1990,6 +2116,7 @@ function adminNavTo(section,btn){
   if(section==='videos')loadAdminVideos('approved');
   if(section==='invoices')loadAdminInvoices();
   if(section==='clients')loadAdminClients();
+  if(section==='projects')loadAdminProjects();
   if(section==='schedule'){loadAdminSchedule();loadAdminCal();}
 }
 
@@ -2207,13 +2334,13 @@ async function loadAdminVideos(tab='approved'){
   }).join('');
 }
 
-let _reuploadFileId=null,_reuploadClientId=null,_reuploadFileName=null,_pendingReuploadFile=null;
+let _reuploadFileId=null,_reuploadClientId=null,_reuploadFileName=null,_pendingReuploadFile=null,_pendingReuploadDrive=null;
 
 function openReuploadModal(fileId,fileName,clientId){
   _reuploadFileId=fileId;
   _reuploadClientId=clientId;
   _reuploadFileName=fileName;
-  _pendingReuploadFile=null;
+  _pendingReuploadFile=null;_pendingReuploadDrive=null;
   document.getElementById('reupload-label').textContent='Tap to select revised file';
   document.getElementById('reupload-zone').classList.remove('active');
   document.getElementById('reupload-err').textContent='';
@@ -2224,16 +2351,26 @@ function openReuploadModal(fileId,fileName,clientId){
 }
 function closeReuploadModal(){
   document.getElementById('reupload-modal').style.display='none';
-  _pendingReuploadFile=null;_reuploadFileId=null;_reuploadClientId=null;
+  _pendingReuploadFile=null;_pendingReuploadDrive=null;_reuploadFileId=null;_reuploadClientId=null;
+}
+async function pickDriveForReupload(){
+  try{
+    const f=await pickFromDrive();if(!f)return;
+    _pendingReuploadDrive=f;_pendingReuploadFile=null;
+    document.getElementById('reupload-label').textContent='✓ '+f.name+' (from Drive)';
+    document.getElementById('reupload-zone').classList.add('active');
+    document.getElementById('reupload-err').textContent='';
+  }catch(e){toast(e.message);}
 }
 function onReuploadFilePicked(file){
+  _pendingReuploadDrive=null;
   _pendingReuploadFile=file;
   document.getElementById('reupload-label').textContent='✓ '+file.name;
   document.getElementById('reupload-zone').classList.add('active');
 }
 
 async function saveReupload(){
-  if(!_pendingReuploadFile){document.getElementById('reupload-err').textContent='Please select a file first.';return;}
+  if(!_pendingReuploadFile&&!_pendingReuploadDrive){document.getElementById('reupload-err').textContent='Select a file or choose one from Drive.';return;}
   const btn=document.getElementById('reupload-save-btn');
   const fill=document.getElementById('reupload-fill');
   const prog=document.getElementById('reupload-progress');
@@ -2249,7 +2386,7 @@ async function saveReupload(){
     let driveViewUrl='',driveEmbedUrl='',driveFileId='';
     try{
       fill.style.width='40%';
-      const result=await uploadToDrive(_pendingReuploadFile,clientName);
+      const result=_pendingReuploadDrive||await uploadToDrive(_pendingReuploadFile,clientName);
       driveViewUrl=result.driveViewUrl;driveEmbedUrl=result.driveEmbedUrl;driveFileId=result.driveFileId;
       fill.style.width='80%';
     }catch(driveErr){
@@ -2259,10 +2396,8 @@ async function saveReupload(){
       return;
     }
     // Update the existing file record with new Drive URLs and reset approval state
-    const ext=_pendingReuploadFile.name.split('.').pop().toUpperCase();
-    const size=_pendingReuploadFile.size>1024*1024
-      ?(_pendingReuploadFile.size/1024/1024).toFixed(1)+' MB'
-      :(_pendingReuploadFile.size/1024).toFixed(0)+' KB';
+    const ext=_pendingReuploadDrive?driveExt(_pendingReuploadDrive.name,_pendingReuploadDrive.mimeType):_pendingReuploadFile.name.split('.').pop().toUpperCase();
+    const size=_pendingReuploadDrive?fmtBytes(_pendingReuploadDrive.sizeBytes):fmtBytes(_pendingReuploadFile.size);
     const token=window._sbAccessToken;
     if(!token){errEl.textContent='Session expired — sign out and back in.';btn.textContent='Upload & Send for Approval';btn.disabled=false;return;}
     const rr=await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${_reuploadFileId}`,{
@@ -2550,19 +2685,6 @@ async function saveAdminStats(){
 
 /* ── ADMIN MODALS ── */
 const adminModalTemplates={
-  project:()=>`<h3>Add Project</h3>
-    <div style="margin-bottom:14px"><label class="form-label">Client</label>
-      <select class="field" id="ap-client" style="margin-bottom:0"><option value="">Select client...</option></select></div>
-    <div style="margin-bottom:14px"><label class="form-label">Campaign Name</label><input class="field" id="ap-name" placeholder="e.g. Google Ads" style="margin-bottom:0"/></div>
-    <div style="margin-bottom:14px"><label class="form-label">Platform</label>
-      <select class="field" id="ap-platform" style="margin-bottom:0"><option>Google Ads</option><option>Meta Ads</option><option>TikTok Ads</option><option>Email</option><option>Other</option></select></div>
-    <div style="display:flex;gap:10px;margin-bottom:14px">
-      <div style="flex:1"><label class="form-label">Due Date</label><input class="field" type="date" id="ap-due" style="margin-bottom:0"/></div>
-      <div style="flex:1"><label class="form-label">Status</label>
-        <select class="field" id="ap-status" style="margin-bottom:0"><option value="active">Active</option><option value="review">In Review</option><option value="hold">On Hold</option></select></div>
-    </div>
-    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" onclick="saveAdminProject()">Save</button></div>`,
-
   invoice:()=>`<h3>Create Invoice</h3>
     <div style="margin-bottom:14px"><label class="form-label">Client</label>
       <select class="field" id="modal-invoice-client" style="margin-bottom:0"><option value="">Loading…</option></select></div>
@@ -2579,6 +2701,7 @@ const adminModalTemplates={
         <p id="invoice-upload-label">Tap to attach PDF</p><span>PDF files only</span>
         <div class="upload-progress" id="invoice-upload-progress" style="display:none"><div class="upload-progress-fill" id="invoice-upload-fill"></div></div>
       </div>
+      <button type="button" class="drive-pick-btn" onclick="pickDriveForInvoice()" style="margin:8px 0 0"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose from Google Drive</button>
     </div>
     <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" id="invoice-save-btn" onclick="saveAdminInvoice()">Create</button></div>`,
 
@@ -2590,6 +2713,7 @@ const adminModalTemplates={
       <p id="upload-label">Tap to select file</p><span>Reels, MP4, Image, PDF</span>
       <div class="upload-progress" id="upload-progress"><div class="upload-progress-fill" id="upload-fill"></div></div>
     </div>
+    <button type="button" class="drive-pick-btn" onclick="pickDriveForUpload()"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose from Google Drive</button>
     <div style="margin-bottom:14px"><label class="form-label">Creative Name</label><input class="field" id="u-name" placeholder="e.g. Spring Reel v1" style="margin-bottom:0"/></div>
     <div style="margin-bottom:14px"><label class="form-label">Needs Approval?</label>
       <select class="field" id="u-approval" style="margin-bottom:0"><option value="yes">Yes — send for approval</option><option value="no">No — file only</option></select></div>
@@ -2639,27 +2763,24 @@ function closeAdminModal(){
   document.getElementById('admin-modal-overlay').style.display='none';
   _pendingUploadFile=null;
   _pendingInvoiceFile=null;
-}
-
-async function saveAdminProject(){
-  const cid=v('ap-client');
-  if(!cid){toast('Please select a client.');return;}
-  const name=v('ap-name'),platform=v('ap-platform'),due_date=v('ap-due'),status=v('ap-status');
-  const colors=['#FF6B2C','#4A8FD4','#2ECC8F','#F5A623','#8B5CF6'];
-  const color=colors[Math.floor(Math.random()*colors.length)];
-  const token=window._sbAccessToken;
-  if(!token){toast('Session expired.');return;}
-  const r=await fetch(`${SUPABASE_URL}/rest/v1/projects`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},
-    body:JSON.stringify({client_id:cid,name,platform,due_date,status,color,progress:0})
-  });
-  if(!r.ok){toast('Error: '+(await r.text().catch(()=>r.status)));return;}
-  closeAdminModal();toast('✓ Project added!');
+  _pendingDriveFile=null;
+  _pendingInvoiceDrive=null;
+  _pjModal=null;
 }
 
 let _pendingInvoiceFile=null;
+let _pendingInvoiceDrive=null;
+async function pickDriveForInvoice(){
+  try{
+    const f=await pickFromDrive();if(!f)return;
+    _pendingInvoiceDrive=f;_pendingInvoiceFile=null;
+    const lbl=document.getElementById('invoice-upload-label'),zone=document.getElementById('invoice-upload-zone');
+    if(lbl)lbl.textContent='✓ '+f.name+' (from Drive)';
+    if(zone)zone.classList.add('active');
+  }catch(e){toast(e.message);}
+}
 function onInvoiceFilePicked(file){
+  _pendingInvoiceDrive=null;
   _pendingInvoiceFile=file;
   const lbl=document.getElementById('invoice-upload-label');
   const zone=document.getElementById('invoice-upload-zone');
@@ -2678,8 +2799,11 @@ async function saveAdminInvoice(){
 
   let driveViewUrl='',driveFileId='';
 
-  // Upload PDF to Drive if one was attached
-  if(_pendingInvoiceFile){
+  // Use a file already in Drive, or upload the attached PDF
+  if(_pendingInvoiceDrive){
+    driveViewUrl=_pendingInvoiceDrive.driveViewUrl;
+    driveFileId=_pendingInvoiceDrive.driveFileId;
+  } else if(_pendingInvoiceFile){
     try{
       if(prog)prog.style.display='block';
       if(fill)fill.style.width='20%';
@@ -2710,13 +2834,30 @@ async function saveAdminInvoice(){
     if(btn){btn.textContent='Create';btn.disabled=false;}
     return;
   }
-  _pendingInvoiceFile=null;
+  _pendingInvoiceFile=null;_pendingInvoiceDrive=null;
   closeAdminModal();
   toast('✓ Invoice created!'+(driveViewUrl?' PDF saved to Drive.':''));
   loadAdminInvoices();
 }
 
+let _pendingDriveFile=null;
+async function pickDriveForUpload(){
+  try{
+    const f=await pickFromDrive();if(!f)return;
+    _pendingDriveFile=f;_pendingUploadFile=null;
+    const lbl=document.getElementById('upload-label'),zone=document.getElementById('upload-zone');
+    if(lbl)lbl.textContent='✓ '+f.name+' (from Drive)';
+    if(zone)zone.classList.add('active');
+    const nf=document.getElementById('u-name');
+    if(nf&&!nf.value)nf.value=f.name.replace(/\.[^/.]+$/,'');
+    const b=document.querySelector('#admin-modal-content .btn-save');
+    if(b)b.textContent='Add to portal';
+  }catch(e){toast(e.message);}
+}
 function onUploadFilePicked(file){
+  _pendingDriveFile=null;
+  const sb_=document.querySelector('#admin-modal-content .btn-save');
+  if(sb_)sb_.textContent='Upload to Drive';
   _pendingUploadFile=file;
   const lbl=document.getElementById('upload-label');
   const zone=document.getElementById('upload-zone');
@@ -2729,14 +2870,15 @@ function onUploadFilePicked(file){
 async function saveAdminUpload(fileIdToReplace){
   const cid         = fileIdToReplace ? null : v('modal-upload-client');
   const file        = _pendingUploadFile;
+  const picked      = _pendingDriveFile;
   const name        = v('u-name') || (file?.name||'').replace(/\.[^/.]+$/,'');
   const needsApproval = fileIdToReplace ? true : (v('u-approval')==='yes');
 
   if(!fileIdToReplace && !cid){ toast('Select a client first.'); return; }
-  if(!file){ toast('Select a file first.'); return; }
+  if(!file&&!picked){ toast('Select a file or choose one from Drive.'); return; }
 
-  const ext      = file.name.split('.').pop().toUpperCase();
-  const size     = file.size > 1048576 ? (file.size/1048576).toFixed(1)+' MB' : (file.size/1024).toFixed(0)+' KB';
+  const ext      = picked ? driveExt(picked.name,picked.mimeType) : file.name.split('.').pop().toUpperCase();
+  const size     = picked ? fmtBytes(picked.sizeBytes) : (file.size > 1048576 ? (file.size/1048576).toFixed(1)+' MB' : (file.size/1024).toFixed(0)+' KB');
   const approved = autoApproveOn || !needsApproval;
   const token    = window._sbAccessToken;
 
@@ -2749,7 +2891,7 @@ async function saveAdminUpload(fileIdToReplace){
   const go   = pct => { if(fill) fill.style.width=pct+'%'; };
   const fail = msg => {
     toast(msg);
-    if(btn){ btn.innerHTML='Upload to Drive'; btn.disabled=false; }
+    if(btn){ btn.innerHTML=picked?'Add to portal':'Upload to Drive'; btn.disabled=false; }
     if(prog) prog.style.display='none';
     go(0);
   };
@@ -2761,6 +2903,10 @@ async function saveAdminUpload(fileIdToReplace){
   // ── 1. Drive upload ───────────────────────────────────────
   let driveFileId='', driveViewUrl='', driveEmbedUrl='';
   try{
+    if(picked){
+      driveFileId=picked.driveFileId; driveViewUrl=picked.driveViewUrl; driveEmbedUrl=picked.driveEmbedUrl;
+      go(70);
+    } else {
     await initGoogleDrive();
     go(25);
     const clients    = await getClients();
@@ -2773,6 +2919,7 @@ async function saveAdminUpload(fileIdToReplace){
     driveViewUrl = dr.driveViewUrl;
     driveEmbedUrl= dr.driveEmbedUrl;
     go(70);
+    }
   } catch(e){
     fail('Drive upload failed: '+e.message);
     return;
@@ -2821,6 +2968,7 @@ async function saveAdminUpload(fileIdToReplace){
   // ── 3. Done ───────────────────────────────────────────────
   go(100);
   _pendingUploadFile = null;
+  _pendingDriveFile = null;
   setTimeout(()=>{
     closeAdminModal();
     if(fileIdToReplace){
@@ -2900,11 +3048,404 @@ async function saveNewClient(){
 }
 
 /* ══════════════════════════════════════════
+   PROJECTS & DELIVERABLES
+   Admin reads/writes `projects` + `deliverables`.
+   Clients call the `client_projects()` function (budget hidden when hide_budget is set) + `deliverables`.
+   Raw fetch only (Supabase JS writes hang on this project). Polling only (Realtime is broken).
+══════════════════════════════════════════ */
+const PJ_STATUS={active:'Active',review:'In review',hold:'On hold',done:'Complete'};
+const DL_STATUS={todo:'Not started',progress:'In progress',review:'In review',done:'Delivered'};
+const DL_ORDER=['todo','progress','review','done'];
+let _pj={projects:[],deliverables:[],clients:{},open:{}};
+let _pjTab='open',_pjClientFilter='',_pjModal=null,_pjAdminPoll=null;
+
+function pjHeaders(extra){
+  return Object.assign({'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+(window._sbAccessToken||SUPABASE_ANON)},extra||{});
+}
+async function pjErr(r){
+  const t=await r.text().catch(()=>'');
+  if(/deliverables|client_projects|hide_budget|budget|schema cache|function public/i.test(t))return 'Run lunar-projects.sql in Supabase first';
+  try{return JSON.parse(t).message||t;}catch(e){return t||('HTTP '+r.status);}
+}
+async function pjGet(path){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:pjHeaders()});
+  if(!r.ok)throw new Error(await pjErr(r));
+  return r.json();
+}
+async function pjRpc(fn){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:pjHeaders(),body:'{}'});
+  if(!r.ok)throw new Error(await pjErr(r));
+  return r.json();
+}
+async function pjSend(method,path,body,wantRows){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
+    method,headers:pjHeaders({Prefer:wantRows?'return=representation':'return=minimal'}),
+    body:body===undefined?undefined:JSON.stringify(body)
+  });
+  if(!r.ok)throw new Error(await pjErr(r));
+  return wantRows?r.json():null;
+}
+
+/* ── date + money helpers ── */
+function pjDate(d){return d?String(d).slice(0,10):'';}
+function pjDays(d){
+  d=pjDate(d);if(!d)return null;
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((new Date(d+'T00:00:00')-t)/86400000);
+}
+function pjFmt(d){
+  d=pjDate(d);if(!d)return '';
+  const x=new Date(d+'T00:00:00'),o={day:'numeric',month:'short'};
+  if(x.getFullYear()!==new Date().getFullYear())o.year='numeric';
+  return x.toLocaleDateString('en-AU',o);
+}
+function pjWhen(d){
+  const n=pjDays(d);
+  if(n===null)return 'No deadline';
+  if(n<0)return `Overdue by ${-n} day${n===-1?'':'s'}`;
+  if(n===0)return 'Due today';
+  if(n===1)return 'Due tomorrow';
+  if(n<=7)return `Due in ${n} days`;
+  return 'Due '+pjFmt(d);
+}
+function pjMoney(n){return(n===null||n===undefined||n==='')?'':'$'+Number(n).toLocaleString('en-AU',{maximumFractionDigits:0});}
+function pjSame(a,b){return String(a)===String(b);}
+function pjSort(a,b){
+  const ad=a.status==='done'?1:0,bd=b.status==='done'?1:0;
+  if(ad!==bd)return ad-bd;
+  const x=pjDate(a.due_date)||'9999',y=pjDate(b.due_date)||'9999';
+  return x<y?-1:x>y?1:0;
+}
+function pjStats(p){
+  const list=_pj.deliverables.filter(d=>pjSame(d.project_id,p.id));
+  const done=list.filter(d=>d.status==='done').length;
+  return{list,total:list.length,done,pct:list.length?Math.round(done/list.length*100):(p.status==='done'?100:0)};
+}
+
+/* ── rendering (shared by client + admin) ── */
+function pjVisibleProjects(admin){
+  let list=_pj.projects.slice();
+  if(admin){
+    if(_pjClientFilter)list=list.filter(p=>pjSame(p.client_id,_pjClientFilter));
+    if(_pjTab==='open')list=list.filter(p=>p.status!=='done');
+    if(_pjTab==='done')list=list.filter(p=>p.status==='done');
+  }
+  return list.sort(pjSort);
+}
+function pjRender(){
+  const admin=!!isAdminUser,pre=admin?'pj-admin-':'pj-client-';
+  const scope=_pj.projects.filter(p=>!admin||!_pjClientFilter||pjSame(p.client_id,_pjClientFilter));
+  const scopeIds=new Set(scope.map(p=>String(p.id)));
+  const pStatus=id=>(_pj.projects.find(p=>pjSame(p.id,id))||{}).status;
+  const live=_pj.deliverables.filter(d=>scopeIds.has(String(d.project_id))&&d.status!=='done'&&!['done','hold'].includes(pStatus(d.project_id)));
+
+  // stats
+  const openProjects=scope.filter(p=>p.status!=='done').length;
+  const dueWeek=live.filter(d=>{const n=pjDays(d.due_date);return n!==null&&n>=0&&n<=7;}).length;
+  const overdue=live.filter(d=>{const n=pjDays(d.due_date);return n!==null&&n<0;}).length;
+  const st=document.getElementById(pre+'stats');
+  if(st)st.innerHTML=`
+    <div class="pj-stat"><b>${openProjects}</b><span>Open projects</span></div>
+    <div class="pj-stat"><b>${dueWeek}</b><span>Due this week</span></div>
+    <div class="pj-stat${overdue?' late':''}"><b>${overdue}</b><span>Overdue</span></div>`;
+
+  // due soon
+  const dueEl=document.getElementById(pre+'due');
+  if(dueEl){
+    const rows=live.filter(d=>pjDate(d.due_date)).sort((a,b)=>pjDate(a.due_date)<pjDate(b.due_date)?-1:1).slice(0,8);
+    dueEl.innerHTML=rows.length?rows.map(d=>{
+      const p=_pj.projects.find(x=>pjSame(x.id,d.project_id))||{};
+      const n=pjDays(d.due_date),cls=n<0?'late':(n<=3?'soon':'');
+      const sub=esc(p.name||'')+(admin&&_pj.clients[d.client_id]?', '+esc(_pj.clients[d.client_id]):'');
+      return `<div class="pj-due-row" role="button" tabindex="0" onclick="pjJump('${esc(d.project_id)}')" onkeydown="if(event.key==='Enter')pjJump('${esc(d.project_id)}')">
+        <div class="pj-due-dot ${cls}"></div>
+        <div class="pj-due-main"><div class="pj-due-title">${esc(d.title)}</div><div class="pj-due-sub">${sub}</div></div>
+        <div class="pj-due-when ${cls}">${pjWhen(d.due_date)}</div></div>`;
+    }).join(''):`<div class="pj-empty">${admin?'Nothing due. Add deliverables with a date and they show up here.':'Nothing due right now. New deliverables appear here as they are scheduled.'}</div>`;
+  }
+
+  // project cards
+  const listEl=document.getElementById(pre+'list');
+  if(listEl){
+    const vis=pjVisibleProjects(admin);
+    listEl.innerHTML=vis.length?vis.map(p=>pjCard(p,admin)).join(''):
+      `<div class="bubble"><div class="pj-empty">${admin?'No projects here yet. Tap New Project to add one.':'No projects yet. Your account manager will add them here.'}</div></div>`;
+  }
+}
+function pjCard(p,admin){
+  const s=pjStats(p),open=!!_pj.open[p.id],id=esc(p.id);
+  const n=pjDays(p.due_date),late=p.status!=='done'&&n!==null&&n<0;
+  const label=PJ_STATUS[p.status]||PJ_STATUS.active,cls=PJ_STATUS[p.status]?p.status:'active';
+  const budget=pjMoney(p.budget);
+  const client=admin?(_pj.clients[p.client_id]||''):'';
+  const rows=s.list.map(d=>pjRow(d,p,admin)).join('');
+  const body=open?`<div class="pj-body">
+      ${p.description?`<div class="pj-desc">${esc(p.description)}</div>`:''}
+      ${rows||`<div class="pj-empty" style="padding:16px 0">No deliverables yet.</div>`}
+      ${admin?`<div class="pj-actions"><button class="lnk" onclick="openDeliverableModal('${id}')">+ Add deliverable</button><button class="lnk" onclick="openProjectModal('${id}')">Edit project</button></div>`:''}
+    </div>`:'';
+  return `<div class="pj-card" id="pj-${id}">
+    <div class="pj-head" role="button" tabindex="0" aria-expanded="${open}" onclick="pjToggle('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pjToggle('${id}')}">
+      <div class="pj-dot" style="background:${esc(p.color||'#FF6B2C')}"></div>
+      <div class="pj-main">
+        <div class="pj-top"><div class="pj-name">${esc(p.name)}</div><span class="pj-badge ${cls}">${label}</span></div>
+        ${client?`<div class="pj-client">${esc(client)}</div>`:''}
+        <div class="pj-meta"><span class="${late?'late':''}">${pjWhen(p.due_date)}</span>${budget?`<span>${budget} budget${admin&&p.hide_budget?' (hidden from client)':''}</span>`:''}</div>
+        <div class="pj-bar"><i style="width:${s.pct}%"></i></div>
+        <div class="pj-count">${s.total?`${s.done} of ${s.total} delivered`:'No deliverables yet'}</div>
+      </div>
+      <svg class="pj-chev${open?' open':''}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>${body}</div>`;
+}
+function pjRow(d,p,admin){
+  const n=pjDays(d.due_date),late=d.status!=='done'&&n!==null&&n<0;
+  const due=d.status==='done'?(d.due_date?'Was due '+pjFmt(d.due_date):''):(d.due_date?pjWhen(d.due_date):'No date');
+  const chip=admin
+    ?`<button class="dl-status ${d.status}" onclick="pjCycle('${esc(d.id)}')" aria-label="Status: ${DL_STATUS[d.status]||''}. Tap to change">${DL_STATUS[d.status]||'Not started'}</button>`
+    :`<span class="dl-status ${d.status}">${DL_STATUS[d.status]||'Not started'}</span>`;
+  const main=`<div class="dl-main${admin?' edit':''}"${admin?` onclick="openDeliverableModal('${esc(p.id)}','${esc(d.id)}')"`:''}>
+      <div class="dl-title">${esc(d.title)}</div><div class="dl-due${late?' late':''}">${esc(due)}</div></div>`;
+  const file=d.drive_embed_url?`<button class="dl-file" onclick="pjOpenFile('${esc(d.id)}')">View</button>`:'';
+  return `<div class="dl-row">${chip}${main}${file}</div>`;
+}
+function pjToggle(id){_pj.open[id]=!_pj.open[id];pjRender();}
+function pjJump(id){
+  _pj.open[id]=true;pjRender();
+  setTimeout(()=>document.getElementById('pj-'+id)?.scrollIntoView({behavior:'smooth',block:'start'}),30);
+}
+function pjOpenFile(id){
+  const d=_pj.deliverables.find(x=>pjSame(x.id,id));
+  if(d&&d.drive_embed_url)playDriveVideo(d.drive_embed_url,d.file_name||d.title);
+}
+async function pjCycle(id){
+  const d=_pj.deliverables.find(x=>pjSame(x.id,id));if(!d)return;
+  const prev=d.status;
+  d.status=DL_ORDER[(DL_ORDER.indexOf(prev)+1)%DL_ORDER.length];
+  pjRender();
+  try{await pjSend('PATCH',`deliverables?id=eq.${encodeURIComponent(d.id)}`,{status:d.status});}
+  catch(e){d.status=prev;pjRender();toast('Error: '+e.message);}
+}
+
+/* ── loading ── */
+async function loadClientProjects(){
+  if(!currentClientId)return;
+  const list=document.getElementById('pj-client-list');
+  try{
+    const [projects,dls]=await Promise.all([
+      pjRpc('client_projects'),
+      pjGet(`deliverables?select=*&client_id=eq.${encodeURIComponent(currentClientId)}&order=due_date.asc.nullslast,position.asc`)
+    ]);
+    _pj.projects=projects;_pj.deliverables=dls;
+    pjRender();
+  }catch(e){
+    if(list)list.innerHTML=`<div class="bubble"><div class="pj-empty">${esc(e.message)}</div></div>`;
+  }
+}
+async function loadAdminProjects(silent){
+  const list=document.getElementById('pj-admin-list');
+  if(!silent&&list&&!_pj.projects.length)list.innerHTML='<div class="bubble"><div class="pj-empty">Loading…</div></div>';
+  try{
+    const [projects,dls,clients]=await Promise.all([
+      pjGet('projects?select=*&order=due_date.asc.nullslast'),
+      pjGet('deliverables?select=*&order=due_date.asc.nullslast,position.asc'),
+      getClients()
+    ]);
+    _pj.projects=projects;_pj.deliverables=dls;_pj.clients={};
+    clients.forEach(c=>{_pj.clients[c.id]=c.name;});
+    const sel=document.getElementById('pj-admin-client');
+    if(sel){
+      sel.innerHTML='<option value="">All clients</option>'+clients.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+      sel.value=_pjClientFilter;
+    }
+    pjRender();
+  }catch(e){
+    if(list)list.innerHTML=`<div class="bubble"><div class="pj-empty">${esc(e.message)}</div></div>`;
+  }
+}
+function pjSetTab(t){
+  _pjTab=t;
+  ['open','done','all'].forEach(k=>document.getElementById('pjtab-'+k)?.classList.toggle('on',k===t));
+  pjRender();
+}
+function pjSetClient(id){_pjClientFilter=id;pjRender();}
+function pjStartAdminPoll(){
+  if(_pjAdminPoll)return;
+  _pjAdminPoll=setInterval(()=>{
+    if(!isAdminUser)return;
+    if(document.getElementById('admin-sec-projects')?.classList.contains('active')&&document.getElementById('admin-modal-overlay')?.style.display!=='flex')loadAdminProjects(true);
+  },15000);
+}
+
+/* ── admin: project modal ── */
+function pjOpenModal(html){
+  document.getElementById('admin-modal-content').innerHTML=html;
+  document.getElementById('admin-modal-overlay').style.display='flex';
+}
+async function openProjectModal(id){
+  const clients=await getClients();
+  const p=id?_pj.projects.find(x=>pjSame(x.id,id)):null;
+  _pjModal={type:'project',id:p?p.id:null};
+  const pre=p?p.client_id:_pjClientFilter;
+  const opts=clients.map(c=>`<option value="${esc(c.id)}"${pjSame(c.id,pre)?' selected':''}>${esc(c.name)}</option>`).join('');
+  const dlBlock=p?'':`
+    <div style="margin-bottom:14px"><label class="form-label">Deliverables</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="field" type="number" id="pj-qty" min="0" max="60" placeholder="8" style="width:84px;margin-bottom:0" aria-label="How many"/>
+        <input class="field" id="pj-qtyname" placeholder="Name, e.g. Reel" style="margin-bottom:0"/>
+      </div>
+      <textarea class="field" id="pj-lines" rows="3" placeholder="Or one per line" style="margin-bottom:0"></textarea>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">8 and Reel creates Reel 1 to Reel 8. Each starts on the project deadline, and you can change dates after.</div>
+    </div>`;
+  pjOpenModal(`<h3>${p?'Edit project':'New project'}</h3>
+    <div style="margin-bottom:14px"><label class="form-label">Client</label>
+      <select class="field" id="pj-client" style="margin-bottom:0"${p?' disabled':''}><option value="">Select client...</option>${opts}</select></div>
+    <div style="margin-bottom:14px"><label class="form-label">Project name</label>
+      <input class="field" id="pj-name" placeholder="e.g. October ad creative" value="${esc(p?p.name:'')}" style="margin-bottom:0"/></div>
+    <div style="margin-bottom:14px"><label class="form-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea class="field" id="pj-desc" rows="2" style="margin-bottom:0">${esc(p&&p.description||'')}</textarea></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Budget ($)</label><input class="field" type="number" id="pj-budget" min="0" placeholder="5000" value="${p&&p.budget!==null&&p.budget!==undefined?esc(p.budget):''}" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Deadline</label><input class="field" type="date" id="pj-due" value="${esc(p?pjDate(p.due_date):'')}" style="margin-bottom:0"/></div>
+    </div>
+    <div style="margin-bottom:14px"><label class="form-label">Status</label>
+      <select class="field" id="pj-status" style="margin-bottom:0">${Object.entries(PJ_STATUS).map(([k,l])=>`<option value="${k}"${(p?p.status:'active')===k?' selected':''}>${l}</option>`).join('')}</select></div>
+    <label class="pj-check"><input type="checkbox" id="pj-showbudget"${p&&p.hide_budget?'':' checked'}/> Show budget to client</label>
+    ${dlBlock}
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" id="pj-save-btn" onclick="saveProject()">${p?'Save changes':'Create project'}</button></div>
+    ${p?`<div style="text-align:center;margin-top:14px"><button class="lnk pj-danger" onclick="deleteProject('${esc(p.id)}')">Delete project</button></div>`:''}`);
+}
+async function saveProject(){
+  const editing=_pjModal&&_pjModal.id;
+  const client_id=editing?(_pj.projects.find(x=>pjSame(x.id,editing))||{}).client_id:v('pj-client');
+  const name=v('pj-name'),due=v('pj-due'),budgetRaw=v('pj-budget');
+  if(!client_id){toast('Select a client.');return;}
+  if(!name){toast('Give the project a name.');return;}
+  if(!due){toast('Set a deadline.');return;}
+  if(!window._sbAccessToken){toast('Session expired. Sign out and back in.');return;}
+  const body={
+    name,description:v('pj-desc')||null,due_date:due,status:v('pj-status')||'active',
+    budget:budgetRaw===''?null:Number(budgetRaw),
+    hide_budget:!document.getElementById('pj-showbudget').checked
+  };
+  const btn=document.getElementById('pj-save-btn');
+  const label=btn?btn.textContent:'';
+  if(btn){btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;}
+  try{
+    if(editing){
+      await pjSend('PATCH',`projects?id=eq.${encodeURIComponent(editing)}`,body);
+    }else{
+      const clients=await getClients();
+      const c=clients.find(x=>pjSame(x.id,client_id));
+      Object.assign(body,{client_id,platform:'Meta Ads',progress:0,color:(c&&c.color)||CLIENT_COLORS[Math.floor(Math.random()*CLIENT_COLORS.length)]});
+      const created=await pjSend('POST','projects',body,true);
+      const titles=[];
+      const qty=Math.min(60,parseInt(v('pj-qty'),10)||0),qname=v('pj-qtyname')||'Deliverable';
+      for(let i=1;i<=qty;i++)titles.push(qty===1?qname:`${qname} ${i}`);
+      v('pj-lines').split('\n').map(t=>t.trim()).filter(Boolean).forEach(t=>titles.push(t));
+      if(titles.length&&created&&created[0]){
+        await pjSend('POST','deliverables',titles.map((title,i)=>({project_id:created[0].id,client_id,title,due_date:due,status:'todo',position:i})));
+      }
+      _pj.open[created&&created[0]?created[0].id:'']=true;
+    }
+    closeAdminModal();
+    toast(editing?'✓ Project updated':'✓ Project created');
+    await loadAdminProjects(true);
+  }catch(e){
+    if(btn){btn.textContent=label;btn.disabled=false;}
+    toast('Error: '+e.message);
+  }
+}
+async function deleteProject(id){
+  if(!confirm('Delete this project and all its deliverables? This cannot be undone.'))return;
+  try{
+    await pjSend('DELETE',`projects?id=eq.${encodeURIComponent(id)}`);
+    closeAdminModal();toast('✓ Project deleted');
+    await loadAdminProjects(true);
+  }catch(e){toast('Error: '+e.message);}
+}
+
+/* ── admin: deliverable modal ── */
+function dlRenderAttach(){
+  const el=document.getElementById('dl-attach');if(!el||!_pjModal)return;
+  const f=_pjModal.drive;
+  el.innerHTML=(f?`<div class="dl-attached"><span>✓ ${esc(f.name)}</span><button class="lnk" onclick="dlClearAttach()">Remove</button></div>`:'')+
+    `<button type="button" class="drive-pick-btn" style="margin:0" onclick="dlPickAttach()"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${f?'Choose a different file':'Attach from Google Drive'}</button>`;
+}
+async function dlPickAttach(){
+  try{
+    const f=await pickFromDrive();if(!f||!_pjModal)return;
+    _pjModal.drive=f;
+    const t=document.getElementById('dl-title');
+    if(t&&!t.value.trim())t.value=f.name.replace(/\.[^/.]+$/,'');
+    dlRenderAttach();
+  }catch(e){toast(e.message);}
+}
+function dlClearAttach(){if(_pjModal){_pjModal.drive=null;dlRenderAttach();}}
+function openDeliverableModal(projectId,id){
+  const p=_pj.projects.find(x=>pjSame(x.id,projectId));if(!p)return;
+  const d=id?_pj.deliverables.find(x=>pjSame(x.id,id)):null;
+  _pjModal={type:'deliverable',projectId:p.id,clientId:p.client_id,id:d?d.id:null,
+    drive:d&&d.drive_file_id?{driveFileId:d.drive_file_id,driveViewUrl:d.drive_view_url,driveEmbedUrl:d.drive_embed_url,name:d.file_name||'Attached file'}:null};
+  pjOpenModal(`<h3>${d?'Edit deliverable':'Add deliverable'}</h3>
+    <p style="font-size:13px;color:var(--muted);margin:-10px 0 16px">${esc(p.name)}</p>
+    <div style="margin-bottom:14px"><label class="form-label">Title</label>
+      <input class="field" id="dl-title" placeholder="e.g. Reel 3, hook variation" value="${esc(d?d.title:'')}" style="margin-bottom:0"/></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1"><label class="form-label">Due date</label><input class="field" type="date" id="dl-due" value="${esc(pjDate(d?d.due_date:p.due_date))}" style="margin-bottom:0"/></div>
+      <div style="flex:1"><label class="form-label">Status</label>
+        <select class="field" id="dl-status" style="margin-bottom:0">${DL_ORDER.map(k=>`<option value="${k}"${(d?d.status:'todo')===k?' selected':''}>${DL_STATUS[k]}</option>`).join('')}</select></div>
+    </div>
+    <div style="margin-bottom:14px"><label class="form-label">File <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><div id="dl-attach"></div></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="closeAdminModal()">Cancel</button><button class="btn-save" id="dl-save-btn" onclick="saveDeliverable()">${d?'Save changes':'Add deliverable'}</button></div>
+    ${d?`<div style="text-align:center;margin-top:14px"><button class="lnk pj-danger" onclick="deleteDeliverable('${esc(d.id)}')">Delete deliverable</button></div>`:''}`);
+  dlRenderAttach();
+}
+async function saveDeliverable(){
+  if(!_pjModal)return;
+  const title=v('dl-title');
+  if(!title){toast('Give it a title.');return;}
+  if(!window._sbAccessToken){toast('Session expired. Sign out and back in.');return;}
+  const f=_pjModal.drive;
+  const body={
+    title,due_date:v('dl-due')||null,status:v('dl-status')||'todo',
+    drive_file_id:f?f.driveFileId:null,drive_view_url:f?f.driveViewUrl:null,drive_embed_url:f?f.driveEmbedUrl:null,file_name:f?f.name:null
+  };
+  const btn=document.getElementById('dl-save-btn'),label=btn?btn.textContent:'';
+  if(btn){btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;}
+  try{
+    if(_pjModal.id){
+      await pjSend('PATCH',`deliverables?id=eq.${encodeURIComponent(_pjModal.id)}`,body);
+    }else{
+      const pos=_pj.deliverables.filter(x=>pjSame(x.project_id,_pjModal.projectId)).length;
+      await pjSend('POST','deliverables',Object.assign(body,{project_id:_pjModal.projectId,client_id:_pjModal.clientId,position:pos}));
+    }
+    _pj.open[_pjModal.projectId]=true;
+    closeAdminModal();toast('✓ Deliverable saved');
+    await loadAdminProjects(true);
+  }catch(e){
+    if(btn){btn.textContent=label;btn.disabled=false;}
+    toast('Error: '+e.message);
+  }
+}
+async function deleteDeliverable(id){
+  if(!confirm('Delete this deliverable?'))return;
+  try{
+    await pjSend('DELETE',`deliverables?id=eq.${encodeURIComponent(id)}`);
+    closeAdminModal();toast('✓ Deliverable deleted');
+    await loadAdminProjects(true);
+  }catch(e){toast('Error: '+e.message);}
+}
+
+
+/* ══════════════════════════════════════════
    GOOGLE DRIVE
 ══════════════════════════════════════════ */
+let _googleTokenAt=0;
 function initGoogleDrive(){
   return new Promise((resolve,reject)=>{
-    if(googleAccessToken){resolve();return;}
+    // Google tokens last ~1h; re-request after 50 min instead of failing mid-upload
+    if(googleAccessToken&&Date.now()-_googleTokenAt<50*60*1000){resolve();return;}
+    googleAccessToken=null;
     try{
       const client=google.accounts.oauth2.initTokenClient({
         client_id:GOOGLE_CLIENT_ID,
@@ -2912,6 +3453,7 @@ function initGoogleDrive(){
         callback:(resp)=>{
           if(resp.access_token){
             googleAccessToken=resp.access_token;
+            _googleTokenAt=Date.now();
             resolve();
           } else {
             reject(new Error(resp.error||'Google auth failed — no access token returned'));
@@ -3028,6 +3570,72 @@ async function uploadToDrive(file,clientName){
   return uploadToDriveWithToken(file,clientName,googleAccessToken);
 }
 
+
+/* ══════════════════════════════════════════
+   GOOGLE DRIVE PICKER — choose a file that's already in Drive
+   Uses the existing drive.file scope: picking a file grants the app access to it.
+══════════════════════════════════════════ */
+function fmtBytes(n){n=Number(n)||0;if(!n)return '—';return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';}
+function driveExt(name,mime){
+  const m=/\.([A-Za-z0-9]+)$/.exec(name||'');
+  if(m)return m[1].toUpperCase();
+  return({'video/mp4':'MP4','video/quicktime':'MOV','application/pdf':'PDF','image/png':'PNG','image/jpeg':'JPG','application/zip':'ZIP'})[mime]||'FILE';
+}
+function loadPickerLib(){
+  return new Promise((resolve,reject)=>{
+    if(window.google&&google.picker){resolve();return;}
+    if(!window.gapi){reject(new Error('Google API failed to load — refresh and try again'));return;}
+    gapi.load('picker',{callback:resolve,onerror:()=>reject(new Error('Could not load Google Picker')),timeout:10000,ontimeout:()=>reject(new Error('Google Picker timed out'))});
+  });
+}
+// Resolves to {driveFileId,driveViewUrl,driveEmbedUrl,name,mimeType,sizeBytes} or null if cancelled
+async function pickFromDrive(){
+  if(!GOOGLE_API_KEY||GOOGLE_API_KEY.startsWith('PASTE_')){
+    throw new Error('Add your Google Picker API key in the config first');
+  }
+  await initGoogleDrive();
+  await loadPickerLib();
+  return new Promise((resolve,reject)=>{
+    try{
+      const G=google.picker;
+      const lunar=new G.DocsView(G.ViewId.DOCS).setParent(DRIVE_ROOT_FOLDER).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(G.DocsViewMode.LIST);
+      const mine=new G.DocsView(G.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(G.DocsViewMode.LIST).setOwnedByMe(true);
+      const shared=new G.DocsView(G.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(G.DocsViewMode.LIST).setOwnedByMe(false);
+      const picker=new G.PickerBuilder()
+        .setAppId(GOOGLE_APP_ID)
+        .setOAuthToken(googleAccessToken)
+        .setDeveloperKey(GOOGLE_API_KEY)
+        .setOrigin(window.location.protocol+'//'+window.location.host)
+        .setTitle('Choose a file from Drive')
+        .addView(lunar).addView(mine).addView(shared)
+        .setCallback(async data=>{
+          if(data.action===G.Action.CANCEL){resolve(null);return;}
+          if(data.action!==G.Action.PICKED)return;
+          const doc=data.docs[0];
+          const id=doc.id||doc[G.Document.ID];
+          const out={
+            driveFileId:id,
+            driveViewUrl:`https://drive.google.com/file/d/${id}/view`,
+            driveEmbedUrl:`https://drive.google.com/file/d/${id}/preview`,
+            name:doc.name||doc[G.Document.NAME]||'Drive file',
+            mimeType:doc.mimeType||doc[G.Document.MIME_TYPE]||'',
+            sizeBytes:Number(doc.sizeBytes||doc[G.Document.SIZE_BYTES]||0)
+          };
+          // Make it viewable by link so the client's embed works (same as uploads do)
+          try{
+            const pr=await fetch(`https://www.googleapis.com/drive/v3/files/${id}/permissions`,{
+              method:'POST',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
+              body:JSON.stringify({role:'reader',type:'anyone'})
+            });
+            if(!pr.ok)toast("Couldn't share this file with clients");
+          }catch(e){toast("Couldn't share this file with clients");}
+          resolve(out);
+        }).build();
+      picker.setVisible(true);
+    }catch(e){reject(e);}
+  });
+}
+
 function playDriveVideo(embedUrl,name){
   const modal=document.getElementById('video-modal');
   const frame=document.getElementById('drive-embed-frame');
@@ -3097,17 +3705,13 @@ document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-tr
 function navTo(id,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  // Show/hide pages
-  const calPage=document.getElementById('page-calendar');
+  // Full pages: calendar + projects. Everything else scrolls within home.
+  const pages={calendar:document.getElementById('page-calendar'),projects:document.getElementById('page-projects')};
   const homePage=document.getElementById('page-home');
-  if(id==='calendar'){
-    if(homePage)homePage.style.display='none';
-    if(calPage)calPage.style.display='block';
-    loadProposedEvents(); // loads from DB then renders
-    return;
-  }
-  if(calPage)calPage.style.display='none';
-  if(homePage)homePage.style.display='block';
+  Object.keys(pages).forEach(k=>{if(pages[k])pages[k].style.display=(k===id)?'block':'none';});
+  if(homePage)homePage.style.display=(id in pages)?'none':'block';
+  if(id==='calendar'){loadProposedEvents();return;} // loads from DB then renders
+  if(id==='projects'){window.scrollTo({top:0});loadClientProjects();return;}
   const targets={
     home:()=>window.scrollTo({top:0,behavior:'smooth'}),
     performance:()=>document.getElementById('stat-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),
